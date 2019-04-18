@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/recipe_navigation"
+    app:startDestination="@id/tabFragment">
+
+    <fragment
+            android:id="@+id/tabFragment"
+            android:name="zelgius.com.myrecipes.fragments.TabFragment"
+            tools:layout="@layout/fragment_tab"
+            android:label="@string/recipe_list">
+        <action
+                android:id="@+id/action_tabFragment_to_recipeActivity"
+                app:destination="@id/recipeActivity"
+                />
+    </fragment>
+    <fragment
+            android:id="@+id/recipeFragment"
+            android:name="zelgius.com.myrecipes.fragments.RecipeFragment"
+            tools:layout="@layout/fragment_recipe"
+            android:label="@string/new_recipe"/>
+    <activity
+            android:id="@+id/recipeActivity"
+            android:name="zelgius.com.myrecipes.RecipeActivity"
+            android:label="RecipeActivity"/>
+    <fragment
+            android:id="@+id/licenseFragment"
+            android:name="zelgius.com.myrecipes.fragments.LicenseFragment"
+            android:label="fragment_license"
+            tools:layout="@layout/fragment_license"/>
+</navigation>

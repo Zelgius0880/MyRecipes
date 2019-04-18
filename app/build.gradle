@@ -1,0 +1,113 @@
+ext {
+    ANIMATE = false
+}
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'androidx.navigation.safeargs'
+androidExtensions {
+    experimental = true
+}
+
+android {
+    compileSdkVersion 'android-Q'
+    defaultConfig {
+        applicationId "zelgius.com.myrecipes"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    lintOptions {
+        warning 'InvalidPackage'
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    signingConfigs {
+        debug {
+            storeFile file('keystore')
+            storePassword 'keystore'
+            keyAlias = 'keystore'
+            keyPassword 'keystore'
+        }
+
+        release {
+            storeFile file('keystore')
+            storePassword 'keystore'
+            keyAlias = 'keystore'
+            keyPassword 'keystore'
+        }
+    }
+    buildToolsVersion = '29.0.0 rc2'
+}
+
+apply plugin: 'kotlin-kapt'
+dependencies {
+    def navigation_version = "1.0.0"
+    def paging_version = "2.1.0"
+    def firebase_version = "16.0.8"
+    def lifecycle_version = "2.1.0-alpha04"
+    def room_version = "2.1.0-alpha06"
+
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.30'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation 'com.google.android.material:material:1.1.0-alpha05'
+
+    testImplementation 'junit:junit:4.13-beta-2'
+    androidTestImplementation 'androidx.test:runner:1.2.0-alpha03'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0-alpha03'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'de.hdodenhof:circleimageview:3.0.0'
+    implementation 'net.alhazmy13.MediaPicker:libary:2.4.4'
+    implementation 'gr.escsoft.michaelprimez.searchablespinner:SearchableSpinner:1.0.9'
+
+    //Android X
+    implementation 'androidx.fragment:fragment:1.1.0-alpha06'
+    implementation 'androidx.core:core-ktx:1.1.0-alpha05'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha4'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0-alpha04'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha04'
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version" // For Kotlin use kapt instead of annotationProcessor
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:$room_version"
+
+    //KTX & coroutines
+    implementation 'androidx.core:core-ktx:1.0.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.0-alpha-2'
+
+
+    //navigation
+    implementation "android.arch.navigation:navigation-fragment:$navigation_version"
+    implementation "android.arch.navigation:navigation-fragment-ktx:$navigation_version"
+    implementation "android.arch.navigation:navigation-ui-ktx:$navigation_version"
+
+    //Paging Library
+    implementation "androidx.paging:paging-runtime:$paging_version" // use -ktx for Kotlin
+
+    //FireBase
+    implementation 'com.google.android.gms:play-services-auth:16.0.1'
+    implementation "com.google.firebase:firebase-auth:16.2.1"
+    implementation "com.google.firebase:firebase-core:$firebase_version"
+    implementation "com.google.firebase:firebase-firestore:18.2.0"
+    implementation 'com.firebaseui:firebase-ui-firestore:4.2.1'
+    implementation 'com.google.firebase:firebase-storage:16.1.0'
+
+    //implementation "com.google.firebase:firebase-database:$firebase_version"
+
+}
+
+apply plugin: 'com.google.gms.google-services'
