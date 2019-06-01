@@ -1,22 +1,28 @@
 package zelgius.com.myrecipes.fragments
 
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.NavUtils
+import androidx.core.app.TaskStackBuilder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.ActivityNavigator
+import androidx.navigation.ui.NavigationUI
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import kotlinx.android.synthetic.main.activity_recipe.*
 import kotlinx.android.synthetic.main.fragment_recipe.*
+import kotlinx.android.synthetic.main.fragment_recipe.fab
 import kotlinx.android.synthetic.main.fragment_recipe.view.*
-import zelgius.com.myrecipes.utils.AnimationUtils
-import zelgius.com.myrecipes.utils.AnimationUtils.RevealAnimationSetting
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.adapters.RecipeDetailsAdapter
+import zelgius.com.myrecipes.adapters.RecipeEditAdapter
+import zelgius.com.myrecipes.utils.AnimationUtils
 import zelgius.com.myrecipes.utils.colorSecondary
 
 
@@ -49,7 +55,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener {
 
     val context by lazy { activity!! }
     private val viewModel by lazy { ViewModelProviders.of(this).get(RecipeViewModel::class.java) }
-    private val adapter by lazy { RecipeDetailsAdapter(context, viewModel) }
+    private val adapter by lazy { RecipeEditAdapter(context, viewModel) }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,11 +84,6 @@ class RecipeFragment : Fragment(), OnBackPressedListener {
 
 
         fab.setImageResource(R.drawable.ic_playlist_plus)
-
-        viewModel.editMode.observe(this, Observer {
-            adapter.edit = it
-            adapter.notifyDataSetChanged()
-        })
 
         viewModel.selectedRecipe.observe(this, Observer {
             adapter.recipe = it

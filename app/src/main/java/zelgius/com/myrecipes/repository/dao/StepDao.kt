@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.repository
+package zelgius.com.myrecipes.repository.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Query

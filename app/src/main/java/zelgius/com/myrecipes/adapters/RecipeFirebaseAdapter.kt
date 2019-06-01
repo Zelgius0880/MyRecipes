@@ -1,3 +1,4 @@
+/*
 package zelgius.com.myrecipes.adapters
 
 import android.view.LayoutInflater
@@ -32,4 +33,4 @@ class RecipeFirebaseAdapter(options: FirestoreRecyclerOptions<Recipe>) : Firesto
                 )
     }
     inner class ViewHolder(override val containerView: View) : RecyclerView.ViewHolder(containerView), LayoutContainer
-}
+}*/

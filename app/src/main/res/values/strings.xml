@@ -15,8 +15,6 @@
     <string name="meal">Meal</string>
     <string name="search">Search</string>
     <string name="search_hint">Search a recipe</string>
-    <string name="teaspoon_abrv">tsp.</string>
-    <string name="tablespoon_abrv">tbsp.</string>
     <string name="title_activity_main2">Main2Activity</string>
 
     <string name="new_recipe">New Recipe</string>
@@ -35,4 +33,45 @@
     <string name="quantity">Quantity</string>
     <string name="select_an_ingredient">Select an ingredient</string>
     <string name="field_required">This field is required</string>
+
+    <!-- UNITS -->
+    <string name="milliliter">Milliliter</string>
+    <string name="liter">Liter</string>
+    <string name="unit">Unit</string>
+    <string name="teaspoon">Teaspoon</string>
+    <string name="tablespoon">Tablespoon</string>
+    <string name="gramme">Gramme</string>
+    <string name="kilogramme">Kilogramme</string>
+    <string name="cup">Cup</string>
+
+    <string name="milliliter_abrv">ml</string>
+    <string name="liter_abrv">l</string>
+    <string name="unit_abrv"></string>
+    <string name="teaspoon_abrv">tsp</string>
+    <string name="tablespoon_abrv">tbs</string>
+    <string name="gramme_abrv">g</string>
+    <string name="kilogramme_abrv">kg</string>
+    <string name="cup_abrv">cp</string>
+
+    <string name="milliliter_select">(Milliliter)</string>
+    <string name="liter_select">l (Liter)</string>
+    <string name="unit_select">Unit</string>
+    <string name="teaspoon_select">tsp (Teaspoon)</string>
+    <string name="tablespoon_select">tbs (Tablespoon)</string>
+    <string name="gramme_select">g (Gramme)</string>
+    <string name="kilogramme_select">kg (Kilogramme)</string>
+    <string name="cup_select">cp (Cup)</string>
+
+    <!-- Default Ingredient Names -->
+    <string name="milk_name">Milk</string>
+    <string name="water_name">Water</string>
+    <string name="sugar_name">Sugar</string>
+    <string name="butter_name">Butter</string>
+    <string name="egg_name">Egg(s)</string>
+    <string name="flour_name">Flour</string>
+    <string name="no_selection">No item selected</string>
+    <string name="salt_name">Salt</string>
+    <string name="error_not_a_number">Please enter a correct number</string>
+    <string name="enter_a_step">Enter a step</string>
+    <string name="step_description">Step description</string>
 </resources>

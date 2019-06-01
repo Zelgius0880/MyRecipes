@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.NavigationUI
+import com.facebook.stetho.Stetho
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -62,12 +63,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         FirebaseApp.initializeApp(this)
+        Stetho.initializeWithDefaults(this)
 
-        setSupportActionBar(toolbar)
+        //setSupportActionBar(toolbar)
 
-        NavigationUI.setupActionBarWithNavController(this, navController)
-
-        viewModel.connectedUser.observe(this, Observer {
+        /*viewModel.connectedUser.observe(this, Observer {
             if (it != null) {
                 Picasso.get()
                     .load(it.photoUrl)
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                 signIn()
             else
                 signOut()
-        }
+        }*/
     }
 
     override fun onStart() {
@@ -134,40 +134,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-
-        // Associate searchable configuration with the SearchView
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        (menu.findItem(R.id.search).actionView as SearchView).apply {
-            setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        }
-
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
-
-        if (id == R.id.action_license) {
-            navController.navigate(
-                R.id.licenseFragment, bundleOf(), NavOptions.Builder()
-                    .setEnterAnim(R.anim.nav_default_enter_anim)
-                    .setExitAnim(R.anim.nav_default_exit_anim)
-                    .setPopEnterAnim(R.anim.nav_default_pop_enter_anim)
-                    .setPopExitAnim(R.anim.nav_default_pop_exit_anim)
-                    .build()
-            )
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
     override fun onBackPressed() {
         val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
             ?.childFragmentManager
@@ -186,7 +152,7 @@ class MainActivity : AppCompatActivity() {
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         when (requestCode) {
 
-            RC_SIGN_IN -> {
+            /*RC_SIGN_IN -> {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 try {
                     // Google Sign In was successful, authenticate with Firebase
@@ -197,14 +163,14 @@ class MainActivity : AppCompatActivity() {
                     Log.w(TAG, "Google sign in failed", e)
                     // ...
                 }
-            }
+            }*/
         }
     }
 
-    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+   /* private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.id!!)
         // [START_EXCLUDE silent]
-        accountProgress.visibility = View.VISIBLE
+        //accountProgress.visibility = View.VISIBLE
         // [END_EXCLUDE]
 
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
@@ -223,9 +189,9 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // [START_EXCLUDE]
-                accountProgress.visibility = View.GONE
+                //accountProgress.visibility = View.GONE
 
                 // [END_EXCLUDE]
             }
-    }
+    }*/
 }

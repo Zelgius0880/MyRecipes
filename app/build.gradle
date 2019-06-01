@@ -19,6 +19,12 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     lintOptions {
@@ -46,6 +52,18 @@ android {
         }
     }
     buildToolsVersion = '29.0.0 rc2'
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/atomicfu.kotlin_module'
+    }
 }
 
 apply plugin: 'kotlin-kapt'
@@ -63,12 +81,18 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0-alpha05'
 
     testImplementation 'junit:junit:4.13-beta-2'
-    androidTestImplementation 'androidx.test:runner:1.2.0-alpha03'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0-alpha03'
+    androidTestImplementation 'androidx.test:runner:1.2.0-alpha04'
+    androidTestImplementation 'androidx.test:core:1.2.0-alpha04'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0-alpha04'
+    androidTestImplementation "androidx.arch.core:core-testing:2.0.1"
+    testImplementation "org.mockito:mockito-core:2.19.0"
+    androidTestImplementation "org.mockito:mockito-core:2.19.0"
+
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'de.hdodenhof:circleimageview:3.0.0'
     implementation 'net.alhazmy13.MediaPicker:libary:2.4.4'
     implementation 'gr.escsoft.michaelprimez.searchablespinner:SearchableSpinner:1.0.9'
+    //debugImplementation 'com.amitshekhar.android:debug-db:1.0.6' //adb forward tcp:8080 tcp:8080
 
     //Android X
     implementation 'androidx.fragment:fragment:1.1.0-alpha06'
@@ -86,7 +110,7 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
 
     //KTX & coroutines
-    implementation 'androidx.core:core-ktx:1.0.1'
+    implementation 'androidx.core:core-ktx:1.1.0-alpha05'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.0-alpha-2'
 
 
@@ -97,17 +121,21 @@ dependencies {
 
     //Paging Library
     implementation "androidx.paging:paging-runtime:$paging_version" // use -ktx for Kotlin
+    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
+
 
     //FireBase
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation "com.google.firebase:firebase-auth:16.2.1"
     implementation "com.google.firebase:firebase-core:$firebase_version"
-    implementation "com.google.firebase:firebase-firestore:18.2.0"
-    implementation 'com.firebaseui:firebase-ui-firestore:4.2.1'
+    //implementation "com.google.firebase:firebase-firestore:18.2.0"
+    //implementation 'com.firebaseui:firebase-ui-firestore:4.2.1'
     implementation 'com.google.firebase:firebase-storage:16.1.0'
 
     //implementation "com.google.firebase:firebase-database:$firebase_version"
 
+    //Other
+    implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

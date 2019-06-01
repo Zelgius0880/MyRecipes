@@ -14,6 +14,10 @@
                 android:label="@string/title_activity_recipe"
                 android:launchMode="singleTask"
                 android:theme="@style/AppTheme.Transparent.NoActionBar">
+
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value=".MainActivity" />
         </activity>
         <activity
                 android:name=".MainActivity"

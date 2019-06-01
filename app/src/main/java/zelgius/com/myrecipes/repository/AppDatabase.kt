@@ -1,13 +1,20 @@
 package zelgius.com.myrecipes.repository
 
+import android.content.ContentValues
 import android.content.Context
 import androidx.room.*
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.Recipe
+import androidx.sqlite.db.SupportSQLiteDatabase
+import zelgius.com.myrecipes.entities.*
 import zelgius.com.myrecipes.repository.dao.IngredientDao
 import zelgius.com.myrecipes.repository.dao.RecipeDao
+import zelgius.com.myrecipes.R
 
-@Database(entities = [Ingredient::class, Recipe::class], version = 1)
+
+@Database(
+    entities = [Ingredient::class, Recipe::class, Step::class, RecipeIngredient::class],
+    views = [IngredientForRecipe::class],
+    version = 1
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
@@ -16,11 +23,66 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private var instance: AppDatabase? = null
-        fun getInstance(context: Context): AppDatabase {
-            if (instance == null) instance = Room.databaseBuilder(
-                context,
-                AppDatabase::class.java, "database"
-            ).build()
+        fun getInstance(context: Context, test: Boolean = false): AppDatabase {
+            if (instance == null) {
+                instance = if (!test)
+                    Room.databaseBuilder(
+                        context,
+                        AppDatabase::class.java, "database"
+                    ).addCallback(object : Callback(){
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                            
+                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
+                                put("name", context.getString(R.string.egg_name))
+                                put("image_url", "drawable://egg")
+                            })
+
+                            
+                            
+                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
+                                put("name", context.getString(R.string.flour_name))
+                                put("image_url", "drawable://flour")
+                            })
+                            
+                            
+                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
+                                put("name", context.getString(R.string.butter_name))
+                                put("image_url", "drawable://butter")
+                            })
+
+
+
+                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
+                                put("name", context.getString(R.string.sugar_name))
+                                put("image_url", "drawable://sugar")
+                            })
+
+                            
+                            
+                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
+                                put("name", context.getString(R.string.water_name))
+                                put("image_url", "drawable://water")
+                            })
+
+
+                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
+                                put("name", context.getString(R.string.milk_name))
+                                put("image_url", "drawable://milk")
+                            })
+
+                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
+                                put("name", context.getString(R.string.salt_name))
+                                put("image_url", "drawable://salt")
+                            })
+
+                        }
+                    }).build()
+                else
+                    Room.inMemoryDatabaseBuilder(
+                        context, AppDatabase::class.java
+                    ).build()
+            }
 
             return instance!!
         }
@@ -33,4 +95,10 @@ class Converters {
 
     @TypeConverter
     fun stringToUnit(s: String): Ingredient.Unit = Ingredient.Unit.valueOf(s)
+
+    @TypeConverter
+    fun typeToString(type: Recipe.Type): String = type.name
+
+    @TypeConverter
+    fun stringToType(s: String): Recipe.Type = Recipe.Type.valueOf(s)
 }

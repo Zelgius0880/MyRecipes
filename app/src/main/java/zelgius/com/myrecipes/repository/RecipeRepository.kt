@@ -1,45 +1,30 @@
 package zelgius.com.myrecipes.repository
 
-import com.google.firebase.firestore.FirebaseFirestore
+import android.app.Application
+import android.content.Context
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.Recipe
 
-class RecipeRepository {
+class RecipeRepository(context: Context) {
 
-    private val database = AppDatabase.getInstance()
+    private val database = AppDatabase.getInstance(context)
 
-    fun getMealsQuery() =
-            database
-                .collection(Recipe.Type.MEAL.collection)
-                .orderBy(Recipe.Fields.NAME.value)
+    fun get() =
+        database.recipeDao.getAll()
 
-    fun getDessertsQuery() =
-        database
-            .collection(Recipe.Type.DESSERT.collection)
-            .orderBy(Recipe.Fields.NAME.value)
+    fun pagedMeal() =
+        database.recipeDao.pagedMeal()
 
-    fun getOthersQuery() =
-        database
-            .collection(Recipe.Type.OTHER.collection)
-            .orderBy(Recipe.Fields.NAME.value)
 
-    fun getIngredients(callback: (List<Ingredient>) -> Unit){
-        database.collection("ingredients")
-            .get()
-            .addOnSuccessListener {
-                callback(it.toObjects(Ingredient::class.java))
-            }
-            .addOnFailureListener {
-                throw it
-            }
+    fun pagedDessert() =
+        database.recipeDao.pagedDessert()
 
-    }
 
-    fun createIngredient(ingredient: Ingredient){
-        val data = HashMap<String, Any>()
+    fun pagedOther() =
+        database.recipeDao.pagedOther()
 
-        val key = database.collection("cities").document()
-
-        key.set(data)
+    suspend fun insert(recipe: Recipe): Long {
+        val id = database.recipeDao.insert(recipe)
+        return id
     }
 }

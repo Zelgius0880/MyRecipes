@@ -5,4 +5,26 @@
         <item>@string/dessert</item>
         <item>@string/other</item>
     </string-array>
+
+    <string-array name="unit_array">
+        <item>@string/gramme</item>
+        <item>@string/kilogramme</item>
+        <item>@string/milliliter</item>
+        <item>@string/liter</item>
+        <item>@string/unit</item>
+        <item>@string/teaspoon</item>
+        <item>@string/tablespoon</item>
+        <item>@string/cup</item>
+    </string-array>
+
+    <string-array name="select_unit_array">
+        <item>@string/gramme_select</item>
+        <item>@string/kilogramme_select</item>
+        <item>@string/milliliter_select</item>
+        <item>@string/liter_select</item>
+        <item>@string/unit_select</item>
+        <item>@string/teaspoon_select</item>
+        <item>@string/tablespoon_select</item>
+        <item>@string/cup_select</item>
+    </string-array>
 </resources>

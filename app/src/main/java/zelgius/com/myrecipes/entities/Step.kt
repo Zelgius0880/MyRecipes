@@ -4,6 +4,16 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
 
+
+/**
+ * Step of a recipe
+ *
+ * @property id Long?           id in database. Null if new one
+ * @property text String        the description of the step
+ * @property order Int          the order of the step
+ * @property refRecipe Long?    the id of the referenced recipe
+ * @constructor     Create from a parcel
+ */
 @Entity(
     foreignKeys = [
         ForeignKey(
@@ -19,6 +29,12 @@ data class Step(
     var order: Int = Int.MAX_VALUE,
     @ColumnInfo(name = "ref_recipe") var refRecipe: Long?
 ) : Parcelable {
+
+    @Ignore
+    var new = false
+
+    @Ignore
+    var ingredients = mutableListOf<IngredientForRecipe>()
 
 
     constructor(parcel: Parcel) : this(

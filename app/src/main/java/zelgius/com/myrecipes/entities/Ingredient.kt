@@ -7,22 +7,24 @@ import androidx.room.*
 @Entity(
     foreignKeys = [
         ForeignKey(entity = Ingredient::class, parentColumns = ["id"], childColumns = ["ref_ingredient"]),
-        ForeignKey(entity = Ingredient::class, parentColumns = ["id"], childColumns = ["ref_recipe"])
+        ForeignKey(entity = Recipe::class, parentColumns = ["id"], childColumns = ["ref_recipe"]),
+        ForeignKey(entity = Step::class, parentColumns = ["id"], childColumns = ["ref_step"])
     ],
     indices = [
         Index(value = ["ref_ingredient"]),
-        Index(value = ["ref_recipe"])
+        Index(value = ["ref_recipe"]),
+        Index(value = ["ref_step"])
     ]
 )
 data class RecipeIngredient(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var quantity: Double,
     var unit: Ingredient.Unit,
+    @ColumnInfo(name = "sort_order") var sortOrder: Int,
     @ColumnInfo(name = "ref_ingredient") var refIngredient: Long?,
-    @ColumnInfo(name = "ref_recipe") var refRecipe: Long?
-) {
-    //constructor() : this (null, 0, Ingredient.Unit.GRAMME, null, null)
-}
+    @ColumnInfo(name = "ref_recipe") var refRecipe: Long?,
+    @ColumnInfo(name = "ref_step") var refStep: Long?
+)
 
 @Entity
 data class Ingredient(
@@ -41,7 +43,8 @@ data class Ingredient(
         TEASPOON,
         TABLESPOON,
         GRAMME,
-        KILOGRAMME
+        KILOGRAMME,
+        CUP
     }
 
 
@@ -56,7 +59,7 @@ data class Ingredient(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id?:0)
+        parcel.writeLong(id ?: 0)
         parcel.writeString(name)
         parcel.writeString(imageURL)
     }
