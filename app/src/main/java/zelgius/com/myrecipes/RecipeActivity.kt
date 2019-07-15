@@ -5,24 +5,24 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
-import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
-import androidx.navigation.ui.NavigationUI
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager
+import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
+import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
 import kotlinx.android.synthetic.main.activity_recipe.*
-import kotlinx.android.synthetic.main.fragment_tab.view.*
 import net.alhazmy13.mediapicker.Image.ImagePicker
-import zelgius.com.myrecipes.adapters.RecipeEditAdapter
+import zelgius.com.myrecipes.adapters.GroupDividerDecoration
+import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
+import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.dialogs.IngredientDialogFragment
 import zelgius.com.myrecipes.dialogs.StepDialogFragment
 import zelgius.com.myrecipes.entities.Recipe
@@ -31,18 +31,28 @@ import zelgius.com.myrecipes.utils.AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS
 import zelgius.com.myrecipes.utils.colorSecondary
 
 
-class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
+
+class RecipeActivity : AppCompatActivity(), NoticeDialogListener,
+    RecyclerViewExpandableItemManager.OnGroupExpandListener,
+    RecyclerViewExpandableItemManager.OnGroupCollapseListener {
+
 
     companion object {
         const val REQUEST_CODE = 543
+        const val SAVED_STATE_EXPANDABLE_ITEM_MANAGER = "RecyclerViewExpandableItemManager"
+
     }
 
     override fun onBackPressed() {
         endActivity()
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
+
+        expandableItemManager?.release()
+        dragDropManager.release()
+        touchActionGuardManager.release()
     }
 
     override fun finish() {
@@ -53,20 +63,26 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
     private var vectorAnimation: AnimatedVectorDrawableCompat? = null
 
     private val viewModel by lazy { ViewModelProviders.of(this).get(RecipeViewModel::class.java) }
-    private val adapter by lazy { RecipeEditAdapter(this, viewModel) }
+    private val adapter by lazy { RecipeExpandableAdapter(this, viewModel) }
+    private val headerWrapper by lazy { HeaderAdapterWrapper(this, viewModel) }
 
-
+    private var expandableItemManager: RecyclerViewExpandableItemManager? = null
+    private lateinit var dragDropManager: RecyclerViewDragDropManager
+    private lateinit var touchActionGuardManager: RecyclerViewTouchActionGuardManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recipe)
         setSupportActionBar(toolbar)
 
+        viewModel.createDummySample() // TODO need to be removed
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         overridePendingTransition(R.anim.do_not_move, R.anim.do_not_move)
 
         fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
-        fab.animation = AnimatedVectorDrawableCompat.create(this, R.drawable.av_add_list_to_close)!! to
-                AnimatedVectorDrawableCompat.create(this, R.drawable.av_close_to_add_list)!!
+        fab.animation =
+            AnimatedVectorDrawableCompat.create(this, R.drawable.av_add_list_to_close)!! to
+                    AnimatedVectorDrawableCompat.create(this, R.drawable.av_close_to_add_list)!!
 
         vectorAnimation = AnimatedVectorDrawableCompat.create(this, R.drawable.av_add_list_to_add)
 
@@ -104,7 +120,8 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
             endActivity()
         }
 
-        viewModel.selectedRecipe.value = intent.getParcelableExtra("RECIPE") ?: Recipe(Recipe.Type.MEAL)
+        viewModel.selectedRecipe.value =
+            intent.getParcelableExtra("RECIPE") ?: Recipe(Recipe.Type.MEAL)
         viewModel.editMode.value = true
 
         fab.setImageResource(R.drawable.ic_playlist_plus)
@@ -117,15 +134,55 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
             viewModel.currentRecipe = it
             adapter.recipe = it
             adapter.notifyDataSetChanged()
+
+            headerWrapper.recipe = it
+            headerWrapper.notifyDataSetChanged()
         })
 
-        list.adapter = adapter
+        val eimSavedState =
+            savedInstanceState?.getParcelable<Parcelable>(SAVED_STATE_EXPANDABLE_ITEM_MANAGER)
+
+        expandableItemManager = RecyclerViewExpandableItemManager(eimSavedState)
+        expandableItemManager?.setOnGroupExpandListener(this)
+        expandableItemManager?.setOnGroupCollapseListener(this)
+        expandableItemManager?.defaultGroupsExpandedState = true
+
+        // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
+        touchActionGuardManager = RecyclerViewTouchActionGuardManager()
+        touchActionGuardManager.setInterceptVerticalScrollingWhileAnimationRunning(true)
+        touchActionGuardManager.isEnabled = true
+
+        // drag & drop manager
+        dragDropManager = RecyclerViewDragDropManager()
+        dragDropManager.isCheckCanDropEnabled = true
+        dragDropManager.setInitiateOnLongPress(true)
+        dragDropManager.setInitiateOnMove(false)
+        /*dragDropManager.setDraggingItemShadowDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.material_shadow_z3
+            ) as NinePatchDrawable?
+        )*/
+
+        var itemAdapter = expandableItemManager?.createWrappedAdapter(adapter)
+        itemAdapter = dragDropManager.createWrappedAdapter(itemAdapter!!)
+        itemAdapter = headerWrapper.setAdapter(itemAdapter)
+
+        touchActionGuardManager.attachRecyclerView(list)
+        dragDropManager.attachRecyclerView(list)
+        expandableItemManager?.attachRecyclerView(list)
+
+
+        adapter.expandableItemManager = expandableItemManager
+        adapter.dragDropManager = dragDropManager
+        list.adapter = itemAdapter
         list.addItemDecoration(
-            adapter.DividerDecoration(
-                this, ContextCompat.getColor(this, android.R.color.transparent), 8f
+            GroupDividerDecoration(
+                this,
+                ContextCompat.getColor(this, android.R.color.transparent),
+                8f
             )
         )
-        ItemTouchHelper(adapter.TouchHelper()).attachToRecyclerView(list)
 
         adapter.editIngredientListener = {
             IngredientDialogFragment.newInstance(it)
@@ -133,13 +190,15 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
         }
 
         adapter.editStepListener = {
+            it.new = false
             StepDialogFragment.newInstance(it)
                 .show(supportFragmentManager, "dialog_step")
         }
 
         fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
-        fab.animation = AnimatedVectorDrawableCompat.create(this, R.drawable.av_add_list_to_close)!! to
-                AnimatedVectorDrawableCompat.create(this, R.drawable.av_close_to_add_list)!!
+        fab.animation =
+            AnimatedVectorDrawableCompat.create(this, R.drawable.av_add_list_to_close)!! to
+                    AnimatedVectorDrawableCompat.create(this, R.drawable.av_close_to_add_list)!!
 
         addIngredient.setOnClickListener {
             IngredientDialogFragment().show(supportFragmentManager, "dialog_ingredient")
@@ -150,10 +209,24 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
         }
     }
 
+
+    public override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        // save current state to support screen rotation, etc...
+        if (expandableItemManager != null) {
+            outState.putParcelable(
+                SAVED_STATE_EXPANDABLE_ITEM_MANAGER,
+                expandableItemManager?.savedState
+            )
+        }
+    }
+
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_recipe, menu)
 
-        return true
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -167,6 +240,14 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
 
         }
     }
+
+    override fun onGroupExpand(groupPosition: Int, fromUser: Boolean, payload: Any?) {
+
+    }
+
+    override fun onGroupCollapse(groupPosition: Int, fromUser: Boolean, payload: Any?) {
+    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -210,9 +291,9 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
                             it.sortOrder = viewModel.currentRecipe.ingredients.size
                             it.new = false
 
-                            adapter.addIngredient(it)
+                            adapter.add(it)
                         } else {
-                            adapter.notifyIngredientChanged(it)
+                            adapter.update(it)
                         }
                     }
                 }
@@ -226,9 +307,9 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
                             it.order = viewModel.currentRecipe.steps.size
                             it.new = false
 
-                            adapter.addStep(it)
+                            adapter.add(it)
                         } else {
-                            adapter.notifyStepChanged(it)
+                            adapter.update(it)
                         }
                     }
                 }
@@ -238,4 +319,7 @@ class RecipeActivity : AppCompatActivity(), NoticeDialogListener {
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {
     }
+
+
+
 }

@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<com.google.android.material.card.MaterialCardView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardElevation="2dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        app:cardCornerRadius="0dp"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?selectableItemBackground">
+        android:foreground="?selectableItemBackground"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -23,45 +22,33 @@
                 android:id="@+id/image"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                app:srcCompat="@drawable/ic_image_24dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginStart="8dp"/>
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_image_24dp" />
 
         <TextView
-                android:text="TextView"
+                android:id="@+id/ingredientName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/ingredientName"
-                app:layout_constraintStart_toEndOf="@+id/image"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
+                android:text="TextView"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginEnd="8dp"/>
+                app:layout_constraintStart_toEndOf="@+id/image"
+                app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.button.MaterialButton
-                style="@style/Widget.MyRecipes.ImageButton.OutlinedButton"
-                app:icon="@drawable/ic_baseline_link_off_24px"
-                app:iconSize="24dp"
-                android:id="@+id/unlinkIngredient"
-                android:background="@drawable/selectable_item_background"
-                app:layout_constraintTop_toTopOf="parent"
-                android:elevation="0dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/deleteIngredient"
-                android:visibility="gone"/>
-
-        <com.google.android.material.button.MaterialButton
-                app:icon="@drawable/ic_delete_24dp"
-                style="@style/Widget.MyRecipes.ImageButton.OutlinedButton"
-                app:srcCompat="@drawable/ic_delete_24dp"
                 android:id="@+id/deleteIngredient"
+                style="@style/Widget.MyRecipes.ImageButton.OutlinedButton"
+                app:icon="@drawable/ic_delete_24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
+                app:srcCompat="@drawable/ic_delete_24dp" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

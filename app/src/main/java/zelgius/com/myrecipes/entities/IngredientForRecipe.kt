@@ -4,6 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.DatabaseView
 import androidx.room.Ignore
+import zelgius.com.myrecipes.adapters.BackgroundColorHolder
 
 @DatabaseView(
     """
@@ -21,7 +22,10 @@ data class IngredientForRecipe(
     var sortOrder: Int,
     var refRecipe: Long?,
     var refStep: Long?
-) : Parcelable {
+) : Parcelable, BackgroundColorHolder {
+
+    @Ignore
+    override var backgroundColor: Int = 0
 
     @Ignore
     var new = false

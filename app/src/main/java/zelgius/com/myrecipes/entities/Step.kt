@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.entities
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
+import zelgius.com.myrecipes.adapters.BackgroundColorHolder
 
 
 /**
@@ -28,7 +29,10 @@ data class Step(
     var text: String,
     var order: Int = Int.MAX_VALUE,
     @ColumnInfo(name = "ref_recipe") var refRecipe: Long?
-) : Parcelable {
+) : Parcelable, BackgroundColorHolder {
+
+    @Ignore
+    override var backgroundColor: Int = 0
 
     @Ignore
     var new = false

@@ -14,6 +14,12 @@
                 android:id="@+id/action_tabFragment_to_recipeActivity"
                 app:destination="@id/recipeActivity"
                 />
+        <action
+                android:id="@+id/action_tabFragment_to_recipeFragment"
+                app:destination="@id/recipeFragment"
+                app:exitAnim="@anim/fade_out"
+                app:popExitAnim="@anim/nav_default_pop_exit_anim"
+                app:popUpTo="@+id/tabFragment" />
     </fragment>
     <fragment
             android:id="@+id/recipeFragment"

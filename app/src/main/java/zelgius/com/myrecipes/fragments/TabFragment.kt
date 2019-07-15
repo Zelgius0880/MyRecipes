@@ -54,21 +54,9 @@ class TabFragment : Fragment() {
         add.setOnClickListener {
             add.setImageDrawable(vectorAnimation)
             vectorAnimation?.start()
-            /*navController.navigate(
-                R.id.action_tabFragment_to_recipeActivity,
-                bundleOf( "EXTRA_CIRCULAR_REVEAL_SETTINGS" to
-                    AnimationUtils.RevealAnimationSetting(
-                        (add.x + add.width / 2).roundToInt(),
-                        (add.y + add.height / 2).roundToInt(),
-                        view.width,
-                        view.height
-                    ),
-                    "ADD" to true
-                )
-            )*/
 
             navController.navigate(
-                R.id.action_tabFragment_to_recipeActivity, bundleOf(
+                R.id.action_tabFragment_to_recipeFragment, bundleOf(
                     AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS to
                             AnimationUtils.RevealAnimationSetting(
                                 (add.x + add.width / 2).roundToInt(),
@@ -78,18 +66,6 @@ class TabFragment : Fragment() {
                             )
                 )
             )
-
-            /*startActivityForResult(Intent(ctx, RecipeActivity::class.java).apply {
-                putExtra(
-                    AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS,
-                    AnimationUtils.RevealAnimationSetting(
-                        (add.x + add.width / 2).roundToInt(),
-                        (add.y + add.height / 2).roundToInt(),
-                        view.width,
-                        view.height
-                    )
-                )
-            }, RecipeActivity.REQUEST_CODE)*/
         }
     }
 
@@ -137,7 +113,8 @@ class TabFragment : Fragment() {
 
         when (requestCode) {
             RecipeActivity.REQUEST_CODE -> {
-                val vectorAnimation = AnimatedVectorDrawableCompat.create(ctx, R.drawable.av_add_list_to_add)
+                val vectorAnimation =
+                    AnimatedVectorDrawableCompat.create(ctx, R.drawable.av_add_list_to_add)
 
                 add.setImageDrawable(vectorAnimation)
                 vectorAnimation?.start()

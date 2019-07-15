@@ -11,7 +11,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:cardBackgroundColor="@color/primaryTextColor"
+        app:cardBackgroundColor="@color/md_blue_50"
         app:cardCornerRadius="0dp"
         app:cardElevation="2dp"
         android:id="@+id/materialCardView">
@@ -54,6 +54,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/editCategory"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
+                app:boxBackgroundColor="@color/md_blue_50"
                 app:layout_constraintStart_toEndOf="@+id/imageView">
 
             <com.google.android.material.textfield.TextInputEditText

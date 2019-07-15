@@ -5,13 +5,13 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
@@ -33,29 +33,37 @@ import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.entities.Step
-import zelgius.com.myrecipes.utils.*
+import zelgius.com.myrecipes.utils.UiUtils
+import zelgius.com.myrecipes.utils.dpToPx
+import zelgius.com.myrecipes.utils.getCompatColor
+import zelgius.com.myrecipes.utils.round
 import java.text.DecimalFormat
+
+interface BackgroundColorHolder {
+    @get:ColorInt
+    var backgroundColor: Int
+}
 
 abstract class AbstractViewHolder(override val containerView: View) : RecyclerView.ViewHolder(containerView),
     LayoutContainer {
     abstract fun bind()
 
-    var backgroundColor = itemView.context.getCompatColor(R.color.md_white_1000)
-    open fun selectedBackground(changeView: Boolean) {
+    //var backgroundColor = itemView.context.getCompatColor(R.color.md_white_1000)
+    open fun selectedBackground(changeView: Boolean, item: BackgroundColorHolder) {
         val v = itemView
 
-        backgroundColor = v.context.getCompatColor(R.color.secondaryColor)
+        item.backgroundColor = v.context.getCompatColor(R.color.secondaryColor)
         if (v is CardView && changeView) {
-            v.setCardBackgroundColor(backgroundColor)
+            v.setCardBackgroundColor(item.backgroundColor)
             v.cardElevation = v.context.dpToPx(2f)
         }
     }
 
-    open fun notSelectedBackground(changeView: Boolean) {
+    open fun notSelectedBackground(changeView: Boolean, item: BackgroundColorHolder) {
         val v = itemView
-        backgroundColor = v.context.getCompatColor(R.color.md_white_1000)
+        item.backgroundColor = v.context.getCompatColor(R.color.md_white_1000)
         if (v is CardView && changeView) {
-            v.setCardBackgroundColor(backgroundColor)
+            v.setCardBackgroundColor(item.backgroundColor)
             v.cardElevation = v.context.dpToPx(2f)
         }
     }
@@ -118,7 +126,8 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
         steps.add(Step(null, "Step 2", Int.MAX_VALUE, null).apply { new = true; order = 2 })
         steps.add(Step(null, "Step 3", Int.MAX_VALUE, null).apply { new = true; order = 3 })
     }
-    private val items = mutableListOf<Any>()
+
+    private val items = mutableListOf<BackgroundColorHolder>()
 
     var editStepListener: ((Step) -> Unit)? = null
     var editIngredientListener: ((IngredientForRecipe) -> Unit)? = null
@@ -240,9 +249,9 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
 
             (recyclerView.findViewHolderForAdapterPosition(index + 1) as AbstractViewHolder).apply {
                 if (item is Step && item == step || item is IngredientForRecipe && item.step == step)
-                    selectedBackground(index in start..stop)
+                    selectedBackground(index in start..stop, item)
                 else
-                    notSelectedBackground(index in start..stop)
+                    notSelectedBackground(index in start..stop, item)
             }
         }
     }
@@ -253,7 +262,7 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
         items.forEachIndexed { index, item ->
             if (item is Step && item == step || item is IngredientForRecipe && item.step == step)
                 (recyclerView.findViewHolderForAdapterPosition(index + 1) as AbstractViewHolder).apply {
-                    notSelectedBackground(index in start..stop)
+                    notSelectedBackground(index in start..stop, item)
                 }
         }
     }
@@ -338,26 +347,26 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
     inner class IngredientViewHolder(view: View) : AbstractViewHolder(view) {
 
         override fun bind() {
+            val item = items[adapterPosition - 1] as IngredientForRecipe
+
+            if (item.backgroundColor == 0)
+                item.backgroundColor = itemView.context.getCompatColor(R.color.md_white_1000)
 
             if (itemView is CardView) {
-                itemView.setCardBackgroundColor(backgroundColor)
+                itemView.setCardBackgroundColor(item.backgroundColor)
                 itemView.cardElevation = itemView.context.dpToPx(2f)
             }
 
-            val item = items[adapterPosition - 1] as IngredientForRecipe
             val abrv = when (item.unit) {
                 Ingredient.Unit.MILLILITER -> itemView.context.getString(R.string.milliliter_abrv)
                 Ingredient.Unit.LITER -> itemView.context.getString(R.string.liter_abrv)
                 Ingredient.Unit.UNIT -> itemView.context.getString(R.string.unit_abrv)
                 Ingredient.Unit.TEASPOON -> itemView.context.getString(R.string.teaspoon_abrv)
-                Ingredient.Unit.TABLESPOON -> itemView.context.getString(R.string.tablespoon)
+                Ingredient.Unit.TABLESPOON -> itemView.context.getString(R.string.tablespoon_abrv)
                 Ingredient.Unit.GRAMME -> itemView.context.getString(R.string.gramme_abrv)
                 Ingredient.Unit.KILOGRAMME -> itemView.context.getString(R.string.kilogramme_abrv)
                 Ingredient.Unit.CUP -> itemView.context.getString(R.string.cup_abrv)
             }
-
-            itemView.unlinkIngredient.visibility =
-                if (item.step != null || item.refStep != null) View.VISIBLE else View.GONE
 
             if (item.unit != Ingredient.Unit.CUP) {
                 itemView.ingredientName.text =
@@ -392,12 +401,17 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
 
     inner class StepViewHolder(view: View) : AbstractViewHolder(view) {
         override fun bind() {
+
+            val item = items[adapterPosition - 1] as Step
+
+            if (item.backgroundColor == 0)
+                item.backgroundColor = itemView.context.getCompatColor(R.color.md_white_1000)
+
             if (itemView is CardView) {
-                itemView.setCardBackgroundColor(backgroundColor)
+                itemView.setCardBackgroundColor(item.backgroundColor)
                 itemView.cardElevation = itemView.context.dpToPx(2f)
             }
 
-            val item = items[adapterPosition - 1] as Step
             itemView.step.text = item.text
 
             itemView.deleteStep.setOnClickListener {
@@ -503,6 +517,8 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
     inner class TouchHelper : ItemTouchHelper.Callback() {
         val TAG = RecipeEditAdapter.TouchHelper::class.java.name
         var orderChanged = false
+        var currentViewHolder: AbstractViewHolder? = null
+
         override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) =
             when (viewHolder) {
                 is StepViewHolder, is IngredientViewHolder -> makeMovementFlags(
@@ -526,11 +542,19 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
             current: RecyclerView.ViewHolder,
             target: RecyclerView.ViewHolder
         ): Boolean {
+            if(current is StepViewHolder && target is StepViewHolder) {
+                orderChanged = true
+                return true
+            }
+
             if (current is HeaderViewHolder || target is HeaderViewHolder       // never can move the header
                 || current is StepViewHolder && target is IngredientViewHolder  // a step never can be moved with an ingredient
             //|| current is IngredientViewHolder && target is StepViewHolder && target.adapterPosition == itemCount - 1// An ingredient never can be moved at the end of the list if there is a step
             ) return false
-            if (current is StepViewHolder && target is StepViewHolder) return true
+            if (current is StepViewHolder && target is StepViewHolder){
+                orderChanged = true
+                return true
+            }
 
             val direction =
                 target.adapterPosition - current.adapterPosition // drag direction:  > 0 if up to bellow, < 0 if bellow to up
@@ -576,15 +600,10 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
             val fromPosition = viewHolder.adapterPosition
             val toPosition = target.adapterPosition
 
-            if (viewHolder is StepViewHolder) {
-                /*var i = position - 1
-                while (i >= 0 && items[i] is IngredientForRecipe && (items[i] as IngredientForRecipe).step == step) {
+            //if (viewHolder is StepViewHolder) {
+                //notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
 
-                }*/
-
-                notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
-
-                val step = items[fromPosition - 1] as Step
+                /*val step = items[fromPosition - 1] as Step
                 for (i in fromPosition - 1 downTo 1) { // the first element is the Header
                     val item = items[i - 1]
                     if (item !is IngredientForRecipe || item.step != step) break
@@ -595,13 +614,27 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
                     items.add(toPosition - 1 - posDiff, items.removeAt(fromPosition - 1 - posDiff))
                     notifyItemMoved(fromPosition - posDiff, toPosition - posDiff)
 
-                }
-            }
+                }*/
+            //}
 
             items.add(toPosition - 1, items.removeAt(fromPosition - 1))
-            notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
+            notifyItemMoved(fromPosition, toPosition)
 
             return true
+        }
+
+        override fun onMoved(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            fromPos: Int,
+            target: RecyclerView.ViewHolder,
+            toPos: Int,
+            x: Int,
+            y: Int
+        ) {
+            super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y)
+
+
         }
 
         override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
@@ -610,19 +643,31 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
             when (actionState) {
                 ItemTouchHelper.ACTION_STATE_IDLE -> { // Drag stop
 
-                    if (viewHolder is StepViewHolder) {da
-                        //stopMovingStep(viewHolder.adapterPosition - 1, items[viewHolder.adapterPosition - 1] as Step)
+                    val vh = currentViewHolder
+                    if (vh is StepViewHolder) {
                         resetBackground()
 
+                        if (orderChanged) {
+                            orderChanged = false
+                            val step = items[vh.adapterPosition - 1] as Step
+
+
+                            items
+                                .filter { it is IngredientForRecipe && it.step == step }
+                                .sortedBy { (it as IngredientForRecipe).sortOrder }
+                                .forEach {
+                                    val index = items.indexOf(it)
+                                    val stepIndex = items.indexOf(step)
+
+                                    items.add( stepIndex- 1, items.removeAt(index))
+                                    notifyItemRemoved(index + 1)
+                                    notifyItemInserted(stepIndex)
+                                }
+
+                            currentViewHolder = null
+                            notifyDataSetChanged() // be sure everything is alright
+                        }
                     } else if (orderChanged) { // the order has changed
-
-                        /*val step = when (viewHolder) {
-                            is IngredientViewHolder -> (items[viewHolder.adapterPosition - 1] as IngredientForRecipe).step
-                            is StepViewHolder -> items[viewHolder.adapterPosition - 1] as Step
-                            else -> null
-                        }*/
-
-                        //if (step != null) setNotSelectedItemsFromStep(step)
                         orderChanged = false
 
                         resetBackground()
@@ -633,18 +678,19 @@ class RecipeEditAdapter(val context: Context, val viewModel: RecipeViewModel) :
 
                 ItemTouchHelper.ACTION_STATE_DRAG -> { // Drag Start
                     if (viewHolder is StepViewHolder) {
-                        //startMovingStep(viewHolder.adapterPosition - 1, items[viewHolder.adapterPosition - 1] as Step)
                         val step = items[viewHolder.adapterPosition - 1] as Step
                         setSelectedItemsFromStep(step)
+
+                        currentViewHolder = viewHolder
                     }
                 }
             }
         }
 
         private fun resetBackground() {
-            for (i in 0 until itemCount) {
+            for (i in 1 until itemCount) {
                 val vh = recyclerView.findViewHolderForAdapterPosition(i)
-                if (vh is AbstractViewHolder) vh.notSelectedBackground(true)
+                if (vh is AbstractViewHolder) vh.notSelectedBackground(true, items[i - 1])
             }
         }
 

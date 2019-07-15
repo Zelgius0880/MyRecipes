@@ -1,14 +1,17 @@
 package zelgius.com.myrecipes.utils
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.TypedValue
 import android.view.View
+import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
 import com.google.android.material.textfield.TextInputLayout
 import kotlin.math.round
+import kotlin.math.roundToInt
 import kotlin.reflect.full.declaredMemberProperties
 
 fun Any.asMap(): Map<String, Any?> =
@@ -34,6 +37,16 @@ fun Double.round(decimals: Int): Double {
     repeat(decimals) { multiplier *= 10 }
     return round(this * multiplier) / multiplier
 }
+
+@ColorInt
+fun Context.getColor(@ColorRes color: Int, alpha: Float) =
+    getColor(color).let{
+        Color.argb(
+            (Color.alpha(color) * alpha).roundToInt(),
+            Color.red(it),
+            Color.green(it),
+            Color.blue(it))
+    }
 
 /**
  *

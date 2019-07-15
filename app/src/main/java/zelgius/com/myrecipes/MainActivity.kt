@@ -1,9 +1,12 @@
 package zelgius.com.myrecipes
 
+import android.app.Activity
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -31,7 +34,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
+import net.alhazmy13.mediapicker.Image.ImagePicker
 import zelgius.com.myrecipes.fragments.OnBackPressedListener
+import zelgius.com.myrecipes.utils.AnimationUtils
+import zelgius.com.myrecipes.utils.colorSecondary
 
 
 class MainActivity : AppCompatActivity() {
@@ -150,48 +156,55 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        when (requestCode) {
+        if (resultCode == Activity.RESULT_OK)
+            when (requestCode) {
+                ImagePicker.IMAGE_PICKER_REQUEST_CODE -> {
+                    val paths = data?.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH)
 
-            /*RC_SIGN_IN -> {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                try {
-                    // Google Sign In was successful, authenticate with Firebase
-                    val account = task.getResult(ApiException::class.java)
-                    firebaseAuthWithGoogle(account!!)
-                } catch (e: ApiException) {
-                    // Google Sign In failed, update UI appropriately
-                    Log.w(TAG, "Google sign in failed", e)
-                    // ...
+                    if (!paths.isNullOrEmpty()) {
+                        viewModel.selectedImageUrl.value = Uri.parse("file://${paths.first()}")
+                    }
                 }
-            }*/
-        }
-    }
+                /*RC_SIGN_IN -> {
+                    val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+                    try {
+                        // Google Sign In was successful, authenticate with Firebase
+                        val account = task.getResult(ApiException::class.java)
+                        firebaseAuthWithGoogle(account!!)
+                    } catch (e: ApiException) {
+                        // Google Sign In failed, update UI appropriately
+                        Log.w(TAG, "Google sign in failed", e)
+                        // ...
+                    }
+                }*/
 
-   /* private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
-        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.id!!)
-        // [START_EXCLUDE silent]
-        //accountProgress.visibility = View.VISIBLE
-        // [END_EXCLUDE]
-
-        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Log.d(TAG, "signInWithCredential:success")
-                    val user = auth.currentUser
-                    viewModel.user = user
-                } else {
-                    // If sign in fails, display a message to the user.
-                    Log.w(TAG, "signInWithCredential:failure", task.exception)
-                    Snackbar.make(coordinator, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
-                    viewModel.user = null
-                }
-
-                // [START_EXCLUDE]
-                //accountProgress.visibility = View.GONE
-
-                // [END_EXCLUDE]
             }
-    }*/
+    }
+    /* private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.id!!)
+         // [START_EXCLUDE silent]
+         //accountProgress.visibility = View.VISIBLE
+         // [END_EXCLUDE]
+
+         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+         auth.signInWithCredential(credential)
+             .addOnCompleteListener(this) { task ->
+                 if (task.isSuccessful) {
+                     // Sign in success, update UI with the signed-in user's information
+                     Log.d(TAG, "signInWithCredential:success")
+                     val user = auth.currentUser
+                     viewModel.user = user
+                 } else {
+                     // If sign in fails, display a message to the user.
+                     Log.w(TAG, "signInWithCredential:failure", task.exception)
+                     Snackbar.make(coordinator, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
+                     viewModel.user = null
+                 }
+
+                 // [START_EXCLUDE]
+                 //accountProgress.visibility = View.GONE
+
+                 // [END_EXCLUDE]
+             }
+     }*/
 }

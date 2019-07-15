@@ -2,6 +2,7 @@ package zelgius.com.myrecipes.entities
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.annotation.ColorInt
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
