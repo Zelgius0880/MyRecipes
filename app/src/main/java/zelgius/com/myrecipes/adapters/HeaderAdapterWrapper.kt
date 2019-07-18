@@ -32,6 +32,8 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
         context.resources.getStringArray(R.array.category_array)
     }
 
+    var viewHolder: HeaderViewHolder? = null
+
     override fun onCreateHeaderItemViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder =
         HeaderViewHolder(
             LayoutInflater.from(parent.context).inflate(
@@ -47,6 +49,7 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
     ): RecyclerView.ViewHolder = throw IllegalStateException("No footer available")
 
     override fun onBindHeaderItemViewHolder(viewHolder: HeaderViewHolder, localPosition: Int) {
+        this.viewHolder = viewHolder
         val itemView = viewHolder.itemView
         val category = when (recipe.type) {
             Recipe.Type.MEAL -> itemView.context.getString(R.string.meal)
@@ -64,8 +67,9 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
             }
         }
 
-        if (context is LifecycleOwner)
+        if (context is LifecycleOwner) {
             viewModel.selectedImageUrl.observe(context, Observer {
+                itemView.imageView.setPadding(0,0,0,0)
                 Picasso.get().apply {
                     //setIndicatorsEnabled(true)
                     //isLoggingEnabled = true
@@ -73,7 +77,7 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
                     .load(it)
                     .resize(2048, 2048)
                     .centerCrop()
-                    .into(itemView.imageView, object :  Callback{
+                    .into(itemView.imageView, object : Callback {
                         override fun onSuccess() {
                         }
 
@@ -83,7 +87,7 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
 
                     })
             })
-
+        }
 
         val spinnerArrayAdapter = ArrayAdapter(
             context, R.layout.adapter_text_category,
@@ -117,6 +121,15 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
     override fun getHeaderItemCount(): Int = 1
 
     override fun getFooterItemCount(): Int = 0
+
+    fun complete(recipe: Recipe) {
+        recipe.name = viewHolder?.itemView?.editName?.editText?.text?.toString()?:""
+        recipe.type = when(viewHolder?.itemView?.editCategory?.selectedItem as String) {
+            context.getString(R.string.meal) -> Recipe.Type.MEAL
+            context.getString(R.string.dessert) -> Recipe.Type.DESSERT
+            else -> Recipe.Type.OTHER
+        }
+    }
 
     inner class HeaderViewHolder(override val containerView: View) :
         RecyclerView.ViewHolder(containerView), LayoutContainer

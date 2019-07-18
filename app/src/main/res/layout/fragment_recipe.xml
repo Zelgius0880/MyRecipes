@@ -1,19 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/rootLayout"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:background="@android:color/background_light"
         android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:name="zelgius.com.myrecipes.fragments.RecipeFragment"
-            android:layout_width="match_parent"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_height="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:context=".fragments.ListFragment"
-            tools:listitem="@layout/fragment_recipe"/>
+            android:layout_width="match_parent">
+
+        <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appbar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/appbar_padding_top"
+                android:theme="@style/AppTheme.AppBarOverlay"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+            <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:layout_weight="1"
+                    app:layout_scrollFlags="scroll|enterAlways"
+                    app:popupTheme="@style/AppTheme.PopupOverlay"
+                    app:title="@string/app_name"/>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list"
+                android:name="zelgius.com.myrecipes.fragments.RecipeFragment"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:context=".fragments.ListFragment"
+                tools:listitem="@layout/fragment_recipe"
+                app:layout_constraintTop_toBottomOf="@+id/appbar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
             android:id="@+id/addIngredientLayout"
@@ -30,16 +67,15 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/add_step"/>
+                android:text="@string/add_ingredient"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/addIngredient"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                app:srcCompat="@drawable/ic_shoe_prints_solid"
+                app:srcCompat="@drawable/ic_carrot_solid"
                 android:tint="@android:color/white"
-                android:rotation="-90"
                 app:fabSize="mini"/>
     </LinearLayout>
 
@@ -59,14 +95,15 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/add_ingredient"/>
+                android:text="@string/add_step"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/addStep"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:rotation="-90"
                 android:layout_marginStart="10dp"
-                app:srcCompat="@drawable/ic_carrot_solid"
+                app:srcCompat="@drawable/ic_shoe_prints_solid"
                 android:tint="@android:color/white"
                 app:fabSize="mini"/>
     </LinearLayout>

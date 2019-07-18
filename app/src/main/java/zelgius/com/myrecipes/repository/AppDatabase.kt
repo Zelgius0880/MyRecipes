@@ -8,6 +8,7 @@ import zelgius.com.myrecipes.entities.*
 import zelgius.com.myrecipes.repository.dao.IngredientDao
 import zelgius.com.myrecipes.repository.dao.RecipeDao
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.repository.dao.StepDao
 
 
 @Database(
@@ -20,6 +21,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract val ingredientDao: IngredientDao
     abstract val recipeDao: RecipeDao
+    abstract val stepDao: StepDao
 
     companion object {
         private var instance: AppDatabase? = null

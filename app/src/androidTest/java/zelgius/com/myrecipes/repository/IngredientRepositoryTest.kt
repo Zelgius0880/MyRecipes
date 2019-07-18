@@ -15,7 +15,7 @@ class IngredientRepositoryTest: AbstractDatabaseTest() {
 
     private val ingredientDao by lazy { db.ingredientDao }
     private val recipeDao by lazy { db.recipeDao }
-    private val defaultItem = IngredientForRecipe(null, 2.0, Ingredient.Unit.KILOGRAMME, "test", "test", null)
+    private val defaultItem = IngredientForRecipe(null, 2.0, Ingredient.Unit.KILOGRAMME, "test", "test", 0, null,  null)
     private val recipe = Recipe(null, "Recipe for testing", "image", Recipe.Type.OTHER)
     private val repo by lazy { IngredientRepository(context) }
 
@@ -33,9 +33,8 @@ class IngredientRepositoryTest: AbstractDatabaseTest() {
         runBlocking {
             recipe.id = recipeDao.insert(recipe)
             repo.insert(defaultItem, recipe)
+            val item = ingredientDao.getForRecipe(recipeId = recipe.id!!)
+            assertEquals(item.first(), defaultItem)
         }
-
-        val item = ingredientDao.getForRecipe(recipeId = recipe.id!!)
-        assertEquals(item.first(), defaultItem)
     }
 }

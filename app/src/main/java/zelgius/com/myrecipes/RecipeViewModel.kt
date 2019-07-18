@@ -11,12 +11,14 @@ import androidx.paging.LivePagedListBuilder
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.TestOnly
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.repository.IngredientRepository
 import zelgius.com.myrecipes.repository.RecipeRepository
+import zelgius.com.myrecipes.repository.StepRepository
 import java.io.File
 
 
@@ -31,6 +33,8 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
 
     private val recipeRepository = RecipeRepository(application)
     private val ingredientRepository = IngredientRepository(application)
+    private val stepRepository = StepRepository(application)
+
     val connectedUser = MutableLiveData<FirebaseUser?>()
     val selectedRecipe = MutableLiveData<Recipe>()
     val editMode = MutableLiveData<Boolean>()
@@ -70,6 +74,43 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun saveCurrentRecipe(): LiveData<Boolean>{
+        val done = MutableLiveData(false)
+
+        val recipe = currentRecipe // thread safe assignement
+        viewModelScope.launch {
+            if(recipe.id == null)
+                recipe.id = recipeRepository.insert(recipe)
+            else
+                recipeRepository.update(recipe)
+
+            recipe.steps.forEach {
+                it.refRecipe = currentRecipe.id
+                it.id = stepRepository.insert(it)
+            }
+
+            recipe.ingredients.forEach {
+                it.refRecipe = currentRecipe.id
+                it.id = ingredientRepository.insert(it, recipe)
+            }
+
+            done.postValue(true)
+        }
+
+        return done
+    }
+
+    fun loadRecipe(id: Long): LiveData<Recipe?> {
+        val done = MutableLiveData<Recipe>()
+
+        viewModelScope.launch {
+            currentRecipe = recipeRepository.getFull(id)
+            done.value = currentRecipe
+        }
+
+        return done
+    }
+
 
     fun newRecipe(recipe: Recipe): LiveData<Recipe> {
         val done = MutableLiveData<Recipe>()
@@ -78,16 +119,19 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
 
             recipe.ingredients.forEach {
                 if (it.id == null) it.id = ingredientRepository.insert(it, recipe)
-
             }
+
+            done.value = recipe
         }
 
         return done
     }
 
+    @TestOnly
     fun createDummySample() {
 
         currentRecipe = Recipe().apply {
+            name = "Recipe For Testing"
             ingredients.add(
                 IngredientForRecipe(
                     null,
@@ -137,9 +181,25 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
                 )
             )
 
-            steps.add(Step(null, "Step 1", Int.MAX_VALUE, null).apply { new = true; order = 1 })
-            steps.add(Step(null, "Step 2", Int.MAX_VALUE, null).apply { new = true; order = 2 })
-            steps.add(Step(null, "Step 3", Int.MAX_VALUE, null).apply { new = true; order = 3 })
+            steps.add(Step(null, "Step 1", Int.MAX_VALUE, null).apply { order = 1 })
+            steps.add(Step(null, "Step 2", Int.MAX_VALUE, null).apply { order = 2 })
+            steps.add(Step(null, "Step 3", Int.MAX_VALUE, null).apply {
+                order = 3
+                ingredients.add(
+                    IngredientForRecipe(
+                        null,
+                        1.0,
+                        Ingredient.Unit.TEASPOON,
+                        "Salt",
+                        "drawable://salt",
+                        4,
+                        null,
+                        null
+                    ).also {
+                        it.step = this
+                    }
+                )
+            })
         }
     }
 

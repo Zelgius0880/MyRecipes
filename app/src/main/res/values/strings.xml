@@ -33,7 +33,9 @@
     <string name="ingredients">Ingredients</string>
     <string name="quantity">Quantity</string>
     <string name="select_an_ingredient">Select an ingredient</string>
+    <string name="ingredient_exists">This ingredient already exists</string>
     <string name="field_required">This field is required</string>
+    <string name="recipe_saved">Recipe saved</string>
 
     <!-- UNITS -->
     <string name="milliliter">Milliliter</string>

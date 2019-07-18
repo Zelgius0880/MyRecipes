@@ -68,7 +68,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
 
         list.add(StepItem(0, null) to recipe.ingredients
             .filter { it.step == null }
-            .mapIndexed { i, item -> IngredientItem(item.id ?: i.toLong(), item) as DataItem }
+            .mapIndexed { i, item -> IngredientItem(item.id ?: i.toLong(), item) as DataItem } // Flagged as 'No cast needed' but actually needed
             .toMutableList())
 
         recipe.steps.forEachIndexed { i, s ->
@@ -107,7 +107,28 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
     var editStepListener: ((Step) -> Unit)? = null
     var editIngredientListener: ((IngredientForRecipe) -> Unit)? = null
 
-    //region ViewHolder
+    fun complete(recipe: Recipe) {
+        for(i in 0 until provider.groupCount){
+            provider.getGroupItem(i).item?.let {
+                it.order = i
+                recipe.steps.add(it)
+            }
+
+            for(j in 0 until provider.getChildCount(i)){
+                val item = provider.getChildItem(i,j)
+                if(item is IngredientItem){
+
+                    item.item.let {
+                        it.sortOrder = j
+                        it.step = provider.getGroupItem(i).item
+                        recipe.ingredients.add(it)
+                    }
+                }
+            }
+        }
+    }
+
+        //region ViewHolder
     inner class IngredientViewHolder(override val containerView: View) :
         AbstractDraggableItemViewHolder(containerView),
         ExpandableItemViewHolder, LayoutContainer {
@@ -124,26 +145,20 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
         fun bind(parentPosition: Int, childPosition: Int) {
             val item = (provider.getChildItem(parentPosition, childPosition) as IngredientItem).item
 
-            if (item.backgroundColor == 0)
-                item.backgroundColor = itemView.context.getCompatColor(R.color.md_white_1000)
-
-            if (itemView is CardView) {
-                itemView.setCardBackgroundColor(item.backgroundColor)
+            if (itemView is MaterialCardView) {
                 itemView.cardElevation = itemView.context.dpToPx(2f)
+                itemView.setCardBackgroundColor(
+                    if (item.step == draggingStep && draggingStep != null)
+                        context.getColor(
+                            R.color.secondaryColor,
+                            0.7f
+                        )
+                    /*else if (item.step == null)
+                        context.getColor(R.color.md_white_1000)*/
+                    else
+                        context.getColor(R.color.md_blue_50)
+                )
             }
-
-            (itemView as MaterialCardView).setCardBackgroundColor(
-                if (item.step == draggingStep && draggingStep != null)
-                    context.getColor(
-                        R.color.secondaryColor,
-                        0.7f
-                    )
-                /*else if (item.step == null)
-                    context.getColor(R.color.md_white_1000)*/
-                else
-                    context.getColor(R.color.md_blue_50)
-            )
-
 
             val abrv = when (item.unit) {
                 Ingredient.Unit.MILLILITER -> itemView.context.getString(R.string.milliliter_abrv)

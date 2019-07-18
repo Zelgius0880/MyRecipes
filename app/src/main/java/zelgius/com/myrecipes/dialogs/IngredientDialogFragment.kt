@@ -242,7 +242,13 @@ class IngredientDialogFragment : DialogFragment() {
                                 } else {
                                     if (ingredient.id == null && ingredient.name.isBlank()) {
                                         dialogView.error.visibility = View.VISIBLE
-                                        dialogView.error.text = getString(R.string.select_an_ingredient)
+                                        dialogView.error.text =
+                                            getString(R.string.select_an_ingredient)
+                                    } else if (ingredient.id == null && (viewModel.ingredients.value ?: listOf())
+                                            .findLast { it.name.equals(ingredient.name, true) } != null){
+                                        dialogView.error.visibility = View.VISIBLE
+                                        dialogView.error.text =
+                                            getString(R.string.select_an_ingredient)
                                     } else {
                                         dismiss()
                                         activity.let { d ->

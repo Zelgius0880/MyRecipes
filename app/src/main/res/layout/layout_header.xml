@@ -24,13 +24,12 @@
                 android:id="@+id/imageView"
                 android:layout_width="0dp"
                 android:layout_height="140dp"
-                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                app:layout_constraintDimensionRatio="w,1:1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_image_24dp"
-                android:scaleType="fitStart"
-                app:layout_constraintDimensionRatio="w,1:1"
-                android:layout_marginBottom="44dp"/>
+                app:srcCompat="@drawable/ic_dish" />
 
         <com.google.android.material.button.MaterialButton
                 style="@style/Widget.MyRecipes.ImageButton"

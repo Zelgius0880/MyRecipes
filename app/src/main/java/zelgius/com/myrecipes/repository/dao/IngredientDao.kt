@@ -21,5 +21,5 @@ interface IngredientDao {
     fun get(): LiveData<List<Ingredient>>
 
     @Query("SELECT * FROM IngredientForRecipe WHERE refRecipe = :recipeId")
-    fun getForRecipe(recipeId: Long): List<IngredientForRecipe>
+    suspend fun getForRecipe(recipeId: Long): List<IngredientForRecipe>
 }

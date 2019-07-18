@@ -24,30 +24,26 @@ import zelgius.com.myrecipes.repository.RecipeRepository
  */
 class ListFragment : Fragment() {
 
-    private var listener: MyRecipeRecyclerViewAdapter.OnRecipeClickedListener? = null
-
     val viewModel by lazy { ViewModelProviders.of(activity!!).get(RecipeViewModel::class.java) }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_recipe, container, false)
+        val view = inflater.inflate(R.layout.fragment_list, container, false)
 
         // Set the adapter
         if (view is RecyclerView) {
-            with(view) {
-                layoutManager = LinearLayoutManager(context)
-                val adapter = RecipePagedAdapter()
-                this.adapter = adapter
+            view.layoutManager = LinearLayoutManager(context)
+            val adapter = RecipePagedAdapter()
+            view.adapter = adapter
 
-                when (Recipe.Type.valueOf(arguments?.getString("type") ?: error("Arguments are null"))) {
-                    Recipe.Type.MEAL -> viewModel.mealList
-                    Recipe.Type.DESSERT -> viewModel.dessertList
-                    Recipe.Type.OTHER -> viewModel.otherList
-                }.observe(this@ListFragment, Observer {
-                    adapter.submitList(it)
-                })
-            }
+            when (Recipe.Type.valueOf(arguments?.getString("type") ?: error("Arguments are null"))) {
+                Recipe.Type.MEAL -> viewModel.mealList
+                Recipe.Type.DESSERT -> viewModel.dessertList
+                Recipe.Type.OTHER -> viewModel.otherList
+            }.observe(this@ListFragment, Observer {
+                adapter.submitList(it)
+            })
         }
         return view
     }

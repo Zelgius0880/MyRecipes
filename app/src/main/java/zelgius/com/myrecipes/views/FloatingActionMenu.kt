@@ -17,8 +17,8 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 class FloatingActionMenu : FloatingActionButton {
 
     var menuLayouts: Array<ViewGroup> = arrayOf()
-    val isOpen: Boolean
-        get() = tag == true
+
+    private var saveState: Boolean? = null
 
     var animation: Pair<AnimatedVectorDrawableCompat, AnimatedVectorDrawableCompat>? = null
 
@@ -40,12 +40,12 @@ class FloatingActionMenu : FloatingActionButton {
             if (isOpen is Boolean && isOpen) {
                 closeMenu()
             } else {
-                showMenu()
+                openMenu()
             }
         }
     }
 
-    private fun showMenu() {
+    private fun openMenu() {
         tag = true
 
         if (animation == null)
@@ -106,6 +106,21 @@ class FloatingActionMenu : FloatingActionButton {
             }
 
         })
+    }
+
+    override fun show() {
+        super.show()
+        if(saveState == true)
+            openMenu()
+
+        saveState = null
+    }
+
+    override fun hide() {
+        if(saveState == null)
+            saveState = tag is Boolean && tag as Boolean
+        closeMenu()
+        super.hide()
     }
 
 

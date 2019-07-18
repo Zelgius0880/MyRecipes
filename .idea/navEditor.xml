@@ -60,6 +60,11 @@
                                 <LayoutPositions />
                               </value>
                             </entry>
+                            <entry key="action_tabFragment_to_recipeFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
                           </map>
                         </option>
                       </LayoutPositions>

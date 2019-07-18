@@ -2,7 +2,6 @@ package zelgius.com.myrecipes.fragments
 
 import android.app.SearchManager
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -15,15 +14,11 @@ import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
-import kotlinx.android.synthetic.main.activity_recipe.*
-import kotlinx.android.synthetic.main.fragment_recipe.*
 import kotlinx.android.synthetic.main.fragment_tab.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
-import zelgius.com.myrecipes.utils.AnimationUtils
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.RecipeActivity
-import zelgius.com.myrecipes.utils.colorSecondary
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.utils.AnimationUtils
 import kotlin.math.roundToInt
 
 class TabFragment : Fragment() {
@@ -37,6 +32,8 @@ class TabFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
+    private val adapter by lazy { SectionsPagerAdapter(childFragmentManager) }
+
     private var vectorAnimation: AnimatedVectorDrawableCompat? = null
 
     private val ctx by lazy { activity!! }
@@ -47,7 +44,9 @@ class TabFragment : Fragment() {
 
         //add.setImageResource(R.drawable.ic_add_24dp)
 
-        container.adapter = SectionsPagerAdapter(fragmentManager!!)
+        container.adapter = adapter
+        tabs.setupWithViewPager(container)
+        //container.isSaveFromParentEnabled = true
 
         vectorAnimation = AnimatedVectorDrawableCompat.create(ctx, R.drawable.av_add_to_add_list)
 
@@ -108,19 +107,12 @@ class TabFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
-            RecipeActivity.REQUEST_CODE -> {
-                val vectorAnimation =
-                    AnimatedVectorDrawableCompat.create(ctx, R.drawable.av_add_list_to_add)
-
-                add.setImageDrawable(vectorAnimation)
-                vectorAnimation?.start()
-            }
         }
-    }
+    }*/
 
 
     /**
@@ -128,7 +120,7 @@ class TabFragment : Fragment() {
      * one of the sections/tabs/pages.
      */
     inner class SectionsPagerAdapter(fm: androidx.fragment.app.FragmentManager) :
-        androidx.fragment.app.FragmentPagerAdapter(fm) {
+        androidx.fragment.app.FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
         private val fragments = listOf(
             ListFragment.newInstance(Recipe.Type.MEAL),
@@ -136,11 +128,19 @@ class TabFragment : Fragment() {
             ListFragment.newInstance(Recipe.Type.OTHER)
         )
 
-        override fun getItem(position: Int): androidx.fragment.app.Fragment {
+        override fun getItem(position: Int): Fragment {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             return fragments[position]
         }
+
+        override fun getPageTitle(position: Int): CharSequence? =
+            when(position) {
+                0 -> getString(R.string.meal)
+                1 -> getString(R.string.dessert)
+                2 -> getString(R.string.other)
+                else -> throw IllegalStateException("Should not be there")
+            }
 
         override fun getCount(): Int {
             // Show 3 total pages.

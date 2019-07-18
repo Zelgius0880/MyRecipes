@@ -1,8 +1,8 @@
 package zelgius.com.myrecipes.repository
 
-import android.app.Application
 import android.content.Context
-import zelgius.com.myrecipes.entities.Ingredient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import zelgius.com.myrecipes.entities.Recipe
 
 class RecipeRepository(context: Context) {
@@ -11,6 +11,18 @@ class RecipeRepository(context: Context) {
 
     fun get() =
         database.recipeDao.getAll()
+
+    suspend fun getFull(id: Long): Recipe =
+        withContext(Dispatchers.Default) {
+            database.recipeDao.blockingGet(id).apply {
+                steps.addAll(database.stepDao.blockingGet(id))
+                ingredients.addAll(database.ingredientDao.getForRecipe(id))
+                ingredients.forEach {
+                    if (it.refStep != null) it.step = steps.find { s -> s.id == it.refStep }
+                }
+            }
+        }
+
 
     fun pagedMeal() =
         database.recipeDao.pagedMeal()
@@ -23,8 +35,13 @@ class RecipeRepository(context: Context) {
     fun pagedOther() =
         database.recipeDao.pagedOther()
 
-    suspend fun insert(recipe: Recipe): Long {
-        val id = database.recipeDao.insert(recipe)
-        return id
-    }
+    suspend fun insert(recipe: Recipe): Long =
+        withContext(Dispatchers.Default) {
+            database.recipeDao.insert(recipe)
+        }
+
+    suspend fun update(recipe: Recipe): Int =
+         withContext(Dispatchers.Default) {
+             database.recipeDao.update(recipe)
+         }
 }

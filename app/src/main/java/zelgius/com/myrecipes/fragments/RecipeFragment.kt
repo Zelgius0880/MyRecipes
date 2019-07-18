@@ -9,31 +9,31 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NavUtils
-import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.ActivityNavigator
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
+import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import com.google.android.material.snackbar.Snackbar
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
-import kotlinx.android.synthetic.main.activity_recipe.*
-import kotlinx.android.synthetic.main.activity_recipe.toolbar
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_recipe.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
 import net.alhazmy13.mediapicker.Image.ImagePicker
+import zelgius.com.myrecipes.MainActivity
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
-import zelgius.com.myrecipes.adapters.RecipeEditAdapter
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.dialogs.IngredientDialogFragment
 import zelgius.com.myrecipes.dialogs.StepDialogFragment
@@ -94,7 +94,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         savedInstanceState: Bundle?
     ): View? {
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.activity_recipe, container, false)
+        return inflater.inflate(R.layout.fragment_recipe, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -104,12 +104,14 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         val args = arguments
         viewModel.createDummySample() // TODO need to be removed
 
-        ViewAnimationUtils.createCircularReveal(
-            view, (fab.x + fab.width / 2).roundToInt(),
-            (fab.y + fab.height / 2).roundToInt(),
-            view.width.toFloat(),
-            view.height.toFloat()
-        )
+        if (ViewCompat.isAttachedToWindow(view)) {
+            ViewAnimationUtils.createCircularReveal(
+                view, (fab.x + fab.width / 2).roundToInt(),
+                (fab.y + fab.height / 2).roundToInt(),
+                view.width.toFloat(),
+                view.height.toFloat()
+            )
+        }
 
         fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
         fab.animation =
@@ -122,16 +124,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         vectorAnimation =
             AnimatedVectorDrawableCompat.create(context, R.drawable.av_add_list_to_add)
 
-        if (args?.containsKey(AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS) == true) {
 
-            AnimationUtils.enterCircularRevealAnimation(
-                context,
-                rootLayout,
-                args.getParcelable(AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS)!!,
-                context.colorSecondary,
-                Color.WHITE
-            )
-        }
 
         viewModel.selectedRecipe.value =
             arguments?.getParcelable("RECIPE") ?: Recipe(Recipe.Type.MEAL)
@@ -199,6 +192,22 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         )
         //endregion
 
+        list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy > 0 || dy < 0 && fab.isShown) {
+                    fab.hide()
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    fab.show()
+                }
+
+                super.onScrollStateChanged(recyclerView, newState)
+            }
+        })
+
         adapter.editIngredientListener = {
             IngredientDialogFragment.newInstance(it)
                 .show(fragmentManager!!, "dialog_ingredient")
@@ -219,11 +228,11 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
                     )!!
 
         addIngredient.setOnClickListener {
-            IngredientDialogFragment().show(fragmentManager!!, "dialog_ingredient")
+            IngredientDialogFragment.newInstance(this).show(fragmentManager!!, "dialog_ingredient")
         }
 
         addStep.setOnClickListener {
-            StepDialogFragment().show(fragmentManager!!, "dialog_step")
+            StepDialogFragment.newInstance(this).show(fragmentManager!!, "dialog_step")
         }
     }
 
@@ -248,7 +257,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         }
     }
 
-    override fun onCreateOptionsMenu( menu: Menu,  inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         // Do something that differs the Activity's menu here
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.menu_recipe, menu)
@@ -273,6 +282,26 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
                             fragmentManager?.beginTransaction()?.remove(this)
                                 ?.commitAllowingStateLoss()
                         }
+                true
+            }
+
+            R.id.save -> {
+                val recipe = viewModel.currentRecipe
+                headerWrapper.complete(recipe)
+                recipe.imageURL = viewModel.selectedImageUrl.value?.encodedPath ?: ""
+                adapter.complete(recipe)
+                viewModel.currentRecipe = recipe // not really usefull, just there in case
+                viewModel.saveCurrentRecipe().observe(this, Observer {
+                    if (it) {
+                        Snackbar.make(
+                            (activity as MainActivity).coordinator,
+                            R.string.recipe_saved,
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                        navController.popBackStack()
+                    }
+                })
+
                 true
             }
             else -> super.onOptionsItemSelected(item)

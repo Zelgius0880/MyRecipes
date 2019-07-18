@@ -2,9 +2,7 @@ package zelgius.com.myrecipes.repository.dao
 
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.Recipe
 
@@ -13,6 +11,10 @@ interface RecipeDao {
 
     @Insert
     suspend fun insert(recipe: Recipe):Long
+
+    @Update suspend fun update(vararg recipe: Recipe): Int
+
+    @Delete suspend fun delete(vararg recipe: Recipe): Int
 
     @Query("SELECT * FROM recipe ORDER BY name")
     fun getAll(): LiveData<List<Recipe>>
