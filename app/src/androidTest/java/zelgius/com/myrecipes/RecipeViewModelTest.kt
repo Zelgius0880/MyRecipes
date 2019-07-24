@@ -1,9 +1,8 @@
 package zelgius.com.myrecipes
 
 import android.app.Application
+import android.os.Environment
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Test
 
@@ -11,7 +10,6 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.runner.RunWith
-import org.mockito.InjectMocks
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoJUnitRunner
 import zelgius.com.myrecipes.entities.Ingredient
@@ -20,15 +18,12 @@ import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.repository.observeOnce
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import android.R.attr.countDown
-import android.R.attr.data
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import androidx.lifecycle.Observer
 import com.facebook.stetho.Stetho
+import java.io.File
 
 
 @RunWith(MockitoJUnitRunner::class)
-class RecipeViewModelTest{
+class RecipeViewModelTest {
     @get:Rule
     val mockitoRule = MockitoJUnit.rule()
 
@@ -40,11 +35,22 @@ class RecipeViewModelTest{
     private val viewModel: RecipeViewModel by lazy { RecipeViewModel(context) }
 
     private val recipe = Recipe(null, "Recipe for testing", "image", Recipe.Type.OTHER).apply {
-        ingredients.add(IngredientForRecipe(null, 2.0, Ingredient.Unit.KILOGRAMME, "test", "test",2 ,  null, null))
+        ingredients.add(
+            IngredientForRecipe(
+                null,
+                2.0,
+                Ingredient.Unit.KILOGRAMME,
+                "test",
+                "test",
+                2,
+                null,
+                null
+            )
+        )
     }
 
     @Before
-    fun init(){
+    fun init() {
         Stetho.initializeWithDefaults(context)
 
     }
@@ -58,30 +64,128 @@ class RecipeViewModelTest{
     }
 
     @Test
-    fun saveCurrentRecipe(){
+    fun saveCurrentRecipe() {
 
-        val latch =  CountDownLatch(1)
+        val latch = CountDownLatch(2)
+
+
         viewModel.createDummySample()
 
-        viewModel.saveCurrentRecipe().observeForever { b ->
+        viewModel.saveCurrentRecipe().observeForever { r ->
 
             //assertTrue(b)
 
-            if(b) {
-                viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever {
+            viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever {
 
-                    assertNotNull(it!!)
-                    assertEquals(it, viewModel.currentRecipe)
+                compareRecipe(it, viewModel.currentRecipe)
+                latch.countDown()
 
-                    it.steps.forEach { s ->
-                        assertNotNull(viewModel.currentRecipe.steps.find { s == it })
-                    }
 
-                    it.ingredients.forEach { i ->
-                        assertNotNull(viewModel.currentRecipe.ingredients.find { i == it })
+                viewModel.currentRecipe.name = "Test Update"
+                viewModel.currentRecipe.ingredients.removeAt(1)
+                viewModel.currentRecipe.steps.removeAt(0)
+
+                viewModel.saveCurrentRecipe().observeForever { r ->
+
+                    //assertTrue(b)
+
+                    viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever {
+                        compareRecipe(it!!, viewModel.currentRecipe)
+
+                        latch.countDown()
                     }
                 }
+
+
+            }
+
+        }
+
+        latch.await(30, TimeUnit.SECONDS)
+
+
+
+        assertTrue(latch.count == 0L)
+    }
+
+    private fun compareRecipe(o1: Recipe?, o2: Recipe) {
+        assertNotNull(o1!!)
+        assertEquals(o1, o2)
+
+        assertEquals(o1.steps.size, o2.steps.size)
+        o1.steps.forEach { s ->
+            assertNotNull(o2.steps.find { s == it })
+        }
+
+        assertEquals(o1.ingredients.size, o2.ingredients.size)
+        o1.ingredients.forEach { i ->
+            assertNotNull(o2.ingredients.find { i == it })
+        }
+    }
+
+
+    @Test
+    fun saveRecipe() {
+
+        val latch = CountDownLatch(2)
+        viewModel.createDummySample()
+
+        viewModel.saveRecipe(viewModel.currentRecipe).observeForever { r ->
+
+            //assertTrue(b)
+
+            viewModel.loadRecipe(r.id!!).observeForever {
+
+                assertNotNull(it!!)
+                compareRecipe(it, r)
                 latch.countDown()
+
+                r.name = "Test Update"
+                r.ingredients.removeAt(1)
+                r.steps.removeAt(0)
+
+                viewModel.saveCurrentRecipe().observeForever { r ->
+
+                    //assertTrue(b)
+
+                    viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever {
+                        compareRecipe(it!!, r)
+
+                        latch.countDown()
+
+                        Thread.sleep(5000)
+
+                       assertTrue(File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${it.id}")
+                            .exists()
+                       )
+                    }
+                }
+            }
+        }
+
+        latch.await(30, TimeUnit.SECONDS)
+        assertTrue(latch.count == 0L)
+
+    }
+
+    @Test
+    fun delete() {
+        val latch = CountDownLatch(1)
+        viewModel.createDummySample()
+
+        viewModel.saveRecipe(viewModel.currentRecipe).observeForever { r ->
+
+            //assertTrue(b)
+            Thread.sleep(5000)
+
+            viewModel.delete(r).observeForever { b ->
+
+                if (b) {
+                    viewModel.loadRecipe(r.id!!).observeForever {
+                        assertNull(it)
+                        latch.countDown()
+                    }
+                }
             }
         }
 

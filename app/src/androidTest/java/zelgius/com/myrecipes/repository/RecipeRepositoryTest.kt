@@ -20,7 +20,7 @@ class RecipeRepositoryTest : AbstractDatabaseTest() {
         runBlocking {
             recipe.id = repo.insert(recipe)
 
-            Assert.assertEquals(recipeDao.blockingGet(recipe.id!!), recipe)
+            Assert.assertEquals(recipeDao.coroutineGet(recipe.id!!), recipe)
         }
 
     }

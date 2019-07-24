@@ -4,11 +4,13 @@ import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandab
 
 abstract class DataItem(var adapterId: Long) {
     abstract val isSectionHeader: Boolean
-    private var mNextChildId = 0L
+    private var nextChildId = 0L
+
+    var isPinned = false
 
     fun generateNewChildId(): Long {
-        val id = mNextChildId
-        mNextChildId += 1
+        val id = nextChildId
+        nextChildId += 1
         return id
     }
 }

@@ -1,6 +1,7 @@
 package zelgius.com.myrecipes.dialogs
 
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -11,6 +12,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -43,27 +45,36 @@ import kotlin.math.roundToInt
  */
 class IngredientDialogFragment : DialogFragment() {
 
-    private val dialogView by lazy { View.inflate(activity, R.layout.dialog_fragment_ingredient, null) }
-    private val viewModel by lazy { ViewModelProviders.of(activity!!).get(RecipeViewModel::class.java) }
+    private val dialogView by lazy {
+        View.inflate(
+            activity,
+            R.layout.dialog_fragment_ingredient,
+            null
+        )
+    }
+    private val viewModel by lazy {
+        ViewModelProviders.of(activity!!).get(RecipeViewModel::class.java)
+    }
 
+    private val context by lazy { activity!! }
     var ingredient: IngredientForRecipe =
         IngredientForRecipe(null, -1.0, Ingredient.Unit.UNIT, "", null, 0, null, null)
             .apply { new = true }
     private var new = false
     private var listener: NoticeDialogListener? = null
-    private val units by lazy { dialogView.context.resources.getStringArray(R.array.select_unit_array) }
+    private val units by lazy { context.resources.getStringArray(R.array.select_unit_array) }
 
     private val defaultDrawable by lazy {
         LayerDrawable(
             arrayOf(
-                ColorDrawable(ContextCompat.getColor(dialogView.context, R.color.md_blue_grey_700)),
+                ColorDrawable(ContextCompat.getColor(context, R.color.md_blue_grey_700)),
                 ContextCompat.getDrawable(
-                    dialogView.context,
+                    context,
                     R.drawable.ic_carrot_solid
                 ).apply { this?.setTint(Color.WHITE) }
             )
         ).apply {
-            val dp = dialogView.context.dpToPx(8f).roundToInt()
+            val dp = context.dpToPx(8f).roundToInt()
             setLayerInset(1, dp, dp, dp, dp)
         }
     }
@@ -83,15 +94,25 @@ class IngredientDialogFragment : DialogFragment() {
         var lastSelectedUnit = Ingredient.Unit.GRAMME
     }
 
-    private val addAnimation by lazy { AnimatedVectorDrawableCompat.create(context!!, R.drawable.avd_add_to_close)!! }
+    private val addAnimation by lazy {
+        AnimatedVectorDrawableCompat.create(
+            context!!,
+            R.drawable.avd_add_to_close
+        )!!
+    }
 
-    private val closeAnimation by lazy { AnimatedVectorDrawableCompat.create(context!!, R.drawable.avd_close_to_add)!! }
+    private val closeAnimation by lazy {
+        AnimatedVectorDrawableCompat.create(
+            context!!,
+            R.drawable.avd_close_to_add
+        )!!
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             // Use the Builder class for convenient dialog construction
-            viewModel.ingredients.observe(activity!!, Observer { list ->
-                dialogView.ingredients.setAdapter(IngredientAutoCompleteAdapter(activity!!, list))
+            viewModel.ingredients.observe(this, Observer { list ->
+                dialogView.ingredients.setAdapter(IngredientAutoCompleteAdapter(context, list))
                 dialogView.ingredients.setOnItemSelectedListener(object : OnItemSelectedListener {
                     override fun onNothingSelected() {
 
@@ -102,6 +123,13 @@ class IngredientDialogFragment : DialogFragment() {
                             ingredient.id = i.id
                             ingredient.name = i.name
                             ingredient.imageUrl = i.imageURL
+
+                            dialogView.spinner.setSelection(units.indexOfFirst { s ->
+                                s == context.getSharedPreferences(
+                                    "UNITS",
+                                    Context.MODE_PRIVATE
+                                ).getString(i.name, null)?: lastSelectedUnit
+                            })
                         }
                     }
 
@@ -144,25 +172,38 @@ class IngredientDialogFragment : DialogFragment() {
                     .simple_spinner_dropdown_item
             )
             dialogView.spinner.adapter = spinnerArrayAdapter
-            dialogView.spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(adapterView: AdapterView<*>?) {}
+            dialogView.spinner.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onNothingSelected(adapterView: AdapterView<*>?) {}
 
-                override fun onItemSelected(adapterView: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    when (dialogView.spinner.selectedItem.toString()) {
-                        getString(R.string.gramme_select) -> ingredient.unit = Ingredient.Unit.GRAMME
-                        getString(R.string.kilogramme_select) -> ingredient.unit = Ingredient.Unit.KILOGRAMME
-                        getString(R.string.milliliter_select) -> ingredient.unit = Ingredient.Unit.MILLILITER
-                        getString(R.string.liter_select) -> ingredient.unit = Ingredient.Unit.LITER
-                        getString(R.string.unit_select) -> ingredient.unit = Ingredient.Unit.UNIT
-                        getString(R.string.tablespoon_select) -> ingredient.unit = Ingredient.Unit.TABLESPOON
-                        getString(R.string.teaspoon_select) -> ingredient.unit = Ingredient.Unit.TEASPOON
-                        getString(R.string.cup_select) -> ingredient.unit = Ingredient.Unit.CUP
+                    override fun onItemSelected(
+                        adapterView: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        when (dialogView.spinner.selectedItem.toString()) {
+                            getString(R.string.gramme_select) -> ingredient.unit =
+                                Ingredient.Unit.GRAMME
+                            getString(R.string.kilogramme_select) -> ingredient.unit =
+                                Ingredient.Unit.KILOGRAMME
+                            getString(R.string.milliliter_select) -> ingredient.unit =
+                                Ingredient.Unit.MILLILITER
+                            getString(R.string.liter_select) -> ingredient.unit =
+                                Ingredient.Unit.LITER
+                            getString(R.string.unit_select) -> ingredient.unit =
+                                Ingredient.Unit.UNIT
+                            getString(R.string.tablespoon_select) -> ingredient.unit =
+                                Ingredient.Unit.TABLESPOON
+                            getString(R.string.teaspoon_select) -> ingredient.unit =
+                                Ingredient.Unit.TEASPOON
+                            getString(R.string.cup_select) -> ingredient.unit = Ingredient.Unit.CUP
+                        }
+
+                        lastSelectedUnit = ingredient.unit
                     }
 
-                    lastSelectedUnit = ingredient.unit
                 }
-
-            }
 
             if (!ingredient.new) {
                 dialogView.quantity.editText?.setText(DecimalFormat("#0.##").format(ingredient.quantity))
@@ -188,14 +229,14 @@ class IngredientDialogFragment : DialogFragment() {
 
             dialogView.spinner.setSelection(units.indexOfFirst { s ->
                 when (s) {
-                    getString(R.string.gramme) -> ingredient.unit == Ingredient.Unit.GRAMME
-                    getString(R.string.kilogramme) -> ingredient.unit == Ingredient.Unit.KILOGRAMME
-                    getString(R.string.milliliter) -> ingredient.unit == Ingredient.Unit.MILLILITER
-                    getString(R.string.liter) -> ingredient.unit == Ingredient.Unit.LITER
-                    getString(R.string.unit) -> ingredient.unit == Ingredient.Unit.UNIT
-                    getString(R.string.tablespoon) -> ingredient.unit == Ingredient.Unit.TABLESPOON
-                    getString(R.string.teaspoon) -> ingredient.unit == Ingredient.Unit.TEASPOON
-                    getString(R.string.cup) -> ingredient.unit == Ingredient.Unit.CUP
+                    getString(R.string.gramme_select) -> ingredient.unit == Ingredient.Unit.GRAMME
+                    getString(R.string.kilogramme_select) -> ingredient.unit == Ingredient.Unit.KILOGRAMME
+                    getString(R.string.milliliter_select) -> ingredient.unit == Ingredient.Unit.MILLILITER
+                    getString(R.string.liter_select) -> ingredient.unit == Ingredient.Unit.LITER
+                    getString(R.string.unit_select) -> ingredient.unit == Ingredient.Unit.UNIT
+                    getString(R.string.tablespoon_select) -> ingredient.unit == Ingredient.Unit.TABLESPOON
+                    getString(R.string.teaspoon_select) -> ingredient.unit == Ingredient.Unit.TEASPOON
+                    getString(R.string.cup_select) -> ingredient.unit == Ingredient.Unit.CUP
                     else -> false
                 }
             })
@@ -205,14 +246,14 @@ class IngredientDialogFragment : DialogFragment() {
                 .setTitle(R.string.select_an_ingredient)
                 .setPositiveButton(R.string.save, null)
                 .setNegativeButton(R.string.cancel) { _, _ ->
-                    activity.let { d ->
+                    it.let { d ->
                         if (d is NoticeDialogListener) d.onDialogNegativeClick(this)
                         else listener?.onDialogNegativeClick(this)
                     }
                 }
                 .create().apply {
                     setOnShowListener {
-                        getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                        getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener { _ ->
                             removeErrors()
 
                             if (dialogView.quantity.editText!!.text.isBlank()) {
@@ -223,7 +264,8 @@ class IngredientDialogFragment : DialogFragment() {
                                     ingredient.quantity = dialogView.quantity.toDouble()
                                 } catch (e: NumberFormatException) {
                                     e.printStackTrace()
-                                    dialogView.quantity.error = getString(R.string.error_not_a_number)
+                                    dialogView.quantity.error =
+                                        getString(R.string.error_not_a_number)
                                 }
                                 if (new) {
                                     if (dialogView.name.editText?.text?.isEmpty() != false) {
@@ -233,28 +275,49 @@ class IngredientDialogFragment : DialogFragment() {
 
                                         ingredient.name = dialogView.name.editText!!.text.toString()
                                         dismiss()
-                                        activity.let { d ->
-                                            if (d is NoticeDialogListener) d.onDialogPositiveClick(this@IngredientDialogFragment)
-                                            else listener?.onDialogPositiveClick(this@IngredientDialogFragment)
 
+                                        context.getSharedPreferences(
+                                            "UNITS",
+                                            Context.MODE_PRIVATE
+                                        ).edit{
+                                            putString(ingredient.name, dialogView.spinner.selectedItem as String)
                                         }
+                                        if (it is NoticeDialogListener) it.onDialogPositiveClick(
+                                            this@IngredientDialogFragment
+                                        )
+                                        else listener?.onDialogPositiveClick(this@IngredientDialogFragment)
+
                                     }
                                 } else {
                                     if (ingredient.id == null && ingredient.name.isBlank()) {
                                         dialogView.error.visibility = View.VISIBLE
                                         dialogView.error.text =
                                             getString(R.string.select_an_ingredient)
-                                    } else if (ingredient.id == null && (viewModel.ingredients.value ?: listOf())
-                                            .findLast { it.name.equals(ingredient.name, true) } != null){
+                                    } else if (ingredient.id == null && (viewModel.ingredients.value
+                                            ?: listOf())
+                                            .findLast { i ->
+                                                i.name.equals(
+                                                    ingredient.name,
+                                                    true
+                                                )
+                                            } != null
+                                    ) {
                                         dialogView.error.visibility = View.VISIBLE
                                         dialogView.error.text =
                                             getString(R.string.select_an_ingredient)
                                     } else {
                                         dismiss()
-                                        activity.let { d ->
-                                            if (d is NoticeDialogListener) d.onDialogPositiveClick(this@IngredientDialogFragment)
-                                            else listener?.onDialogPositiveClick(this@IngredientDialogFragment)
+
+                                        context.getSharedPreferences(
+                                            "UNITS",
+                                            Context.MODE_PRIVATE
+                                        ).edit{
+                                            putString(ingredient.name, dialogView.spinner.selectedItem as String)
                                         }
+                                        if (it is NoticeDialogListener) it.onDialogPositiveClick(
+                                            this@IngredientDialogFragment
+                                        )
+                                        else listener?.onDialogPositiveClick(this@IngredientDialogFragment)
                                     }
                                 }
                             }

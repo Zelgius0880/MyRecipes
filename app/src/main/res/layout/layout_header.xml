@@ -22,6 +22,7 @@
 
         <ImageView
                 android:id="@+id/imageView"
+                android:transitionName="imageView"
                 android:layout_width="0dp"
                 android:layout_height="140dp"
                 android:padding="8dp"
@@ -47,6 +48,7 @@
         <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:transitionName="name"
                 android:layout_marginTop="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:id="@+id/editName"
@@ -67,6 +69,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/editCategory"
+                android:transitionName="category"
                 android:layout_marginTop="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:listitem="@layout/adapter_text_category"

@@ -14,6 +14,8 @@ interface RecipeDao {
 
     @Update suspend fun update(vararg recipe: Recipe): Int
 
+    @Update fun blockingUpdate(vararg recipe: Recipe): Int
+
     @Delete suspend fun delete(vararg recipe: Recipe): Int
 
     @Query("SELECT * FROM recipe ORDER BY name")
@@ -31,10 +33,13 @@ interface RecipeDao {
     @Query("SELECT * FROM recipe WHERE type = 'OTHER' ORDER BY name")
     fun getOther(): LiveData<List<Recipe>>
 
-
     // Blocking get
     @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
-    suspend fun blockingGet(id: Long): Recipe
+    fun blockingGet(id: Long): Recipe?
+
+    // Coroutine get
+    @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
+    suspend fun coroutineGet(id: Long): Recipe?
 
     //Paging
     @Query("SELECT * FROM recipe ORDER BY name")

@@ -1,6 +1,8 @@
 package zelgius.com.myrecipes.adapters
 
 import android.content.Context
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.InsetDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,15 +18,19 @@ import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.layout_header.view.*
+import kotlinx.android.synthetic.main.layout_header.view.editCategory
+import kotlinx.android.synthetic.main.layout_header.view.editName
+import kotlinx.android.synthetic.main.layout_header.view.imageView
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.dialogs.ImageDialogFragment
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.utils.dpToPx
 import java.lang.Exception
 import java.lang.IllegalStateException
 
 
-class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel) :
+class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel, private val bindListener: (()-> Unit)? = null) :
     AbstractHeaderFooterWrapperAdapter<HeaderAdapterWrapper.HeaderViewHolder, RecyclerView.ViewHolder>() {
 
     var recipe: Recipe = viewModel.currentRecipe
@@ -49,6 +55,12 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
     ): RecyclerView.ViewHolder = throw IllegalStateException("No footer available")
 
     override fun onBindHeaderItemViewHolder(viewHolder: HeaderViewHolder, localPosition: Int) {
+/*
+        viewHolder.itemView.imageView.transitionName = "imageView${recipe.id?:""}"
+        viewHolder.itemView.editName.transitionName = "name${recipe.id?:""}"
+        viewHolder.itemView.editCategory.transitionName = "category${recipe.id?:""}"
+*/
+
         this.viewHolder = viewHolder
         val itemView = viewHolder.itemView
         val category = when (recipe.type) {
@@ -58,36 +70,6 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
         }
 
         itemView.editName.editText?.setText(recipe.name)
-        itemView.editCategory.setSelection(typeStringArray.indexOf(category))
-
-        itemView.editImage.setOnClickListener { _ ->
-            ImageDialogFragment().let {
-                if (context is AppCompatActivity)
-                    it.show(context.supportFragmentManager, "image_dialog")
-            }
-        }
-
-        if (context is LifecycleOwner) {
-            viewModel.selectedImageUrl.observe(context, Observer {
-                itemView.imageView.setPadding(0,0,0,0)
-                Picasso.get().apply {
-                    //setIndicatorsEnabled(true)
-                    //isLoggingEnabled = true
-                }
-                    .load(it)
-                    .resize(2048, 2048)
-                    .centerCrop()
-                    .into(itemView.imageView, object : Callback {
-                        override fun onSuccess() {
-                        }
-
-                        override fun onError(e: Exception?) {
-                            e?.printStackTrace()
-                        }
-
-                    })
-            })
-        }
 
         val spinnerArrayAdapter = ArrayAdapter(
             context, R.layout.adapter_text_category,
@@ -113,6 +95,42 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel)
 
                 }
             }
+        itemView.editCategory.setSelection(typeStringArray.indexOf(category))
+
+        itemView.editImage.setOnClickListener { _ ->
+            ImageDialogFragment().let {
+                if (context is AppCompatActivity)
+                    it.show(context.supportFragmentManager, "image_dialog")
+            }
+        }
+
+        if (context is LifecycleOwner) {
+            viewModel.selectedImageUrl.observe(context, Observer {
+                if(it != null && it.toString().isNotEmpty()) {
+                    itemView.imageView.setPadding(0, 0, 0, 0)
+                    Picasso.get().apply {
+                        //setIndicatorsEnabled(true)
+                        //isLoggingEnabled = true
+                    }
+                        .load(it)
+                        .resize(2048, 2048)
+                        .centerCrop()
+                        .into(itemView.imageView, object : Callback {
+                            override fun onSuccess() {
+                            }
+
+                            override fun onError(e: Exception?) {
+                                e?.printStackTrace()
+                            }
+
+                        })
+                }
+            })
+        }
+
+
+
+        bindListener?.invoke()
     }
 
     override fun onBindFooterItemViewHolder(holder: RecyclerView.ViewHolder, localPosition: Int) {

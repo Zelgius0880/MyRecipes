@@ -1,16 +1,22 @@
 package zelgius.com.myrecipes.fragments
 
 
+import android.animation.Animator
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
+import android.transition.TransitionInflater
 import android.view.*
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -23,10 +29,15 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.google.android.material.snackbar.Snackbar
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
+import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_recipe.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
+import kotlinx.android.synthetic.main.layout_header.*
+import kotlinx.android.synthetic.main.layout_header.view.*
 import net.alhazmy13.mediapicker.Image.ImagePicker
 import zelgius.com.myrecipes.MainActivity
 import zelgius.com.myrecipes.NoticeDialogListener
@@ -40,7 +51,9 @@ import zelgius.com.myrecipes.dialogs.StepDialogFragment
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.AnimationUtils
 import zelgius.com.myrecipes.utils.colorSecondary
+import java.lang.Exception
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 
 /**
@@ -81,12 +94,36 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         ViewModelProviders.of(context).get(RecipeViewModel::class.java)
     }
     private val adapter by lazy { RecipeExpandableAdapter(context, viewModel) }
-    private val headerWrapper by lazy { HeaderAdapterWrapper(context, viewModel) }
+    private val headerWrapper by lazy {
+        HeaderAdapterWrapper(
+            context,
+            viewModel
+        ) { /*startPostponedEnterTransition()*/ header.visibility = View.INVISIBLE }
+    }
 
     private var expandableItemManager: RecyclerViewExpandableItemManager? = null
     private lateinit var dragDropManager: RecyclerViewDragDropManager
     private lateinit var touchActionGuardManager: RecyclerViewTouchActionGuardManager
+    private lateinit var  swipeManager: RecyclerViewSwipeManager
+
     private lateinit var navController: NavController
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (arguments?.getBoolean("ADD") != true) {
+            sharedElementEnterTransition =
+                TransitionInflater.from(context).inflateTransition(android.R.transition.move)
+            sharedElementReturnTransition =
+                TransitionInflater.from(context).inflateTransition(android.R.transition.move)
+
+            /*postponeEnterTransition()*/
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            popFragment()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -101,16 +138,31 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
 
-        val args = arguments
-        viewModel.createDummySample() // TODO need to be removed
+        imageView.transitionName = "imageView${arguments?.getLong("ID")?:""}"
+        editName.transitionName = "name${arguments?.getLong("ID")?:""}"
+        editCategory.transitionName = "category${arguments?.getLong("ID")?:""}"
 
-        if (ViewCompat.isAttachedToWindow(view)) {
-            ViewAnimationUtils.createCircularReveal(
-                view, (fab.x + fab.width / 2).roundToInt(),
-                (fab.y + fab.height / 2).roundToInt(),
-                view.width.toFloat(),
-                view.height.toFloat()
-            )
+        val args = arguments
+        //viewModel.createDummySample() // TODO need to be removed
+
+        if (arguments?.getBoolean("ADD") == true && ViewCompat.isAttachedToWindow(view)) {
+            view.doOnPreDraw {
+                val (width, height) = arrayOf(
+                    rootLayout.width.toFloat(),
+                    rootLayout.width.toFloat()
+                )
+                val finalRadius = sqrt((width * width + height * height).toDouble()).toFloat()
+
+                ViewAnimationUtils.createCircularReveal(
+                    rootLayout, (fab.x + fab.width / 2).roundToInt(),
+                    (fab.y + fab.height / 2).roundToInt(),
+                    0f,
+                    finalRadius
+                ).apply {
+                    duration = 200L
+                    start()
+                }
+            }
         }
 
         fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
@@ -124,10 +176,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         vectorAnimation =
             AnimatedVectorDrawableCompat.create(context, R.drawable.av_add_list_to_add)
 
-
-
         viewModel.selectedRecipe.value =
             arguments?.getParcelable("RECIPE") ?: Recipe(Recipe.Type.MEAL)
+        viewModel.selectedImageUrl.value = viewModel.selectedRecipe.value?.imageURL?.toUri()
+
         viewModel.editMode.value = true
 
         fab.setImageResource(R.drawable.ic_playlist_plus)
@@ -143,6 +195,13 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
 
             headerWrapper.recipe = it
             headerWrapper.notifyDataSetChanged()
+        })
+
+        viewModel.selectedImageUrl.observe(this, Observer {
+            if(it != null && it.toString().isNotEmpty()) {
+                imageView.setPadding(0, 0, 0, 0)
+                imageView.setImageURI(it)
+            }
         })
 
         //region RecyclerView Config
@@ -171,11 +230,16 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
             ) as NinePatchDrawable?
         )*/
 
+        swipeManager = RecyclerViewSwipeManager()
+
+        //The order here is important
         var itemAdapter = expandableItemManager?.createWrappedAdapter(adapter)
-        itemAdapter = dragDropManager.createWrappedAdapter(itemAdapter!!)
+        itemAdapter = swipeManager.createWrappedAdapter(itemAdapter!!)
+        itemAdapter = dragDropManager.createWrappedAdapter(itemAdapter)
         itemAdapter = headerWrapper.setAdapter(itemAdapter)
 
         touchActionGuardManager.attachRecyclerView(list)
+        swipeManager.attachRecyclerView(list)
         dragDropManager.attachRecyclerView(list)
         expandableItemManager?.attachRecyclerView(list)
 
@@ -267,44 +331,70 @@ class RecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
         return when (item.itemId) {
             android.R.id.home -> {
                 //endActivity()
-                navController.popBackStack()
+                //navController.popBackStack()
 
-                val args = arguments
-                if (args?.containsKey(AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS) == true)
-                    AnimationUtils
-                        .exitCircularRevealAnimation(
-                            context,
-                            view!!,
-                            args.getParcelable(AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS)!!,
-                            Color.WHITE,
-                            context.colorSecondary
-                        ) {
-                            fragmentManager?.beginTransaction()?.remove(this)
-                                ?.commitAllowingStateLoss()
-                        }
+                popFragment()
                 true
             }
 
             R.id.save -> {
                 val recipe = viewModel.currentRecipe
                 headerWrapper.complete(recipe)
-                recipe.imageURL = viewModel.selectedImageUrl.value?.encodedPath ?: ""
+                recipe.imageURL = viewModel.selectedImageUrl.value?.toString() ?: ""
                 adapter.complete(recipe)
                 viewModel.currentRecipe = recipe // not really usefull, just there in case
                 viewModel.saveCurrentRecipe().observe(this, Observer {
-                    if (it) {
-                        Snackbar.make(
-                            (activity as MainActivity).coordinator,
-                            R.string.recipe_saved,
-                            Snackbar.LENGTH_SHORT
-                        ).show()
-                        navController.popBackStack()
-                    }
+                    Snackbar.make(
+                        (activity as MainActivity).coordinator,
+                        R.string.recipe_saved,
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                    navController.popBackStack()
                 })
 
                 true
             }
             else -> super.onOptionsItemSelected(item)
+
+        }
+    }
+
+    private fun popFragment() {
+
+        if(arguments?.getBoolean("ADD") == true) {
+            val (width, height) = arrayOf(rootLayout.width.toFloat(), rootLayout.width.toFloat())
+            val initialRadius = sqrt((width * width + height * height).toDouble()).toFloat()
+            ViewAnimationUtils.createCircularReveal(
+                rootLayout,
+                (fab.x + fab.width / 2).roundToInt(),
+                (fab.y + fab.height / 2).roundToInt(),
+                initialRadius,
+                0f
+
+            ).apply {
+                duration = 100L
+                start()
+                addListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(p0: Animator?) {
+
+                    }
+
+                    override fun onAnimationEnd(p0: Animator?) {
+                        rootLayout.visibility = View.INVISIBLE
+                        navController.popBackStack()
+                    }
+
+                    override fun onAnimationCancel(p0: Animator?) {
+                    }
+
+                    override fun onAnimationStart(p0: Animator?) {
+                    }
+
+                })
+
+            }
+        } else {
+            navController.popBackStack()
 
         }
     }

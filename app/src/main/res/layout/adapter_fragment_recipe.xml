@@ -8,55 +8,109 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        app:cardBackgroundColor="@color/md_blue_50"
+        android:clickable="true"
         app:cardCornerRadius="0dp"
         app:cardElevation="2dp"
+        app:rippleColor="@color/md_blue_500"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_height="150dp">
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/behindView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/md_blue_100"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent">
 
-        <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:scaleType="centerInside"
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/delete"
+                style="@style/Widget.MyRecipes.ImageButton.OutlinedButton"
+                android:layout_width="80dp"
+                android:layout_height="0dp"
+                android:backgroundTint="@color/md_red_400"
+                android:paddingStart="28dp"
+                android:paddingRight="24dp"
+                app:icon="@drawable/ic_delete_24dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="w,1:1"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/edit"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_image_24dp" />
+                app:layout_constraintVertical_bias="0.0"
+                app:rippleColor="@color/md_white_1000" />
 
-        <TextView
-                android:id="@+id/name"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:hint="@string/name"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
-                app:boxBackgroundColor="@color/md_blue_50"
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/edit"
+                style="@style/Widget.MyRecipes.ImageButton.OutlinedButton"
+                android:layout_width="80dp"
+                android:layout_height="0dp"
+                android:backgroundTint="@color/md_blue_400"
+                android:paddingStart="28dp"
+                android:paddingEnd="24dp"
+                app:icon="@drawable/ic_mode_edit_24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
-                app:layout_constraintTop_toBottomOf="@+id/category" />
-
-        <TextView
-                android:id="@+id/category"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:listitem="@layout/adapter_text_category" />
-
+                app:layout_constraintVertical_bias="0.0"
+                app:rippleColor="@color/md_white_1000" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <FrameLayout
+            android:id="@+id/contentView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/md_blue_50"
+            tools:visibility="visible">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <ImageView
+                    android:id="@+id/imageView"
+                    android:transitionName="imageView"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerInside"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintDimensionRatio="w,1:1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_image_24dp" />
+
+            <TextView
+                    android:id="@+id/name"
+                    android:transitionName="name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:hint="@string/name"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+                    app:boxBackgroundColor="@color/md_blue_50"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/imageView"
+                    app:layout_constraintTop_toBottomOf="@+id/category" />
+
+            <TextView
+                    android:id="@+id/category"
+                    android:transitionName="category"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/imageView"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:listitem="@layout/adapter_text_category" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

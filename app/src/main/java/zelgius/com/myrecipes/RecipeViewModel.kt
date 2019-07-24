@@ -20,9 +20,25 @@ import zelgius.com.myrecipes.repository.IngredientRepository
 import zelgius.com.myrecipes.repository.RecipeRepository
 import zelgius.com.myrecipes.repository.StepRepository
 import java.io.File
+import android.graphics.BitmapFactory
+import android.R.attr.bitmap
+import android.os.Environment
+import android.os.FileUtils
+import android.util.Log
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import zelgius.com.myrecipes.repository.AppDatabase
+import zelgius.com.myrecipes.worker.DownloadImageWorker
+import java.io.FileOutputStream
+import java.net.URL
 
+val TAG = RecipeViewModel::class.simpleName
 
-class RecipeViewModel(application: Application) : AndroidViewModel(application) {
+class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
     //protocol buffer
     var user: FirebaseUser? = null
@@ -31,14 +47,14 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
             connectedUser.value = value
         }
 
-    private val recipeRepository = RecipeRepository(application)
-    private val ingredientRepository = IngredientRepository(application)
-    private val stepRepository = StepRepository(application)
+    private val recipeRepository = RecipeRepository(app)
+    private val ingredientRepository = IngredientRepository(app)
+    private val stepRepository = StepRepository(app)
 
     val connectedUser = MutableLiveData<FirebaseUser?>()
     val selectedRecipe = MutableLiveData<Recipe>()
     val editMode = MutableLiveData<Boolean>()
-    val selectedImageUrl = MutableLiveData<Uri>()
+    val selectedImageUrl = MutableLiveData<Uri?>()
 
     var currentRecipe: Recipe = Recipe()
 
@@ -74,38 +90,73 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun saveCurrentRecipe(): LiveData<Boolean>{
-        val done = MutableLiveData(false)
+    fun saveCurrentRecipe(): LiveData<Recipe> =
+        saveRecipe(currentRecipe)
 
-        val recipe = currentRecipe // thread safe assignement
-        viewModelScope.launch {
-            if(recipe.id == null)
-                recipe.id = recipeRepository.insert(recipe)
-            else
-                recipeRepository.update(recipe)
+    fun saveRecipe(recipe: Recipe): LiveData<Recipe> {
+        val done = MutableLiveData<Recipe>()
 
-            recipe.steps.forEach {
-                it.refRecipe = currentRecipe.id
-                it.id = stepRepository.insert(it)
+        runInTransaction {
+            viewModelScope.launch {
+                if (recipe.id == null)
+                    recipe.id = recipeRepository.insert(recipe)
+                else
+                    recipeRepository.update(recipe)
+
+                recipe.steps.forEach {
+                    it.refRecipe = currentRecipe.id
+
+                    if (it.id == null)
+                        it.id = stepRepository.insert(it)
+                    else stepRepository.update(it)
+                }
+
+                recipe.ingredients.forEach {
+                    it.refRecipe = currentRecipe.id
+                    it.refStep = it.step?.id
+
+                    if (it.id == null)
+                        it.id = ingredientRepository.insert(it, recipe)
+                    else
+                        ingredientRepository.update(it)
+                }
+
+                ingredientRepository.deleteAllButThem(recipe, recipe.ingredients)
+                stepRepository.deleteAllButThem(recipe, recipe.steps)
+
+                done.value = recipe
+
+                val worker = OneTimeWorkRequestBuilder<DownloadImageWorker>()
+                    .setInputData(
+                        Data.Builder()
+                            .putString("URL", recipe.imageURL)
+                            .putLong("ID", recipe.id ?: 0L)
+                            .build()
+                    )
+                    .setConstraints(Constraints.NONE)
+                    .build()
+
+                WorkManager
+                    .getInstance()
+                    .enqueue(worker)
             }
-
-            recipe.ingredients.forEach {
-                it.refRecipe = currentRecipe.id
-                it.id = ingredientRepository.insert(it, recipe)
-            }
-
-            done.postValue(true)
         }
 
         return done
     }
 
     fun loadRecipe(id: Long): LiveData<Recipe?> {
-        val done = MutableLiveData<Recipe>()
+        val done = MutableLiveData<Recipe?>()
 
         viewModelScope.launch {
-            currentRecipe = recipeRepository.getFull(id)
-            done.value = currentRecipe
+
+            recipeRepository.getFull(id).apply {
+                if (this != null)
+                    selectedRecipe.value = this
+
+                selectedImageUrl.value = this?.imageURL?.toUri()
+                done.value = this
+            }
         }
 
         return done
@@ -127,11 +178,39 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
         return done
     }
 
+    fun delete(recipe: Recipe): LiveData<Boolean> {
+        val result = MutableLiveData<Boolean>()
+
+        viewModelScope.launch {
+            ingredientRepository.delete(recipe)
+
+            stepRepository.delete(recipe)
+
+            recipeRepository.delete(recipe)
+
+            result.value = true
+
+            File(app.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${recipe.id}").delete()
+        }
+
+        return result
+    }
+
+    private fun runInTransaction(runner: () -> Unit) {
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                AppDatabase.getInstance(app).runInTransaction(runner)
+            }
+        }
+    }
+
     @TestOnly
     fun createDummySample() {
 
         currentRecipe = Recipe().apply {
             name = "Recipe For Testing"
+            imageURL =
+                "https://img.huffingtonpost.com/asset/5c92b00222000033001b332d.jpeg?ops=scalefit_630_noupscale"
             ingredients.add(
                 IngredientForRecipe(
                     null,

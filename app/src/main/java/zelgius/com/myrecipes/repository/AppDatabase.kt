@@ -14,7 +14,7 @@ import zelgius.com.myrecipes.repository.dao.StepDao
 @Database(
     entities = [Ingredient::class, Recipe::class, Step::class, RecipeIngredient::class],
     views = [IngredientForRecipe::class],
-    version = 1
+    version = 2
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -31,7 +31,9 @@ abstract class AppDatabase : RoomDatabase() {
                     Room.databaseBuilder(
                         context,
                         AppDatabase::class.java, "database"
-                    ).addCallback(object : Callback(){
+                    )
+                        .fallbackToDestructiveMigration()
+                        .addCallback(object : Callback(){
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
                             
@@ -40,33 +42,25 @@ abstract class AppDatabase : RoomDatabase() {
                                 put("image_url", "drawable://egg")
                             })
 
-                            
-                            
                             db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
                                 put("name", context.getString(R.string.flour_name))
                                 put("image_url", "drawable://flour")
                             })
-                            
-                            
+
                             db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
                                 put("name", context.getString(R.string.butter_name))
                                 put("image_url", "drawable://butter")
                             })
-
-
 
                             db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
                                 put("name", context.getString(R.string.sugar_name))
                                 put("image_url", "drawable://sugar")
                             })
 
-                            
-                            
                             db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
                                 put("name", context.getString(R.string.water_name))
                                 put("image_url", "drawable://water")
                             })
-
 
                             db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
                                 put("name", context.getString(R.string.milk_name))

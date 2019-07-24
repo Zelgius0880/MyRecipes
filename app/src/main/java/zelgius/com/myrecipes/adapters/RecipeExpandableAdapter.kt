@@ -1,18 +1,10 @@
 package zelgius.com.myrecipes.adapters
 
 import android.content.Context
-import android.graphics.drawable.AnimatedVectorDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
@@ -20,34 +12,34 @@ import com.amulyakhare.textdrawable.TextDrawable
 import com.google.android.material.card.MaterialCardView
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager
-import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableDraggableItemAdapter
-import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableItemState
-import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableItemViewHolder
-import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
-import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableItemViewHolder
+import com.h6ah4i.android.widget.advrecyclerview.expandable.*
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants.*
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultAction
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultActionDefault
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultActionMoveToSwipedDirection
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultActionRemoveItem
+import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeableItemViewHolder
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemAdapter
-import com.squareup.picasso.Picasso
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.adapter_ingredient.view.*
 import kotlinx.android.synthetic.main.adapter_step.view.*
-import kotlinx.android.synthetic.main.layout_header.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.dialogs.ImageDialogFragment
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.utils.*
 import java.text.DecimalFormat
-import kotlin.math.exp
 import kotlin.math.min
+
 
 val TAG = RecipeExpandableAdapter::class.simpleName
 
-class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewModel) :
-    AbstractExpandableItemAdapter<RecipeExpandableAdapter.StepSectionViewHolder, AbstractDraggableItemViewHolder>(),
-    ExpandableDraggableItemAdapter<RecipeExpandableAdapter.StepSectionViewHolder, AbstractDraggableItemViewHolder> {
+class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) :
+    AbstractExpandableItemAdapter<RecipeExpandableAdapter.StepSectionViewHolder, AbstractDraggableSwipeableItemViewHolder>(),
+    ExpandableDraggableItemAdapter<RecipeExpandableAdapter.StepSectionViewHolder, AbstractDraggableSwipeableItemViewHolder>,
+    ExpandableSwipeableItemAdapter<RecipeExpandableAdapter.StepSectionViewHolder, AbstractDraggableSwipeableItemViewHolder> {
 
     private lateinit var recyclerView: RecyclerView
     lateinit var layoutManager: LinearLayoutManager
@@ -56,6 +48,11 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
     var dragDropManager: RecyclerViewDragDropManager? = null
 
     var recipe = viewModel.currentRecipe
+        set(value) {
+            field = value
+            createProvider()
+        }
+
     var draggingStep: Step? = null
 
     init {
@@ -68,7 +65,12 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
 
         list.add(StepItem(0, null) to recipe.ingredients
             .filter { it.step == null }
-            .mapIndexed { i, item -> IngredientItem(item.id ?: i.toLong(), item) as DataItem } // Flagged as 'No cast needed' but actually needed
+            .mapIndexed { i, item ->
+                IngredientItem(
+                    item.id ?: i.toLong(),
+                    item
+                ) as DataItem
+            } // Flagged as 'No cast needed' but actually needed
             .toMutableList())
 
         recipe.steps.forEachIndexed { i, s ->
@@ -108,15 +110,15 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
     var editIngredientListener: ((IngredientForRecipe) -> Unit)? = null
 
     fun complete(recipe: Recipe) {
-        for(i in 0 until provider.groupCount){
+        for (i in 0 until provider.groupCount) {
             provider.getGroupItem(i).item?.let {
                 it.order = i
                 recipe.steps.add(it)
             }
 
-            for(j in 0 until provider.getChildCount(i)){
-                val item = provider.getChildItem(i,j)
-                if(item is IngredientItem){
+            for (j in 0 until provider.getChildCount(i)) {
+                val item = provider.getChildItem(i, j)
+                if (item is IngredientItem) {
 
                     item.item.let {
                         it.sortOrder = j
@@ -128,9 +130,9 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
         }
     }
 
-        //region ViewHolder
+    //region ViewHolder
     inner class IngredientViewHolder(override val containerView: View) :
-        AbstractDraggableItemViewHolder(containerView),
+        AbstractDraggableSwipeableItemViewHolder(containerView),
         ExpandableItemViewHolder, LayoutContainer {
 
         private val mExpandState = ExpandableItemState()
@@ -142,17 +144,20 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             mExpandState.flags = flags
         }
 
+        override fun getSwipeableContainerView(): View = itemView.containerIngredient
+
         fun bind(parentPosition: Int, childPosition: Int) {
+            val dragState = dragState
+            if (itemView is MaterialCardView) itemView.isDragged =
+                dragState.isActive && dragState.isUpdated
+
             val item = (provider.getChildItem(parentPosition, childPosition) as IngredientItem).item
 
             if (itemView is MaterialCardView) {
                 itemView.cardElevation = itemView.context.dpToPx(2f)
                 itemView.setCardBackgroundColor(
                     if (item.step == draggingStep && draggingStep != null)
-                        context.getColor(
-                            R.color.secondaryColor,
-                            0.7f
-                        )
+                        context.getColor(R.color.md_orange_200)
                     /*else if (item.step == null)
                         context.getColor(R.color.md_white_1000)*/
                     else
@@ -197,17 +202,12 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             }
             UiUtils.getIngredientDrawable(itemView.image, item)
 
-            itemView.deleteIngredient.setOnClickListener {
-                recipe.ingredients.remove(item)
-                remove(item)
-            }
-
             itemView.setOnClickListener { editIngredientListener?.invoke(item) }
         }
     }
 
     inner class StepSectionViewHolder(override val containerView: View) :
-        AbstractDraggableItemViewHolder(containerView),
+        AbstractDraggableSwipeableItemViewHolder(containerView),
         ExpandableItemViewHolder, LayoutContainer {
 
         private val mExpandState = ExpandableItemState()
@@ -219,6 +219,8 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             mExpandState.flags = flags
         }
 
+        override fun getSwipeableContainerView(): View = itemView.containerStep
+
 
         private val upToDown =
             AnimatedVectorDrawableCompat.create(context, R.drawable.avd_up_to_down)
@@ -226,6 +228,10 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             AnimatedVectorDrawableCompat.create(context, R.drawable.avd_down_to_up)
 
         fun bind(position: Int) {
+            val dragState = dragState
+            if (itemView is MaterialCardView) itemView.isDragged =
+                dragState.isActive && dragState.isUpdated
+
             val item = provider.getGroupItem(position).item
             itemView.setOnClickListener { }
             itemView.expand.visibility = View.VISIBLE
@@ -233,19 +239,19 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             itemView.step.text = item?.text ?: context.getString(R.string.ingredients)
 
             //Visibility for dragging
-            if (item == draggingStep && draggingStep != null) {
-                itemView.step.visibility = View.VISIBLE
-                itemView.deleteStep.visibility = View.GONE
-                itemView.expand.visibility = View.GONE
-                itemView.stepImage.visibility = View.VISIBLE
-            } else {
-                // Visibility for expand
-                with(if (expandState.isExpanded || item == null) View.GONE else View.VISIBLE) {
-                    itemView.step.visibility = this
-                    itemView.deleteStep.visibility = this
-                    itemView.stepImage.visibility = this
+            if (!swipeState.isSwiping) {
+                if (item == draggingStep && draggingStep != null) {
+                    itemView.step.visibility = View.VISIBLE
+                    itemView.expand.visibility = View.GONE
+                    itemView.stepImage.visibility = View.VISIBLE
+                } else {
+                    // Visibility for expand
+                    with(if (expandState.isExpanded || item == null) View.GONE else View.VISIBLE) {
+                        itemView.step.visibility = this
+                        itemView.stepImage.visibility = this
+                    }
+                    itemView.expand.visibility = View.VISIBLE
                 }
-                itemView.expand.visibility = View.VISIBLE
             }
 
             //Visibility for first group (Ingredients)
@@ -256,10 +262,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
 
             (itemView as MaterialCardView).setCardBackgroundColor(
                 if (item == draggingStep && draggingStep != null)
-                    context.getColor(
-                        R.color.secondaryColor,
-                        0.7f
-                    )
+                    context.getColor(R.color.md_deep_orange_200)
                 /*else if (item == null)
                     context.getColor(R.color.md_white_1000)*/
                 else
@@ -299,7 +302,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
     }
 
     open inner class StepViewHolder(override val containerView: View) :
-        AbstractDraggableItemViewHolder(containerView),
+        AbstractDraggableSwipeableItemViewHolder(containerView),
         ExpandableItemViewHolder, LayoutContainer {
         private val mExpandState = ExpandableItemState()
         override fun getExpandState(): ExpandableItemState = mExpandState
@@ -310,7 +313,13 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             mExpandState.flags = flags
         }
 
+        override fun getSwipeableContainerView(): View = itemView.containerStep
+
         fun bind(groupPosition: Int, childPosition: Int) {
+            val dragState = dragState
+            if (itemView is MaterialCardView) itemView.isDragged =
+                dragState.isActive && dragState.isUpdated
+
             val item = (provider.getChildItem(groupPosition, childPosition) as StepItem).item
 
             if (item == null) {
@@ -321,16 +330,10 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             itemView.step.text = item.text
 
             (itemView as MaterialCardView).setCardBackgroundColor(
-                if (item == draggingStep && draggingStep != null) context.getColor(
-                    R.color.secondaryColor,
-                    0.7f
-                ) else context.getColor(R.color.md_blue_50)
+                if (item == draggingStep && draggingStep != null)
+                    context.getColor(R.color.md_orange_200)
+                else context.getColor(R.color.md_blue_50)
             )
-
-            itemView.deleteStep.setOnClickListener {
-                recipe.steps.remove(item)
-                remove(item)
-            }
 
             itemView.stepImage.setImageDrawable(
                 TextDrawable.builder()
@@ -349,15 +352,15 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
             itemView.setOnClickListener { editStepListener?.invoke(item) }
 
             //Visibility for dragging
-            if (item == draggingStep && draggingStep != null) {
-                itemView.step.visibility = View.GONE
-                itemView.deleteStep.visibility = View.GONE
-                itemView.stepImage.visibility = View.GONE
-            } else {
-                // Visibility for expand
-                itemView.step.visibility = View.VISIBLE
-                itemView.deleteStep.visibility = View.VISIBLE
-                itemView.stepImage.visibility = View.VISIBLE
+            if (!swipeState.isSwiping) {
+                if (item == draggingStep && draggingStep != null) {
+                    itemView.step.visibility = View.GONE
+                    itemView.stepImage.visibility = View.GONE
+                } else {
+                    // Visibility for expand
+                    itemView.step.visibility = View.VISIBLE
+                    itemView.stepImage.visibility = View.VISIBLE
+                }
             }
         }
     }
@@ -379,7 +382,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
     override fun onCreateChildViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): AbstractDraggableItemViewHolder =
+    ): AbstractDraggableSwipeableItemViewHolder =
         if (viewType == R.layout.adapter_ingredient)
             IngredientViewHolder(
                 LayoutInflater.from(parent.context).inflate(
@@ -412,7 +415,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
 
 
     override fun onBindChildViewHolder(
-        holder: AbstractDraggableItemViewHolder,
+        holder: AbstractDraggableSwipeableItemViewHolder,
         groupPosition: Int,
         childPosition: Int,
         viewType: Int
@@ -439,14 +442,18 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
         val i = provider.list.indexOfLast { item.step == it.first.item }
         if (i >= 0) {
             item.sortOrder =
-                if (provider.getChildItem(i, provider.getChildCount(i) - 1) is StepItem)
+                if (provider.getChildCount(i) > 0 && provider.getChildItem(
+                        i,
+                        provider.getChildCount(i) - 1
+                    ) is StepItem
+                )
                     provider.getChildCount(i) - 1
                 else
                     provider.getChildCount(i)
 
             provider.addChildItem(
                 i,
-                item.sortOrder ,
+                item.sortOrder,
                 IngredientItem(item.sortOrder.toLong(), item)
             )
             expandableItemManager?.notifyChildItemInserted(i, item.sortOrder)
@@ -564,7 +571,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
         y: Int,
         expand: Boolean
     ): Boolean {
-        /*if (provider.getGroupItem(groupPosition).isPinned()) {
+        /*if (provider.getGroupItem(groupPosition).isPinned) {
             // return false to raise View.OnClickListener#onClick() event
             return false;
         }
@@ -594,7 +601,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
     ): Boolean = provider.getGroupItem(groupPosition).item != null
 
     override fun onCheckChildCanStartDrag(
-        holder: AbstractDraggableItemViewHolder,
+        holder: AbstractDraggableSwipeableItemViewHolder,
         groupPosition: Int,
         childPosition: Int,
         x: Int,
@@ -625,7 +632,7 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
 
 
     override fun onGetChildItemDraggableRange(
-        holder: AbstractDraggableItemViewHolder,
+        holder: AbstractDraggableSwipeableItemViewHolder,
         groupPosition: Int,
         childPosition: Int
     ): ItemDraggableRange? = null
@@ -658,6 +665,145 @@ class RecipeExpandableAdapter(val context: Context, val viewModel: RecipeViewMod
         notifyDataSetChanged()
     }
 
+
 //endregion
 
+    //region Swipe
+
+    override fun onSetGroupItemSwipeBackground(
+        holder: StepSectionViewHolder,
+        groupPosition: Int,
+        type: Int
+    ) {
+        //nothing to do here
+    }
+
+    override fun onSwipeGroupItem(
+        holder: StepSectionViewHolder,
+        groupPosition: Int,
+        result: Int
+    ): SwipeResultAction? =
+        when (result) {
+            // swipe right
+            RESULT_SWIPED_RIGHT, RESULT_SWIPED_LEFT ->
+                GroupSwipeRightResultAction(this, groupPosition)
+            else -> null
+        }
+
+    override fun onSwipeGroupItemStarted(holder: StepSectionViewHolder, groupPosition: Int) {
+        draggingStep = provider.getGroupItem(groupPosition).item
+        notifyDataSetChanged()
+    }
+
+    override fun onGetGroupItemSwipeReactionType(
+        holder: StepSectionViewHolder,
+        groupPosition: Int,
+        x: Int,
+        y: Int
+    ): Int {
+        if (!onCheckGroupCanStartDrag(holder, groupPosition, x, y)) {
+            return REACTION_CAN_NOT_SWIPE_BOTH_H
+        }
+
+        return REACTION_CAN_SWIPE_BOTH_H
+    }
+
+    override fun onGetChildItemSwipeReactionType(
+        holder: AbstractDraggableSwipeableItemViewHolder,
+        groupPosition: Int,
+        childPosition: Int,
+        x: Int,
+        y: Int
+    ): Int {
+        if (!onCheckChildCanStartDrag(holder, groupPosition, childPosition, x, y)) {
+            return REACTION_CAN_NOT_SWIPE_BOTH_H
+        }
+
+        return REACTION_CAN_SWIPE_BOTH_H
+    }
+
+    override fun onSetChildItemSwipeBackground(
+        holder: AbstractDraggableSwipeableItemViewHolder,
+        groupPosition: Int,
+        childPosition: Int,
+        type: Int
+    ) {
+        // Nothing to change here
+    }
+
+    override fun onSwipeChildItemStarted(
+        holder: AbstractDraggableSwipeableItemViewHolder,
+        groupPosition: Int,
+        childPosition: Int
+    ) {
+        //notifyDataSetChanged()
+    }
+
+    override fun onSwipeChildItem(
+        holder: AbstractDraggableSwipeableItemViewHolder,
+        groupPosition: Int,
+        childPosition: Int,
+        result: Int
+    ): SwipeResultAction? {
+        draggingStep = null
+        return when (result) {
+            // swipe right
+            RESULT_SWIPED_RIGHT, RESULT_SWIPED_LEFT ->
+                ChildSwipeRightResultAction(this, groupPosition, childPosition)
+            else -> null
+        }
+    }
+
+
+    private class ChildSwipeRightResultAction(
+        private var adapter: RecipeExpandableAdapter?,
+        private val groupPosition: Int,
+        private val childPosition: Int
+    ) : SwipeResultActionRemoveItem() {
+
+        override fun onPerformAction() {
+            super.onPerformAction()
+
+            /*adapter?.provider?.removeChildItem(groupPosition, childPosition)
+            adapter?.expandableItemManager?.notifyChildItemRemoved(groupPosition, childPosition)*/
+
+            val item = adapter?.provider?.getChildItem(groupPosition, childPosition)
+            if (item is IngredientItem) {
+                adapter?.recipe?.ingredients?.remove(item.item)
+                adapter?.remove(item.item)
+            }
+        }
+
+        override fun onCleanUp() {
+            super.onCleanUp()
+            // clear the references
+            adapter = null
+        }
+    }
+
+
+    private class GroupSwipeRightResultAction(
+        private var adapter: RecipeExpandableAdapter?,
+        private val groupPosition: Int
+    ) : SwipeResultActionRemoveItem() {
+
+        override fun onPerformAction() {
+            super.onPerformAction()
+
+            val item = adapter?.provider?.getGroupItem(groupPosition)
+            if (item is StepItem && item.item != null) {
+                adapter?.recipe?.steps?.remove(item.item)
+                adapter?.remove(item.item)
+            }
+        }
+
+        override fun onCleanUp() {
+            super.onCleanUp()
+            // clear the references
+            adapter = null
+        }
+    }
+
+
+//endregion
 }

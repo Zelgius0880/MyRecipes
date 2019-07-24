@@ -158,13 +158,13 @@ class MainActivity : AppCompatActivity() {
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (resultCode == Activity.RESULT_OK)
             when (requestCode) {
-                ImagePicker.IMAGE_PICKER_REQUEST_CODE -> {
+                /*ImagePicker.IMAGE_PICKER_REQUEST_CODE -> {
                     val paths = data?.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH)
 
                     if (!paths.isNullOrEmpty()) {
                         viewModel.selectedImageUrl.value = Uri.parse("file://${paths.first()}")
                     }
-                }
+                }*/
                 /*RC_SIGN_IN -> {
                     val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                     try {

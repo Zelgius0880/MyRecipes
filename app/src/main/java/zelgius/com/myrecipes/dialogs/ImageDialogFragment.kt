@@ -29,8 +29,9 @@ class ImageDialogFragment : DialogFragment() {
             if (s != null && URLUtil.isValidUrl(s.toString())) {
                 Picasso.get()
                     .load(s.toString())
-                    //.resize(50, 50)
-                    //.centerCrop()
+                    .resize(2048, 2048)
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_image_24dp)
                     .into(dialogView.imageView)
             }
         }

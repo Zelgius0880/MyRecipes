@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
@@ -20,8 +19,13 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.AnimationUtils
 import kotlin.math.roundToInt
+import android.content.ComponentName
+import android.widget.SearchView
+import zelgius.com.myrecipes.SearchResultsActivity
 
-class TabFragment : Fragment() {
+
+class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+
 
     private lateinit var navController: NavController
 
@@ -56,6 +60,7 @@ class TabFragment : Fragment() {
 
             navController.navigate(
                 R.id.action_tabFragment_to_recipeFragment, bundleOf(
+                    "ADD" to true,
                     AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS to
                             AnimationUtils.RevealAnimationSetting(
                                 (add.x + add.width / 2).roundToInt(),
@@ -82,7 +87,9 @@ class TabFragment : Fragment() {
         // Associate searchable configuration with the SearchView
         val searchManager = ctx.getSystemService(Context.SEARCH_SERVICE) as SearchManager
         (menu.findItem(R.id.search).actionView as SearchView).apply {
-            setSearchableInfo(searchManager.getSearchableInfo(activity!!.componentName))
+            setOnQueryTextListener(this@TabFragment)
+            setOnCloseListener(this@TabFragment)
+            //setSearchableInfo(searchManager.getSearchableInfo(ComponentName(ctx, SearchResultsActivity::class.java)))
         }
     }
 
@@ -107,13 +114,18 @@ class TabFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun onQueryTextSubmit(s: String?): Boolean {
+        return s != null && s.length > 3
+    }
 
-        when (requestCode) {
-        }
-    }*/
+    override fun onQueryTextChange(s: String?): Boolean {
+        return s != null && s.length > 3
+    }
 
+    override fun onClose(): Boolean {
+
+        return true
+    }
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to

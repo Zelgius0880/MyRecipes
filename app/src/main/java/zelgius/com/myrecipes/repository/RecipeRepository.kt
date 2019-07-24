@@ -12,9 +12,9 @@ class RecipeRepository(context: Context) {
     fun get() =
         database.recipeDao.getAll()
 
-    suspend fun getFull(id: Long): Recipe =
+    suspend fun getFull(id: Long): Recipe? =
         withContext(Dispatchers.Default) {
-            database.recipeDao.blockingGet(id).apply {
+            database.recipeDao.coroutineGet(id)?.apply {
                 steps.addAll(database.stepDao.blockingGet(id))
                 ingredients.addAll(database.ingredientDao.getForRecipe(id))
                 ingredients.forEach {
@@ -43,5 +43,10 @@ class RecipeRepository(context: Context) {
     suspend fun update(recipe: Recipe): Int =
          withContext(Dispatchers.Default) {
              database.recipeDao.update(recipe)
+         }
+
+    suspend fun delete(recipe: Recipe): Int =
+         withContext(Dispatchers.Default) {
+             database.recipeDao.delete(recipe)
          }
 }

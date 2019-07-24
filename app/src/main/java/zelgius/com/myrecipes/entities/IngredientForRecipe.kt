@@ -9,7 +9,7 @@ import androidx.room.Ignore
     """
     SELECT ri.quantity, ri.unit, ri.ref_recipe AS refRecipe, ri.ref_step AS refStep, ri.sort_order AS sortOrder,
      i.name, i.id, i.image_url AS imageUrl FROM RecipeIngredient ri
-        INNER JOIN Ingredient i ON i.id = ri.ref_recipe
+        INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
         """
 )
 data class IngredientForRecipe(

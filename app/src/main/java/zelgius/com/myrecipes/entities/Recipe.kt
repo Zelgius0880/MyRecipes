@@ -47,6 +47,9 @@ data class Recipe (
     val image: File? = null
 
     @Ignore
+    var isPinned: Boolean = false
+
+    @Ignore
     constructor(parcel: Parcel) : this(
         parcel.readLong().let { if(it >= 0) it else null},
         parcel.readString()!!,
