@@ -5,13 +5,10 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Step
 
 class GroupDividerDecoration(
     context: Context,
@@ -37,10 +34,10 @@ class GroupDividerDecoration(
             val viewType = parent.adapter!!.getItemViewType(position)
 
 
-            if (viewType == R.layout.layout_header) {
+            if (viewType == R.layout.layout_header_edit) {
                 //outRect.set(0, 0, 0, mHeightDp)
             } else {
-                val previousViewType = if (position > 0) parent.adapter!!.getItemViewType(position - 1) else 0
+                //val previousViewType = if (position > 0) parent.adapter!!.getItemViewType(position - 1) else 0
 
                 if (viewType < 0) { // if < 0, it is a section
                     outRect.set(0, mHeightDp, 0, 0)
@@ -55,10 +52,10 @@ class GroupDividerDecoration(
         for (i in 0 until parent.childCount) {
             val view = parent.getChildAt(i)
             val position = parent.getChildAdapterPosition(view)
-            if (position >= 0) {
+            if (position >= 0 && parent.adapter != null) {
 
                 val viewType = parent.adapter!!.getItemViewType(position)
-                val previousViewType = if (position > 0) parent.adapter!!.getItemViewType(position - 1) else 0
+                //val previousViewType = if (position > 0) parent.adapter!!.getItemViewType(position - 1) else 0
 
                 if (viewType < 0) { // if < 0, it is a section
                     c.drawRect(

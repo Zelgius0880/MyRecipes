@@ -31,7 +31,9 @@ abstract class AppDatabase : RoomDatabase() {
                     Room.databaseBuilder(
                         context,
                         AppDatabase::class.java, "database"
-                    )
+                    ).apply {
+                        if(test) allowMainThreadQueries()
+                    }
                         .fallbackToDestructiveMigration()
                         .addCallback(object : Callback(){
                         override fun onCreate(db: SupportSQLiteDatabase) {

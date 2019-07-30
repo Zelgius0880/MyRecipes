@@ -5,16 +5,22 @@ import android.content.res.Resources
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.LayerDrawable
+import android.os.Bundle
 import android.util.DisplayMetrics
-import android.widget.ImageView
+import android.view.View
+import android.widget.*
 import androidx.core.content.ContextCompat
 import com.amulyakhare.textdrawable.TextDrawable
+import com.google.android.material.textfield.TextInputLayout
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.adapter_ingredient.view.*
-import kotlinx.android.synthetic.main.layout_header.*
+import kotlinx.android.synthetic.main.layout_header_edit.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
+import zelgius.com.myrecipes.entities.Recipe
 import java.lang.IllegalStateException
+import java.util.*
 import kotlin.math.roundToInt
 
 
@@ -66,7 +72,7 @@ object UiUtils {
                     .bold()
                     .endConfig()
                     .buildRound(
-                    "${item.name.toUpperCase()[0]}",
+                    "${item.name.toUpperCase(Locale.getDefault())[0]}",
                     ContextCompat.getColor(imageView.context, R.color.md_blue_grey_700)
                 )
             )
@@ -116,4 +122,74 @@ object UiUtils {
 
         return output
     }
+
+
+    fun bindHeader(recipe: Recipe, viewHolder: HeaderViewHolder) {
+        val context = viewHolder.root.context
+
+        viewHolder.root.transitionName = "cardView${recipe.id}"
+        viewHolder.imageView.transitionName = "imageView${recipe.id}"
+        viewHolder.name.transitionName = "name${recipe.id}"
+        viewHolder.category.transitionName = "category${recipe.id}"
+
+
+        val category = when (recipe.type) {
+            Recipe.Type.MEAL -> context.getString(R.string.meal)
+            Recipe.Type.DESSERT -> context.getString(R.string.dessert)
+            Recipe.Type.OTHER -> context.getString(R.string.other)
+        }
+
+        with(viewHolder.category){
+            when(this){
+                is Spinner -> {
+                    val typeStringArray = context.resources.getStringArray(R.array.category_array)
+                    val spinnerArrayAdapter = ArrayAdapter(
+                        context, R.layout.adapter_text_category,
+                        typeStringArray
+                    ) //selected item will look like a spinner set from XML
+                    spinnerArrayAdapter.setDropDownViewResource(
+                        android.R.layout
+                            .simple_spinner_dropdown_item
+                    )
+                    adapter = spinnerArrayAdapter
+                    setSelection(typeStringArray.indexOf(category))
+                }
+                is TextView -> this.text = category
+            }
+        }
+
+        with(viewHolder.name){
+            when(this){
+                is TextInputLayout -> editText?.setText(recipe.name)
+                is TextView -> text = recipe.name
+                else -> error("should not be there")
+            }
+        }
+
+        if (!recipe.imageURL.isNullOrEmpty()) {
+            Picasso.get()
+                .load(recipe.imageURL)
+                .resize(2048, 2048)
+                .centerCrop()
+                .into(viewHolder.imageView)
+
+            viewHolder.imageView.setPadding(0, 0, 0, 0)
+        } else {
+            viewHolder.imageView.setImageResource(R.drawable.ic_dish)
+
+            context.let {
+                viewHolder.imageView.setPadding(
+                    it.dpToPx(8f).toInt(),
+                    it.dpToPx(8f).toInt(),
+                    it.dpToPx(8f).toInt(),
+                    it.dpToPx(8f).toInt()
+                )
+
+            }
+
+
+        }
+    }
+
+    class HeaderViewHolder(val root: View, val imageView: ImageView, val name: View, val category: View)
 }

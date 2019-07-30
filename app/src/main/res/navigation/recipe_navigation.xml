@@ -11,28 +11,35 @@
             tools:layout="@layout/fragment_tab"
             android:label="@string/recipe_list">
         <action
-                android:id="@+id/action_tabFragment_to_recipeActivity"
-                app:destination="@id/recipeActivity"
-                />
+                android:id="@+id/action_tabFragment_to_editRecipeFragment"
+                app:destination="@id/editRecipeFragment"
+                app:enterAnim="@anim/fade_in"
+                app:exitAnim="@anim/fade_out"
+                app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+                app:popExitAnim="@anim/nav_default_pop_exit_anim"
+                app:popUpTo="@+id/tabFragment" />
         <action
                 android:id="@+id/action_tabFragment_to_recipeFragment"
                 app:destination="@id/recipeFragment"
+                app:enterAnim="@anim/fade_in"
                 app:exitAnim="@anim/fade_out"
+                app:popEnterAnim="@anim/nav_default_pop_enter_anim"
                 app:popExitAnim="@anim/nav_default_pop_exit_anim"
                 app:popUpTo="@+id/tabFragment" />
     </fragment>
     <fragment
-            android:id="@+id/recipeFragment"
-            android:name="zelgius.com.myrecipes.fragments.RecipeFragment"
-            tools:layout="@layout/fragment_recipe"
+            android:id="@+id/editRecipeFragment"
+            android:name="zelgius.com.myrecipes.fragments.EditRecipeFragment"
+            tools:layout="@layout/fragment_recipe_edit"
             android:label="@string/new_recipe"/>
-    <activity
-            android:id="@+id/recipeActivity"
-            android:name="zelgius.com.myrecipes.RecipeActivity"
-            android:label="RecipeActivity"/>
     <fragment
             android:id="@+id/licenseFragment"
             android:name="zelgius.com.myrecipes.fragments.LicenseFragment"
             android:label="fragment_license"
             tools:layout="@layout/fragment_license"/>
+    <fragment
+            android:id="@+id/recipeFragment"
+            android:name="zelgius.com.myrecipes.fragments.RecipeFragment"
+            tools:layout="@layout/fragment_recipe"
+            android:label="RecipeFragment" />
 </navigation>

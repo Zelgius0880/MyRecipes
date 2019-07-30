@@ -45,6 +45,8 @@ interface RecipeDao {
     @Query("SELECT * FROM recipe ORDER BY name")
     fun pagedAll(): DataSource.Factory<Int, Recipe>
 
+    @Query("SELECT * FROM recipe WHERE name LIKE '%'||:name||'%' ORDER BY name")
+    fun pagedSearch(name: String): DataSource.Factory<Int, Recipe>
 
     @Query("SELECT * FROM recipe WHERE type = 'MEAL' ORDER BY name")
     fun pagedMeal(): DataSource.Factory<Int, Recipe>

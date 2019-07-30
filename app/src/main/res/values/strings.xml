@@ -79,4 +79,5 @@
     <string name="error_not_a_number">Please enter a correct number</string>
     <string name="enter_a_step">Enter a step</string>
     <string name="step_description">Step description</string>
+    <string name="all_ingredients">All ingredients</string>
 </resources>

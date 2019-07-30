@@ -13,7 +13,7 @@
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:context=".fragments.ListFragment"
-            tools:listitem="@layout/fragment_recipe"/>
+            tools:listitem="@layout/fragment_recipe_edit"/>
 
     <LinearLayout
             android:id="@+id/addIngredientLayout"

@@ -14,9 +14,10 @@ import com.h6ah4i.android.widget.advrecyclerview.headerfooter.AbstractHeaderFoot
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.main.layout_header.view.*
-import kotlinx.android.synthetic.main.layout_header.view.imageView
 import kotlinx.android.synthetic.main.layout_header_edit.view.*
+import kotlinx.android.synthetic.main.layout_header_edit.view.editCategory
+import kotlinx.android.synthetic.main.layout_header_edit.view.editName
+import kotlinx.android.synthetic.main.layout_header_edit.view.imageView
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.dialogs.ImageDialogFragment
@@ -25,8 +26,8 @@ import java.lang.Exception
 import java.lang.IllegalStateException
 
 
-class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel, private val bindListener: (()-> Unit)? = null) :
-    AbstractHeaderFooterWrapperAdapter<HeaderAdapterWrapper.HeaderViewHolder, RecyclerView.ViewHolder>() {
+class EditHeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel, private val bindListener: (()-> Unit)? = null) :
+    AbstractHeaderFooterWrapperAdapter<EditHeaderAdapterWrapper.HeaderViewHolder, RecyclerView.ViewHolder>() {
 
     var recipe: Recipe = viewModel.currentRecipe
     private val typeStringArray: Array<String> by lazy {
@@ -38,7 +39,7 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
     override fun onCreateHeaderItemViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder =
         HeaderViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                R.layout.layout_header,
+                R.layout.layout_header_edit,
                 parent,
                 false
             )
@@ -64,10 +65,40 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
             Recipe.Type.OTHER -> itemView.context.getString(R.string.other)
         }
 
+        itemView.editName.editText?.setText(recipe.name)
 
+        val spinnerArrayAdapter = ArrayAdapter(
+            context, R.layout.adapter_text_category,
+            typeStringArray
+        ) //selected item will look like a spinner set from XML
+        spinnerArrayAdapter.setDropDownViewResource(
+            android.R.layout
+                .simple_spinner_dropdown_item
+        )
+        itemView.editCategory.adapter = spinnerArrayAdapter
+        itemView.editCategory.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) {
 
-        itemView.name.text = recipe.name
-        itemView.category.text = category
+                }
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+
+                }
+            }
+        itemView.editCategory.setSelection(typeStringArray.indexOf(category))
+
+        itemView.editImage.setOnClickListener { _ ->
+            ImageDialogFragment().let {
+                if (context is AppCompatActivity)
+                    it.show(context.supportFragmentManager, "image_dialog")
+            }
+        }
 
         if (context is LifecycleOwner) {
             viewModel.selectedImageUrl.observe(context, Observer {
@@ -104,6 +135,15 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
     override fun getHeaderItemCount(): Int = 1
 
     override fun getFooterItemCount(): Int = 0
+
+    fun complete(recipe: Recipe) {
+        recipe.name = viewHolder?.itemView?.editName?.editText?.text?.toString()?:""
+        recipe.type = when(viewHolder?.itemView?.editCategory?.selectedItem as String) {
+            context.getString(R.string.meal) -> Recipe.Type.MEAL
+            context.getString(R.string.dessert) -> Recipe.Type.DESSERT
+            else -> Recipe.Type.OTHER
+        }
+    }
 
     inner class HeaderViewHolder(override val containerView: View) :
         RecyclerView.ViewHolder(containerView), LayoutContainer

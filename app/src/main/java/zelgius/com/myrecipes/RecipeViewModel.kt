@@ -3,10 +3,6 @@ package zelgius.com.myrecipes
 import android.app.Application
 import android.net.Uri
 import androidx.core.net.toUri
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.storage.FirebaseStorage
@@ -20,11 +16,10 @@ import zelgius.com.myrecipes.repository.IngredientRepository
 import zelgius.com.myrecipes.repository.RecipeRepository
 import zelgius.com.myrecipes.repository.StepRepository
 import java.io.File
-import android.graphics.BitmapFactory
-import android.R.attr.bitmap
 import android.os.Environment
-import android.os.FileUtils
-import android.util.Log
+import androidx.lifecycle.*
+import androidx.paging.PagedList
+import androidx.paging.toLiveData
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
@@ -33,8 +28,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import zelgius.com.myrecipes.repository.AppDatabase
 import zelgius.com.myrecipes.worker.DownloadImageWorker
-import java.io.FileOutputStream
-import java.net.URL
 
 val TAG = RecipeViewModel::class.simpleName
 
@@ -63,14 +56,21 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         LivePagedListBuilder(recipeRepository.pagedDessert(), /* page size  */ 20).build()
     val otherList = LivePagedListBuilder(recipeRepository.pagedOther(), /* page size  */ 20).build()
 
-    val storageRef by lazy { FirebaseStorage.getInstance().reference }
+    //val searchResult: MutableLiveData<>
+
+    //val storageRef by lazy { FirebaseStorage.getInstance().reference }
     val ingredients: LiveData<List<Ingredient>>
+
+    private val searchQuery = MutableLiveData<String>()
+    val searchResult = Transformations.switchMap(searchQuery) {
+        recipeRepository.pagedSearch(it).toLiveData(20)
+    }
 
     init {
         ingredients = ingredientRepository.get()
     }
 
-    fun uploadFile(recipe: Recipe, file: File, callback: (Boolean) -> Unit = {}) {
+    /*fun uploadFile(recipe: Recipe, file: File, callback: (Boolean) -> Unit = {}) {
         val ref = storageRef.child("images/${recipe.name}.png")
 
         val uploadTask = ref.putFile(file.toUri())
@@ -88,6 +88,12 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
             }
             callback(it.isSuccessful)
         }
+    }*/
+
+    fun search(query: String) : LiveData<PagedList<Recipe>>{
+        searchQuery.value = query
+
+        return searchResult
     }
 
     fun saveCurrentRecipe(): LiveData<Recipe> =

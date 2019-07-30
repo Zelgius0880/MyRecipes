@@ -8,6 +8,18 @@
             <LayoutPositions>
               <option name="myPositions">
                 <map>
+                  <entry key="editRecipeFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="licenseFragment">
                     <value>
                       <LayoutPositions>
@@ -20,25 +32,13 @@
                       </LayoutPositions>
                     </value>
                   </entry>
-                  <entry key="recipeActivity">
-                    <value>
-                      <LayoutPositions>
-                        <option name="myPosition">
-                          <Point>
-                            <option name="x" value="256" />
-                            <option name="y" value="368" />
-                          </Point>
-                        </option>
-                      </LayoutPositions>
-                    </value>
-                  </entry>
                   <entry key="recipeFragment">
                     <value>
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="12" />
-                            <option name="y" value="12" />
+                            <option name="x" value="306" />
+                            <option name="y" value="348" />
                           </Point>
                         </option>
                       </LayoutPositions>
@@ -55,7 +55,7 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_tabFragment_to_recipeActivity">
+                            <entry key="action_tabFragment_to_editRecipeFragment">
                               <value>
                                 <LayoutPositions />
                               </value>

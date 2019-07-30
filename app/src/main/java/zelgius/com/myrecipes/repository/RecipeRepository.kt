@@ -35,6 +35,9 @@ class RecipeRepository(context: Context) {
     fun pagedOther() =
         database.recipeDao.pagedOther()
 
+    fun pagedSearch(name: String) =
+        database.recipeDao.pagedSearch(name)
+
     suspend fun insert(recipe: Recipe): Long =
         withContext(Dispatchers.Default) {
             database.recipeDao.insert(recipe)

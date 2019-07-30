@@ -3,6 +3,7 @@ package zelgius.com.myrecipes
 import android.app.Application
 import android.os.Environment
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.paging.toLiveData
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Test
 
@@ -19,7 +20,10 @@ import zelgius.com.myrecipes.repository.observeOnce
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import com.facebook.stetho.Stetho
+import zelgius.com.myrecipes.repository.AppDatabase
+import zelgius.com.myrecipes.repository.RecipeRepository
 import java.io.File
+import kotlin.concurrent.thread
 
 
 @RunWith(MockitoJUnitRunner::class)
@@ -155,9 +159,13 @@ class RecipeViewModelTest {
 
                         Thread.sleep(5000)
 
-                       assertTrue(File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${it.id}")
-                            .exists()
-                       )
+                        assertTrue(
+                            File(
+                                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                                "${it.id}"
+                            )
+                                .exists()
+                        )
                     }
                 }
             }
@@ -191,5 +199,37 @@ class RecipeViewModelTest {
 
         latch.await(30, TimeUnit.SECONDS)
         assertTrue(latch.count == 0L)
+    }
+
+    @Test
+    fun search() {
+        var latch = CountDownLatch(1)
+        viewModel.createDummySample()
+
+
+        viewModel.saveRecipe(viewModel.currentRecipe).observeForever {
+            latch.countDown()
+        }
+
+        latch.await(30, TimeUnit.SECONDS)
+        assertTrue(latch.count == 0L)
+
+        latch = CountDownLatch(2)
+
+        viewModel.searchResult.observeForever{
+            assertTrue(it.size > 0)
+            latch.countDown()
+        }
+
+        viewModel.search("Test").observeForever{
+            assertTrue(it.size > 0)
+            latch.countDown()
+        }
+        latch.await(30, TimeUnit.SECONDS)
+        assertTrue(latch.count == 0L)
+
+
+
+
     }
 }

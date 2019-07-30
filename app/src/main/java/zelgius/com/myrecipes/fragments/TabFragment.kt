@@ -1,7 +1,5 @@
 package zelgius.com.myrecipes.fragments
 
-import android.app.SearchManager
-import android.content.Context
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -19,12 +17,11 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.AnimationUtils
 import kotlin.math.roundToInt
-import android.content.ComponentName
-import android.widget.SearchView
-import zelgius.com.myrecipes.SearchResultsActivity
+import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.Observer
 
 
-class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener{
 
 
     private lateinit var navController: NavController
@@ -34,13 +31,12 @@ class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnClo
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.fragment_tab, container, false).also {
         setHasOptionsMenu(true)
+        recyclerView = it.findViewById(R.id.searchList)
     }
 
-    private val adapter by lazy { SectionsPagerAdapter(childFragmentManager) }
+    private val pagerAdapter by lazy { SectionsPagerAdapter(childFragmentManager) }
 
     private var vectorAnimation: AnimatedVectorDrawableCompat? = null
-
-    private val ctx by lazy { activity!! }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -48,9 +44,13 @@ class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnClo
 
         //add.setImageResource(R.drawable.ic_add_24dp)
 
-        container.adapter = adapter
+        container.adapter = pagerAdapter
         tabs.setupWithViewPager(container)
         //container.isSaveFromParentEnabled = true
+
+        container.visibility = View.VISIBLE
+        tabs.visibility = View.VISIBLE
+        searchList.visibility = View.GONE
 
         vectorAnimation = AnimatedVectorDrawableCompat.create(ctx, R.drawable.av_add_to_add_list)
 
@@ -59,7 +59,7 @@ class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnClo
             vectorAnimation?.start()
 
             navController.navigate(
-                R.id.action_tabFragment_to_recipeFragment, bundleOf(
+                R.id.action_tabFragment_to_editRecipeFragment, bundleOf(
                     "ADD" to true,
                     AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS to
                             AnimationUtils.RevealAnimationSetting(
@@ -71,6 +71,10 @@ class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnClo
                 )
             )
         }
+
+        viewModel.searchResult.observe(this, Observer {
+            adapter.submitList(it)
+        })
     }
 
     override fun onResume() {
@@ -85,12 +89,12 @@ class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnClo
         inflater.inflate(R.menu.menu_main, menu)
 
         // Associate searchable configuration with the SearchView
-        val searchManager = ctx.getSystemService(Context.SEARCH_SERVICE) as SearchManager
         (menu.findItem(R.id.search).actionView as SearchView).apply {
             setOnQueryTextListener(this@TabFragment)
-            setOnCloseListener(this@TabFragment)
-            //setSearchableInfo(searchManager.getSearchableInfo(ComponentName(ctx, SearchResultsActivity::class.java)))
         }
+
+        menu.findItem(R.id.search).setOnActionExpandListener(this)
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -115,24 +119,39 @@ class TabFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnClo
     }
 
     override fun onQueryTextSubmit(s: String?): Boolean {
-        return s != null && s.length > 3
+        viewModel.search(s?:"")
+        return true
     }
 
     override fun onQueryTextChange(s: String?): Boolean {
+        if(s != null && s.length > 3)
+            viewModel.search(s)
+
         return s != null && s.length > 3
     }
 
-    override fun onClose(): Boolean {
-
+    override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+        container.visibility = View.GONE
+        tabs.visibility = View.GONE
+        searchList.visibility = View.VISIBLE
         return true
     }
+
+
+    override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+        container.visibility = View.VISIBLE
+        tabs.visibility = View.VISIBLE
+        searchList.visibility = View.GONE
+        return true
+    }
+
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
     inner class SectionsPagerAdapter(fm: androidx.fragment.app.FragmentManager) :
-        androidx.fragment.app.FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+        androidx.fragment.app.FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
         private val fragments = listOf(
             ListFragment.newInstance(Recipe.Type.MEAL),

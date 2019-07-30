@@ -96,14 +96,14 @@ class IngredientDialogFragment : DialogFragment() {
 
     private val addAnimation by lazy {
         AnimatedVectorDrawableCompat.create(
-            context!!,
+            context,
             R.drawable.avd_add_to_close
         )!!
     }
 
     private val closeAnimation by lazy {
         AnimatedVectorDrawableCompat.create(
-            context!!,
+            context,
             R.drawable.avd_close_to_add
         )!!
     }

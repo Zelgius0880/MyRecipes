@@ -12,7 +12,10 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 
 
 /**
- * TODO: document your custom view class.
+ *
+ * @property menuLayouts Array<ViewGroup>
+ * @property saveState Boolean?
+ * @property animation Pair<AnimatedVectorDrawableCompat, AnimatedVectorDrawableCompat>?
  */
 class FloatingActionMenu : FloatingActionButton {
 

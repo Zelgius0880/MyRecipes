@@ -24,7 +24,6 @@ import zelgius.com.myrecipes.utils.dpToPx
 import androidx.navigation.fragment.FragmentNavigatorExtras
 
 
-
 class RecipePagedAdapter :
     PagedListAdapter<Recipe, RecipePagedAdapter.ViewHolder>(DIFF_CALLBACK),
     SwipeableItemAdapter<RecipePagedAdapter.ViewHolder> {
@@ -43,10 +42,6 @@ class RecipePagedAdapter :
 
         if (recipe != null) {
             val itemView = holder.itemView
-
-            itemView.imageView.transitionName = "imageView${recipe.id}"
-            itemView.name.transitionName = "name${recipe.id}"
-            itemView.category.transitionName = "category${recipe.id}"
 
             itemView.name.text = recipe.name
             itemView.category.text = when (recipe.type) {
@@ -94,48 +89,57 @@ class RecipePagedAdapter :
             }
 
             itemView.edit.setOnClickListener {
-                editListener?.invoke(recipe, FragmentNavigatorExtras(
-                    itemView.imageView to "imageView${recipe.id}",
-                    itemView.name to "name${recipe.id}",
-                    itemView.category to "category${recipe.id}"
-                ))
+                itemView.materialCardView.transitionName = "cardView${recipe.id}"
+                itemView.imageView.transitionName = "imageView${recipe.id}"
+                itemView.name.transitionName = "name${recipe.id}"
+                itemView.category.transitionName = "category${recipe.id}"
+
+                editListener?.invoke(
+                    recipe, FragmentNavigatorExtras(
+                        itemView.materialCardView to "cardView${recipe.id}",
+                        itemView.imageView to "imageView${recipe.id}",
+                        itemView.name to "name${recipe.id}",
+                        itemView.category to "category${recipe.id}"
+                    )
+                )
+
+                /*itemView.imageView.transitionName = ""
+                itemView.name.transitionName = ""
+                itemView.category.transitionName = ""*/
             }
 
             itemView.setOnClickListener {
-                clickListener?.invoke(recipe, FragmentNavigatorExtras(
-                    itemView.imageView to "imageView${recipe.id}",
-                    itemView.name to "name${recipe.id}",
-                    itemView.category to "category${recipe.id}"
-                ))
+                itemView.materialCardView.transitionName = "cardView${recipe.id}"
+                itemView.imageView.transitionName = "imageView${recipe.id}"
+                itemView.name.transitionName = "name${recipe.id}"
+                itemView.category.transitionName = "category${recipe.id}"
+
+                clickListener?.invoke(
+                    recipe, FragmentNavigatorExtras(
+                        itemView.materialCardView to "cardView${recipe.id}",
+                        itemView.imageView to "imageView${recipe.id}",
+                        itemView.name to "name${recipe.id}",
+                        itemView.category to "category${recipe.id}"
+                    )
+                )
+
+                /*itemView.imageView.transitionName = ""
+                itemView.name.transitionName = ""
+                itemView.category.transitionName = ""*/
             }
 
-            // set background resource (target view ID: container)
-            val swipeState = holder.swipeState
-
-            /*if (swipeState.isUpdated) {
-                val bgResId: Int
-
-                if (swipeState.isActive) {
-                    bgResId = R.drawable.bg_item_swiping_active_state
-                } else if (swipeState.isSwiping) {
-                    bgResId = R.drawable.bg_item_swiping_state
-                } else {
-                    bgResId = R.drawable.bg_item_normal_state
-                }
-
-                holder.mContainer.setBackgroundResource(bgResId)
-            }*/
 
             // set swiping properties
             holder.isProportionalSwipeAmountModeEnabled = false
             holder.maxLeftSwipeAmount = -itemView.context.dpToPx(160f)
             holder.maxRightSwipeAmount = 0f
-            holder.swipeItemHorizontalSlideAmount = if(recipe.isPinned) -itemView.context.dpToPx(160f) else 0f
+            holder.swipeItemHorizontalSlideAmount =
+                if (recipe.isPinned) -itemView.context.dpToPx(160f) else 0f
         }
     }
 
     override fun getItemId(position: Int): Long {
-        return getItem(position)?.id?: 0
+        return getItem(position)?.id ?: 0
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
@@ -174,10 +178,10 @@ class RecipePagedAdapter :
 
         return when (result) {
             // swipe left --- pin
-            SwipeableItemConstants.RESULT_SWIPED_LEFT -> SwipeLeftResultAction( position)
+            SwipeableItemConstants.RESULT_SWIPED_LEFT -> SwipeLeftResultAction(position)
             // other --- do nothing
             SwipeableItemConstants.RESULT_SWIPED_RIGHT, SwipeableItemConstants.RESULT_CANCELED -> if (position != RecyclerView.NO_POSITION) {
-                UnpinResultAction( position)
+                UnpinResultAction(position)
             } else {
                 null
             }
