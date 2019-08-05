@@ -17,10 +17,10 @@ interface StepDao {
     suspend fun delete(vararg item: Step): Int
 
 
-    @Query("SELECT * FROM step WHERE :recipe = ref_recipe")
+    @Query("SELECT * FROM step WHERE :recipe = ref_recipe ORDER BY `order`")
     fun get(recipe: Long): LiveData<List<Step>>
 
-    @Query("SELECT * FROM step WHERE :recipe = ref_recipe")
+    @Query("SELECT * FROM step WHERE :recipe = ref_recipe ORDER BY `order`")
     suspend fun blockingGet(recipe: Long): List<Step>
 
     /**

@@ -5,7 +5,11 @@
     <color name="primaryDarkColor">#004ba0</color>
     <color name="secondaryColor">#ff9800</color>
     <color name="secondaryLightColor">#FFC947</color>
-    <color name="secondaryDarkColor">#c66900</color>
-    <color name="primaryTextColor">#FFFFFF</color>
-    <color name="secondaryTextColor">#000000</color>
+    <color name="secondaryDarkColor">#c66900</color>>
+    <color name="colorAccent">#1976d2</color>
+    <color name="cardBackground">@color/md_blue_50</color>
+    <color name="background">@color/md_white_1000</color>
+    <color name="tabColor">@color/primaryLightColor</color>
+    <color name="iconColorTint">@color/md_black_1000</color>
+
 </resources>

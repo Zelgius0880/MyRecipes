@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cardBackground">#21252E</color>
+    <!--<color name="cardBackground">#234FC3F7</color>-->
+    <color name="background">#161616</color>
+    <color name="tabColor">#232323</color>
+
+    <color name="secondaryColor">@color/md_deep_orange_500</color>
+    <color name="secondaryLightColor">@color/md_deep_orange_300</color>
+    <color name="iconColorTint">@color/md_white_1000</color>
+
+</resources>

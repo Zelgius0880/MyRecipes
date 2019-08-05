@@ -1,7 +1,7 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
@@ -13,6 +13,19 @@
         <item name="textInputStyle">@style/Widget.MyRecipes.TextInputLayout</item>
 <!--        <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">true</item>-->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.MyRecipes.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.MyRecipes.Headline2</item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.MyRecipes.Headline3</item>
+        <item name="textAppearanceHeadline4">@style/TextAppearance.MyRecipes.Headline4</item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.MyRecipes.Headline5</item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.MyRecipes.Headline6</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.MyRecipes.Subtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.MyRecipes.Subtitle2</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.MyRecipes.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.MyRecipes.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.MyRecipes.Caption</item>
+        <item name="textAppearanceButton">@style/TextAppearance.MyRecipes.Button</item>
+        <item name="textAppearanceOverline">@style/TextAppearance.MyRecipes.Overline</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="AppTheme">
@@ -44,12 +57,15 @@
     <style name="Widget.MyRecipes.TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored">
         <item name="tabIndicatorColor">@color/secondaryColor</item>
         <item name="tabUnboundedRipple">true</item>
-        <item name="android:background">@color/primaryLightColor</item>
+        <item name="android:background">@color/tabColor</item>
     </style>
 
-    <style name="Widget.MyRecipes.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
-        <item name="boxBackgroundColor">@android:color/transparent</item>
+    <style name="Widget.MyRecipes.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
     </style>
+
+    <style name="Widget.MyRecipes.TextInputLayout.Outline" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+    </style>
+
 
     <style name="Widget.MyRecipes.ImageButton" parent="Widget.MaterialComponents.Button">
         <!--<item name="backgroundTint">@color/primaryDarkColor</item>-->
@@ -87,6 +103,45 @@
         <item name="android:insetRight">0dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Headline4" parent="TextAppearance.MaterialComponents.Headline4">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Body1" parent="TextAppearance.MaterialComponents.Body1">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Body2" parent="TextAppearance.MaterialComponents.Body2">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Caption" parent="TextAppearance.MaterialComponents.Caption">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Button" parent="TextAppearance.MaterialComponents.Button">
+    </style>
+
+    <style name="TextAppearance.MyRecipes.Overline" parent="TextAppearance.MaterialComponents.Overline">
     </style>
 
 </resources>

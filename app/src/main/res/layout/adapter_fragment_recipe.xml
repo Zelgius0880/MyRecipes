@@ -22,7 +22,7 @@
             android:id="@+id/behindView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/md_blue_100"
+            android:background="@color/cardBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent">
@@ -34,7 +34,7 @@
                 android:layout_height="0dp"
                 android:backgroundTint="@color/md_red_400"
                 android:paddingStart="28dp"
-                android:paddingRight="24dp"
+                android:paddingEnd="24dp"
                 app:icon="@drawable/ic_delete_24dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/edit"
@@ -63,7 +63,7 @@
             android:id="@+id/contentView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/md_blue_50"
+            android:background="@color/cardBackground"
             tools:visibility="visible">
 
         <androidx.constraintlayout.widget.ConstraintLayout

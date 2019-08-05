@@ -57,6 +57,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         add.setOnClickListener {
             add.setImageDrawable(vectorAnimation)
             vectorAnimation?.start()
+            viewModel.selectedImageUrl.value = null
 
             navController.navigate(
                 R.id.action_tabFragment_to_editRecipeFragment, bundleOf(

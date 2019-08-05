@@ -32,7 +32,7 @@ class StepDialogFragment : DialogFragment() {
 
     var step = Step(null, "", Int.MAX_VALUE, null)
         .apply { new = true }
-    private var listener: NoticeDialogListener? = null
+    var listener: NoticeDialogListener? = null
 
     companion object {
         fun newInstance(listener: NoticeDialogListener? = null) = StepDialogFragment().apply {

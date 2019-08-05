@@ -13,7 +13,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/rootLayout"
             android:layout_height="match_parent"
-            android:background="@android:color/background_light"
+            android:background="@color/background"
             android:layout_width="match_parent">
 
         <com.google.android.material.appbar.AppBarLayout

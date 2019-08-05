@@ -14,7 +14,7 @@
         app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/behindView"
+            android:id="@+id/behindViewStep"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/md_red_400">
@@ -48,7 +48,7 @@
             android:id="@+id/containerStep"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/md_blue_50"
+            android:background="@color/cardBackground"
             tools:visibility="gone">
 
         <androidx.constraintlayout.widget.ConstraintLayout

@@ -11,7 +11,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:cardBackgroundColor="@color/md_blue_50"
+        app:cardBackgroundColor="@color/cardBackground"
         app:cardCornerRadius="0dp"
         app:cardElevation="2dp"
         android:id="@+id/materialCardView">

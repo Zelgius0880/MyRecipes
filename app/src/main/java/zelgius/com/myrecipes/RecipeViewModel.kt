@@ -1,33 +1,40 @@
 package zelgius.com.myrecipes
 
-import android.app.Application
+import android.app.*
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
-import androidx.core.net.toUri
-import androidx.paging.LivePagedListBuilder
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.launch
-import org.jetbrains.annotations.TestOnly
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.entities.Step
-import zelgius.com.myrecipes.repository.IngredientRepository
-import zelgius.com.myrecipes.repository.RecipeRepository
-import zelgius.com.myrecipes.repository.StepRepository
-import java.io.File
 import android.os.Environment
+import android.os.Parcelable
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.net.toUri
 import androidx.lifecycle.*
+import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import androidx.paging.toLiveData
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.TestOnly
+import zelgius.com.myrecipes.entities.Ingredient
+import zelgius.com.myrecipes.entities.IngredientForRecipe
+import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.repository.AppDatabase
+import zelgius.com.myrecipes.repository.IngredientRepository
+import zelgius.com.myrecipes.repository.RecipeRepository
+import zelgius.com.myrecipes.repository.StepRepository
+import zelgius.com.myrecipes.utils.PdfGenerator
+import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.worker.DownloadImageWorker
+import java.io.File
 
 val TAG = RecipeViewModel::class.simpleName
 
@@ -90,7 +97,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }*/
 
-    fun search(query: String) : LiveData<PagedList<Recipe>>{
+    fun search(query: String): LiveData<PagedList<Recipe>> {
         searchQuery.value = query
 
         return searchResult
@@ -210,8 +217,91 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
+
+    fun exportToPdf(recipe: Recipe, file: File): LiveData<File> {
+        val result = MutableLiveData<File>()
+        viewModelScope.launch {
+            PdfGenerator(app).createPdf(recipe, file)
+
+            result.value = file
+        }
+
+        return result
+    }
+
+    fun buildNotification(recipe: Recipe) {
+        val list = mutableListOf<Parcelable>()
+        list.addAll(recipe.ingredients.filter { it.step == null }.sortedBy { it.sortOrder })
+        recipe.steps.forEach { s ->
+            list.addAll(recipe.ingredients.filter { it.step == s }.sortedBy { it.sortOrder })
+            list.add(s)
+        }
+
+
+        if (list.isNotEmpty()) {
+            val name = app.getString(R.string.channel_name)
+            val descriptionText = app.getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val mChannel = NotificationChannel("recipe", name, importance)
+            mChannel.description = descriptionText
+            mChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            val notificationManager =
+                app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(mChannel)
+
+            //This is the intent of PendingIntent
+            val intentAction = Intent(app, ActionBroadcastReceiver::class.java)
+
+            //This is optional if you have more than one buttons and want to differentiate between two
+            intentAction.putExtra("LIST", list.toTypedArray())
+            intentAction.putExtra("INDEX", 0)
+            intentAction.putExtra("TITLE", recipe.name)
+
+            val o = list.first()
+            val text = when (o) {
+                is Step -> o.text
+                is IngredientForRecipe -> IngredientForRecipe.text(app, o)
+                else -> error("Should not be there")
+            }
+
+            val drawable = when (o) {
+                is Step -> UiUtils.getDrawable(
+                    app,
+                    "${o.order}"
+                )
+                is IngredientForRecipe -> UiUtils.getDrawable(
+                    app, if (!o.imageUrl.isNullOrEmpty()) o.imageUrl!! else o.name
+                )
+                else -> error("Should not be there")
+            }
+
+            val pIntent =
+                PendingIntent.getBroadcast(app, 1, intentAction, PendingIntent.FLAG_UPDATE_CURRENT)
+
+            val builder = NotificationCompat.Builder(app, "recipe")
+                .setSmallIcon(R.drawable.ic_restaurant_menu_black_24dp)
+                .setContentTitle(recipe.name)
+                .setContentText(text)
+                .setLargeIcon(drawable!!.toBitmap())
+                .addAction(
+                    R.drawable.ic_skip_next_black_24dp,
+                    app.getString(R.string.next),
+                    pIntent
+                )
+            //.setStyleMediaStyle().setMediaSession(MediaSessionCompat.Token.fromToken(recipe)))
+
+            builder.priority =
+                NotificationCompat.PRIORITY_DEFAULT
+
+            NotificationManagerCompat.from(app).notify(5, builder.build())
+        }
+    }
+
+
     @TestOnly
-    fun createDummySample() {
+    fun createDummySample(): Recipe {
 
         currentRecipe = Recipe().apply {
             name = "Recipe For Testing"
@@ -284,8 +374,40 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                         it.step = this
                     }
                 )
+
+                ingredients.add(
+                    IngredientForRecipe(
+                        null,
+                        1000.0,
+                        Ingredient.Unit.TABLESPOON,
+                        "Sugar",
+                        "drawable://sugar",
+                        4,
+                        null,
+                        null
+                    ).also {
+                        it.step = this
+                    }
+                )
+
+                ingredients.add(
+                    IngredientForRecipe(
+                        null,
+                        1000.0,
+                        Ingredient.Unit.LITER,
+                        "Milk",
+                        "drawable://milk",
+                        4,
+                        null,
+                        null
+                    ).also {
+                        it.step = this
+                    }
+                )
             })
         }
+
+        return currentRecipe
     }
 
 }

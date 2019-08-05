@@ -354,10 +354,12 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                 if (item == draggingStep && draggingStep != null) {
                     itemView.step.visibility = View.GONE
                     itemView.stepImage.visibility = View.GONE
+                    itemView.behindViewStep.visibility = View.GONE
                 } else {
                     // Visibility for expand
                     itemView.step.visibility = View.VISIBLE
                     itemView.stepImage.visibility = View.VISIBLE
+                    itemView.behindViewStep.visibility = View.VISIBLE
                 }
             }
         }

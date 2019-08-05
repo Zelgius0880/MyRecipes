@@ -3,8 +3,12 @@ package zelgius.com.myrecipes
 import android.app.Application
 import android.os.Environment
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.net.toFile
+import androidx.core.net.toUri
 import androidx.paging.toLiveData
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.rule.ActivityTestRule
+import androidx.test.rule.GrantPermissionRule
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -24,6 +28,11 @@ import zelgius.com.myrecipes.repository.AppDatabase
 import zelgius.com.myrecipes.repository.RecipeRepository
 import java.io.File
 import kotlin.concurrent.thread
+import android.content.ActivityNotFoundException
+import androidx.core.content.ContextCompat.startActivity
+import android.content.Intent
+
+
 
 
 @RunWith(MockitoJUnitRunner::class)
@@ -231,5 +240,40 @@ class RecipeViewModelTest {
 
 
 
+    }
+
+    @Rule @JvmField
+    val mRuntimePermissionRule = GrantPermissionRule.grant(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+    @Rule @JvmField
+    val mActivityRule: ActivityTestRule<MainActivity> = ActivityTestRule(MainActivity::class.java)
+
+    @Test
+    fun exportToPdf() {
+        val file = File("/storage/emulated/0/Download")
+        viewModel.createDummySample()
+        viewModel.currentRecipe.imageURL = "file:/storage/emulated/0/Android/data/zelgius.com.myrecipes/files/Pictures/23"
+        val latch = CountDownLatch(1)
+
+        viewModel.exportToPdf(viewModel.currentRecipe, file).observeOnce {
+            assertTrue(file.exists())
+
+            latch.count
+        }
+
+        latch.await(10, TimeUnit.SECONDS)
+
+
+        /*val target = Intent(Intent.ACTION_VIEW)
+        target.setDataAndType(file.toUri(), "application/pdf")
+        target.flags = Intent.FLAG_ACTIVITY_NEW_TASK // FLAG_ACTIVITY_NEW_TASK only for testing
+
+        val intent = Intent.createChooser(target, "Open File")
+        try {
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            e.printStackTrace()
+            fail(e.message)
+        }*/
     }
 }

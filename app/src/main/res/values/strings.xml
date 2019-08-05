@@ -80,4 +80,22 @@
     <string name="enter_a_step">Enter a step</string>
     <string name="step_description">Step description</string>
     <string name="all_ingredients">All ingredients</string>
+    <string name="export_to_pdf">Export to PDF</string>
+    <string name="choose_directory">Choose a directory</string>
+
+    <string name="cancel_button_label">Cancel</string>
+    <string name="choose_button_label">Select</string>
+    <string name="default_dir" translatable="false">/sdcard</string>
+    <string name="label_parent_directory">Parent Directory</string>
+    <string name="last_edit">Last edited: </string>
+    <string name="error_dir_access">Directory cannot be accessed</string>
+    <string name="label_parent_dir" translatable="false">...</string>
+    <string name="channel_name">Recipe</string>
+    <string name="channel_description">Following recipe step by step</string>
+    <string name="play">Play</string>
+    <string name="next">Next</string>
+    <string name="edit_recipe">Edit Recipe</string>
+    <string name="recipe_details">Recipe Details</string>
 </resources>
+
+

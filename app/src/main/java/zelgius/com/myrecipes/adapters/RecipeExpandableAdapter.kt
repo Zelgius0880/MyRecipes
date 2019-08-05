@@ -62,8 +62,8 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         list.add(StepItem(0, null) to recipe.ingredients
             .sortedWith(Comparator { o1, o2 ->
                 when {
-                    o1.step == null && o2.step != null -> 1
-                    o2.step == null && o1.step != null -> -1
+                    o1.step == null && o2.step != null -> -1
+                    o2.step == null && o1.step != null -> 1
                     else -> o1.sortOrder - o2.sortOrder
                 }
             })
@@ -184,7 +184,7 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         fun bind(position: Int) {
 
             val item = provider.getGroupItem(position).item
-            itemView.setOnClickListener { }
+            itemView.foreground = null
             itemView.expand.visibility = View.VISIBLE
 
             itemView.step.text = item?.text ?: context.getString(R.string.all_ingredients)
@@ -207,6 +207,8 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
 
             with(if (expandState.isExpanded || item == null) View.GONE else View.VISIBLE) {
                 itemView.stepImage.visibility = this
+                if(item != null) itemView.step.visibility = this
+                else itemView.step.visibility = View.VISIBLE
             }
             itemView.expand.visibility = View.VISIBLE
 

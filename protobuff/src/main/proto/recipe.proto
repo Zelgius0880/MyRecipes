@@ -1,0 +1,52 @@
+syntax = "proto2";
+
+package tutorial;
+
+option java_package = "zelgius.com.protobuff";
+option java_outer_classname = "RecipeProto";
+
+
+
+message Recipe {
+    required string name = 1;
+    optional string imageUrl = 2;
+
+    enum Type {
+        DESSERT = 0;
+        MEAL = 1;
+        OTHER = 2;
+    }
+
+    required Type type = 3;
+
+
+    repeated Step steps = 4;
+    repeated Ingredient ingredients = 5;
+}
+
+message Step {
+    required string name = 1;
+    required int32 order = 2;
+}
+
+
+message Ingredient {
+    required double quantity = 1;
+    required string name = 2;
+    optional string imageUrl = 3;
+    required int32 sortOrder = 4;
+    optional Step step = 5;
+
+    enum Unit {
+        MILLILITER = 1;
+        LITER = 2;
+        UNIT = 3;
+        TEASPOON = 4;
+        TABLESPOON = 5;
+        GRAMME = 6;
+        KILOGRAMME = 7;
+        CUP = 8;
+    }
+
+    required Unit unit = 6;
+}

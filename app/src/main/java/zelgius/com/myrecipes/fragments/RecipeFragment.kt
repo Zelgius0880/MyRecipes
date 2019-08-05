@@ -1,12 +1,14 @@
 package zelgius.com.myrecipes.fragments
 
 
+import android.Manifest
+import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import android.os.Parcelable
 import android.transition.TransitionInflater
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.ProgressBar
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -18,11 +20,17 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
+import zelgius.com.myrecipes.filepicker.model.DialogConfigs
+import zelgius.com.myrecipes.filepicker.model.DialogProperties
+import zelgius.com.myrecipes.filepicker.view.FilePickerDialog
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
 import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
-import kotlinx.android.synthetic.main.adapter_fragment_recipe.view.*
-import kotlinx.android.synthetic.main.fragment_recipe.*
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.MultiplePermissionsReport
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import kotlinx.android.synthetic.main.fragment_recipe.header
 import kotlinx.android.synthetic.main.fragment_recipe.list
 import kotlinx.android.synthetic.main.fragment_tab.view.*
@@ -34,6 +42,7 @@ import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.UiUtils
+import java.io.File
 
 
 /**
@@ -77,6 +86,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
     private var expandableItemManager: RecyclerViewExpandableItemManager? = null
     private lateinit var touchActionGuardManager: RecyclerViewTouchActionGuardManager
+    private lateinit var menu: Menu
 
     private lateinit var navController: NavController
 
@@ -108,10 +118,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
 
-        val recipe =  arguments?.getParcelable("RECIPE") ?: Recipe(Recipe.Type.MEAL)
+        val recipe = arguments?.getParcelable("RECIPE") ?: Recipe(Recipe.Type.MEAL)
         viewModel.selectedRecipe.value = recipe
 
-        if(arguments != null)
+        if (arguments != null)
             UiUtils.bindHeader(recipe, UiUtils.HeaderViewHolder(view, imageView, name, category))
 
         viewModel.selectedImageUrl.value = viewModel.selectedRecipe.value?.imageURL?.toUri()
@@ -182,6 +192,43 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.menu_recipe, menu)
+        this.menu = menu
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
+            R.id.pdf -> {
+                Dexter.withActivity(activity)
+                    .withPermissions(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                    .withListener(object : MultiplePermissionsListener {
+                        override fun onPermissionRationaleShouldBeShown(
+                            permissions: MutableList<PermissionRequest>?,
+                            token: PermissionToken?
+                        ) {
+                        }
+
+                        override fun onPermissionsChecked(report: MultiplePermissionsReport) {
+                            if (report.areAllPermissionsGranted()) {
+                                setupFilePicker()
+                            }
+                        }
+                    })
+                    .check()
+                true
+            }
+            R.id.play -> {
+                viewModel.buildNotification(viewModel.currentRecipe)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -210,11 +257,30 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         navController.popBackStack()
     }
 
+    fun setupFilePicker() {
+        DialogProperties().apply {
+            selection_mode = DialogConfigs.SINGLE_MODE
+            selection_type = DialogConfigs.DIR_SELECT
+            root = Environment.getExternalStorageDirectory()
+            error_dir = File(DialogConfigs.DEFAULT_DIR)
+            offset = File(DialogConfigs.DEFAULT_DIR)
+            extensions = null
+
+            FilePickerDialog(getString(R.string.choose_directory), this).let {
+                it.setDialogSelectionListener { result ->
+                    menu.findItem(R.id.pdf).actionView = ProgressBar(context)
+                    viewModel.exportToPdf(viewModel.currentRecipe,File(result.first()))
+
+                }
+                it.show(fragmentManager!!, "file_picker")
+            }
+        }
+    }
+
     override fun onGroupExpand(groupPosition: Int, fromUser: Boolean, payload: Any?) {
 
     }
 
     override fun onGroupCollapse(groupPosition: Int, fromUser: Boolean, payload: Any?) {
     }
-
 }

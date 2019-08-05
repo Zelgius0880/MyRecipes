@@ -3,22 +3,17 @@ package zelgius.com.myrecipes.dialogs
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener
-import kotlinx.android.synthetic.main.dialog_fragment_ingredient.*
 import kotlinx.android.synthetic.main.dialog_fragment_ingredient.view.*
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
@@ -27,11 +22,8 @@ import zelgius.com.myrecipes.adapters.IngredientAutoCompleteAdapter
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.utils.UiUtils
-import zelgius.com.myrecipes.utils.dpToPx
 import zelgius.com.myrecipes.utils.toDouble
-import java.lang.NumberFormatException
 import java.text.DecimalFormat
-import kotlin.math.roundToInt
 
 
 /**
@@ -61,23 +53,8 @@ class IngredientDialogFragment : DialogFragment() {
         IngredientForRecipe(null, -1.0, Ingredient.Unit.UNIT, "", null, 0, null, null)
             .apply { new = true }
     private var new = false
-    private var listener: NoticeDialogListener? = null
+    var listener: NoticeDialogListener? = null
     private val units by lazy { context.resources.getStringArray(R.array.select_unit_array) }
-
-    private val defaultDrawable by lazy {
-        LayerDrawable(
-            arrayOf(
-                ColorDrawable(ContextCompat.getColor(context, R.color.md_blue_grey_700)),
-                ContextCompat.getDrawable(
-                    context,
-                    R.drawable.ic_carrot_solid
-                ).apply { this?.setTint(Color.WHITE) }
-            )
-        ).apply {
-            val dp = context.dpToPx(8f).roundToInt()
-            setLayerInset(1, dp, dp, dp, dp)
-        }
-    }
 
     companion object {
         fun newInstance(listener: NoticeDialogListener? = null) = IngredientDialogFragment().apply {
@@ -147,7 +124,7 @@ class IngredientDialogFragment : DialogFragment() {
                     dialogView.ingredients.visibility = View.GONE
                     dialogView.button.setImageResource(R.drawable.ic_close_black_24dp)
                     dialogView.button.setImageDrawable(addAnimation)
-                    dialogView.image.setImageDrawable(defaultDrawable)
+                    UiUtils.getCircleDrawable(dialogView.image, R.drawable.ic_carrot_solid, R.color.md_blue_grey_700, 8f)
                     addAnimation.start()
                     ingredient.name = ""
                     new = true
@@ -155,6 +132,15 @@ class IngredientDialogFragment : DialogFragment() {
                     setNewIngredient(View.GONE)
                     dialogView.ingredients.visibility = View.VISIBLE
                     dialogView.button.setImageDrawable(closeAnimation)
+
+                    (dialogView.ingredients.selectedItem as Ingredient?)?.let { i ->
+                        ingredient.id = i.id
+                        ingredient.name = i.name
+                        ingredient.imageUrl = i.imageURL
+                    }
+                    if(ingredient.name.isNotEmpty())UiUtils.getIngredientDrawable(dialogView.image, ingredient)
+                    else UiUtils.getCircleDrawable(dialogView.image, R.drawable.ic_carrot_solid, R.color.md_blue_grey_700, 8f)
+
 
                     closeAnimation.start()
                     ingredient.id = null
@@ -219,7 +205,6 @@ class IngredientDialogFragment : DialogFragment() {
 
                 setEditIngredient(View.GONE)
 
-
             } else {
                 setEditIngredient(View.VISIBLE)
                 setNewIngredient(View.GONE)
@@ -274,6 +259,7 @@ class IngredientDialogFragment : DialogFragment() {
                                         //ingredient = IngredientForRecipe(null, dialogView.quantity.toDouble(), Ingredient.Unit.valueOf() dialogView.name.editText!!.text.toString(), "")
 
                                         ingredient.name = dialogView.name.editText!!.text.toString()
+                                        ingredient.imageUrl = null
                                         dismiss()
 
                                         context.getSharedPreferences(

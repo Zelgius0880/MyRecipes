@@ -12,7 +12,6 @@ import android.view.*
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.DialogFragment
@@ -49,7 +48,6 @@ import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.UiUtils
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
-import kotlin.text.category
 
 
 /**
@@ -265,13 +263,13 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
         })
 
         adapter.editIngredientListener = {
-            IngredientDialogFragment.newInstance(it)
+            IngredientDialogFragment.newInstance(it, this)
                 .show(fragmentManager!!, "dialog_ingredient")
         }
 
         adapter.editStepListener = {
             it.new = false
-            StepDialogFragment.newInstance(it)
+            StepDialogFragment.newInstance(it, this)
                 .show(fragmentManager!!, "dialog_step")
         }
 
@@ -316,7 +314,7 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         // Do something that differs the Activity's menu here
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu_recipe, menu)
+        inflater.inflate(R.menu.menu_edit_recipe, menu)
     }
 
     override fun onDestroyView() {
