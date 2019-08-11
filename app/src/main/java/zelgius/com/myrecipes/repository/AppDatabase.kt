@@ -2,6 +2,7 @@ package zelgius.com.myrecipes.repository
 
 import android.content.ContentValues
 import android.content.Context
+import androidx.core.content.contentValuesOf
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteDatabase
 import zelgius.com.myrecipes.entities.*
@@ -14,7 +15,7 @@ import zelgius.com.myrecipes.repository.dao.StepDao
 @Database(
     entities = [Ingredient::class, Recipe::class, Step::class, RecipeIngredient::class],
     views = [IngredientForRecipe::class],
-    version = 2
+    version = 3
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -29,53 +30,24 @@ abstract class AppDatabase : RoomDatabase() {
             if (instance == null) {
                 instance = if (!test)
                     Room.databaseBuilder(
+
+
                         context,
                         AppDatabase::class.java, "database"
                     ).apply {
-                        if(test) allowMainThreadQueries()
+                        if (test) allowMainThreadQueries()
                     }
                         .fallbackToDestructiveMigration()
-                        .addCallback(object : Callback(){
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            super.onCreate(db)
-                            
-                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
-                                put("name", context.getString(R.string.egg_name))
-                                put("image_url", "drawable://egg")
-                            })
+                        .addCallback(object : Callback() {
+                            override fun onCreate(db: SupportSQLiteDatabase) {
+                                super.onCreate(db)
 
-                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
-                                put("name", context.getString(R.string.flour_name))
-                                put("image_url", "drawable://flour")
-                            })
+                                DefaultIngredients.values().forEach {
+                                    insertOrUpdateIngredient(context,db, it)
+                                }
 
-                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
-                                put("name", context.getString(R.string.butter_name))
-                                put("image_url", "drawable://butter")
-                            })
-
-                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
-                                put("name", context.getString(R.string.sugar_name))
-                                put("image_url", "drawable://sugar")
-                            })
-
-                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply { 
-                                put("name", context.getString(R.string.water_name))
-                                put("image_url", "drawable://water")
-                            })
-
-                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
-                                put("name", context.getString(R.string.milk_name))
-                                put("image_url", "drawable://milk")
-                            })
-
-                            db.insert("Ingredient", OnConflictStrategy.IGNORE, ContentValues().apply {
-                                put("name", context.getString(R.string.salt_name))
-                                put("image_url", "drawable://salt")
-                            })
-
-                        }
-                    }).build()
+                            }
+                        }).build()
                 else
                     Room.inMemoryDatabaseBuilder(
                         context, AppDatabase::class.java
@@ -83,6 +55,29 @@ abstract class AppDatabase : RoomDatabase() {
             }
 
             return instance!!
+        }
+
+        fun insertOrUpdateIngredient(
+            context: Context,
+            db: SupportSQLiteDatabase,
+            item: DefaultIngredients
+        ) {
+            val name = context.getString(item.string)
+            val contentValues = contentValuesOf(
+                "name" to name,
+                "image_url" to item.url
+
+            )
+            if (db.update(
+                    "Ingredient",
+                    OnConflictStrategy.REPLACE,
+                    contentValues,
+                    "name = ?",
+                    arrayOf(name)
+                ) == 0
+            ) {
+                db.insert("Ingredient", OnConflictStrategy.IGNORE, contentValues)
+            }
         }
     }
 }

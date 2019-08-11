@@ -1,15 +1,8 @@
 package zelgius.com.myrecipes.utils
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Context.NOTIFICATION_SERVICE
-import android.content.Intent
 import android.content.res.Resources
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
@@ -21,14 +14,12 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.amulyakhare.textdrawable.TextDrawable
 import com.google.android.material.textfield.TextInputLayout
 import com.squareup.picasso.Picasso
-import zelgius.com.myrecipes.ActionBroadcastReceiver
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.entities.DefaultIngredients
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
@@ -37,15 +28,6 @@ import kotlin.math.roundToInt
 
 
 object UiUtils {
-    val KNOWN_ICONS = arrayOf(
-        "drawable://egg",
-        "drawable://flour",
-        "drawable://sugar",
-        "drawable://water",
-        "drawable://milk",
-        "drawable://butter",
-        "drawable://salt"
-    )
 
     fun getIngredientDrawable(imageView: ImageView, item: IngredientForRecipe) =
         getIngredientDrawable(
@@ -81,31 +63,33 @@ object UiUtils {
      * @return (Drawable?)
      */
     fun getDrawableForImageView(context: Context, item: Ingredient, padding: Float = 8f, @ColorInt color: Int? = null) =
-        if (KNOWN_ICONS.contains(item.imageURL)) {
-            LayerDrawable(
-                arrayOf(
-                    context.getDrawable(R.drawable.background_circle)
-                    , getDrawableFromName(context, item.imageURL!!)
-                )
-            ).apply {
-                val dp = context.dpToPx(padding).roundToInt()
-                setLayerInset(1, dp, dp, dp, dp)
-            }
-        } else {
-            TextDrawable.builder()
-                .beginConfig()
-                .fontSize(context.dpToPx(20f).toInt())
-                .width(context.dpToPx(36f).toInt())
-                .height(context.dpToPx(36f).toInt())
-                .bold().apply {
-                    if (color != null)
-                        textColor(color)
+        DefaultIngredients.values().find { it.url == item.imageURL }.let {
+            if (it != null) {
+                LayerDrawable(
+                    arrayOf(
+                        context.getDrawable(R.drawable.background_circle)
+                        , context.getDrawable(it.drawable)
+                    )
+                ).apply {
+                    val dp = context.dpToPx(padding).roundToInt()
+                    setLayerInset(1, dp, dp, dp, dp)
                 }
-                .endConfig()
-                .buildRound(
-                    "${item.name.toUpperCase(Locale.getDefault())[0]}",
-                    ContextCompat.getColor(context, R.color.md_blue_grey_700)
-                )
+            } else {
+                TextDrawable.builder()
+                    .beginConfig()
+                    .fontSize(context.dpToPx(20f).toInt())
+                    .width(context.dpToPx(36f).toInt())
+                    .height(context.dpToPx(36f).toInt())
+                    .bold().apply {
+                        if (color != null)
+                            textColor(color)
+                    }
+                    .endConfig()
+                    .buildRound(
+                        "${item.name.toUpperCase(Locale.getDefault())[0]}",
+                        ContextCompat.getColor(context, R.color.md_blue_grey_700)
+                    )
+            }
         }
 
 
@@ -113,41 +97,25 @@ object UiUtils {
         context: Context,
         drawableName: String, @ColorInt color: Int? = null
     ): Drawable? {
-        if (KNOWN_ICONS.contains(drawableName)) {
-            return getDrawableFromName(context, drawableName)
-        } else
-            return TextDrawable.builder()
-                .beginConfig()
-                .fontSize(context.dpToPx(20f).toInt())
-                .width(context.dpToPx(36f).toInt())
-                .height(context.dpToPx(36f).toInt())
-                .bold().apply {
-                    if (color != null)
-                        textColor(color)
-                }
-                .endConfig()
-                .buildRound(
-                    "${drawableName.toUpperCase(Locale.getDefault())[0]}",
-                    ContextCompat.getColor(context, R.color.md_blue_grey_700)
-                )
-    }
-
-    private fun getDrawableFromName(
-        context: Context,
-        drawableName: String
-    ): Drawable? {
-        return ContextCompat.getDrawable(
-            context, when (drawableName) {
-                "drawable://egg" -> R.drawable.ic_eggs
-                "drawable://flour" -> R.drawable.ic_flour
-                "drawable://sugar" -> R.drawable.ic_suggar
-                "drawable://water" -> R.drawable.ic_drop
-                "drawable://milk" -> R.drawable.ic_milk
-                "drawable://butter" -> R.drawable.ic_butter
-                "drawable://salt" -> R.drawable.ic_salt
-                else -> throw IllegalStateException("It's impossible to be there")
-            }
-        )
+        DefaultIngredients.values().find { it.url == drawableName }.let {
+            if (it != null) {
+                return context.getDrawable(it.drawable)
+            } else
+                return TextDrawable.builder()
+                    .beginConfig()
+                    .fontSize(context.dpToPx(20f).toInt())
+                    .width(context.dpToPx(36f).toInt())
+                    .height(context.dpToPx(36f).toInt())
+                    .bold().apply {
+                        if (color != null)
+                            textColor(color)
+                    }
+                    .endConfig()
+                    .buildRound(
+                        "${drawableName.toUpperCase(Locale.getDefault())[0]}",
+                        ContextCompat.getColor(context, R.color.md_blue_grey_700)
+                    )
+        }
     }
 
     fun getCircleDrawable(

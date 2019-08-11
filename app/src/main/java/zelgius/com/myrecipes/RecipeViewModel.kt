@@ -6,10 +6,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
+import android.util.Base64
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
@@ -18,7 +20,6 @@ import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,25 +34,26 @@ import zelgius.com.myrecipes.repository.RecipeRepository
 import zelgius.com.myrecipes.repository.StepRepository
 import zelgius.com.myrecipes.utils.PdfGenerator
 import zelgius.com.myrecipes.utils.UiUtils
+import zelgius.com.myrecipes.utils.unzip
 import zelgius.com.myrecipes.worker.DownloadImageWorker
+import zelgius.com.protobuff.RecipeProto
 import java.io.File
 
 val TAG = RecipeViewModel::class.simpleName
 
 class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
-    //protocol buffer
-    var user: FirebaseUser? = null
-        set(value) {
-            field = value
-            connectedUser.value = value
-        }
+    /* var user: FirebaseUser? = null
+         set(value) {
+             field = value
+             connectedUser.value = value
+         }*/
 
     private val recipeRepository = RecipeRepository(app)
     private val ingredientRepository = IngredientRepository(app)
     private val stepRepository = StepRepository(app)
 
-    val connectedUser = MutableLiveData<FirebaseUser?>()
+    /*val connectedUser = MutableLiveData<FirebaseUser?>()*/
     val selectedRecipe = MutableLiveData<Recipe>()
     val editMode = MutableLiveData<Boolean>()
     val selectedImageUrl = MutableLiveData<Uri?>()
@@ -117,7 +119,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                     recipeRepository.update(recipe)
 
                 recipe.steps.forEach {
-                    it.refRecipe = currentRecipe.id
+                    it.refRecipe = recipe.id
 
                     if (it.id == null)
                         it.id = stepRepository.insert(it)
@@ -125,7 +127,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                 }
 
                 recipe.ingredients.forEach {
-                    it.refRecipe = currentRecipe.id
+                    it.refRecipe = recipe.id
                     it.refStep = it.step?.id
 
                     if (it.id == null)
@@ -176,21 +178,6 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
 
-    fun newRecipe(recipe: Recipe): LiveData<Recipe> {
-        val done = MutableLiveData<Recipe>()
-        viewModelScope.launch {
-            recipe.id = recipeRepository.insert(recipe)
-
-            recipe.ingredients.forEach {
-                if (it.id == null) it.id = ingredientRepository.insert(it, recipe)
-            }
-
-            done.value = recipe
-        }
-
-        return done
-    }
-
     fun delete(recipe: Recipe): LiveData<Boolean> {
         val result = MutableLiveData<Boolean>()
 
@@ -203,10 +190,13 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
             result.value = true
 
-            File(app.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${recipe.id}").delete()
         }
 
         return result
+    }
+
+    fun removeImage(recipe: Recipe) {
+        File(app.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${recipe.id}").delete()
     }
 
     private fun runInTransaction(runner: () -> Unit) {
@@ -221,9 +211,52 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     fun exportToPdf(recipe: Recipe, file: File): LiveData<File> {
         val result = MutableLiveData<File>()
         viewModelScope.launch {
-            PdfGenerator(app).createPdf(recipe, file)
 
-            result.value = file
+            result.value = PdfGenerator(app).createPdf(recipe, file)
+        }
+
+        return result
+    }
+
+    fun saveFromQrCode(scannedBase64: String): LiveData<Recipe?> {
+
+        val result = MutableLiveData<Recipe?>()
+
+        runInTransaction {
+            viewModelScope.launch {
+                result.value = try {
+                    val bytes = Base64.decode(scannedBase64, Base64.NO_PADDING).unzip()
+                    val proto = RecipeProto.Recipe.parseFrom(bytes)
+                    val recipe = Recipe(proto)
+
+                    recipe.ingredients.forEach {
+                        it.id = ingredientRepository.get(it.name)?.id
+                        it.step = recipe.steps.find { s -> s == it.step }
+                    }
+
+                    recipe.id = recipeRepository.insert(recipe)
+
+                    recipe.steps.forEach {
+                        it.refRecipe = recipe.id
+                        it.id = stepRepository.insert(it)
+                    }
+
+                    recipe.ingredients.forEach {
+                        it.refRecipe = recipe.id
+                        it.refStep = it.step?.id
+
+                        if (it.id == null)
+                            it.id = ingredientRepository.insert(it, recipe)
+                        else
+                            ingredientRepository.update(it)
+                    }
+
+                    recipe
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
         }
 
         return result
@@ -241,15 +274,21 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         if (list.isNotEmpty()) {
             val name = app.getString(R.string.channel_name)
             val descriptionText = app.getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val mChannel = NotificationChannel("recipe", name, importance)
-            mChannel.description = descriptionText
-            mChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel("recipe", name, importance).apply {
+                description = descriptionText
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                vibrationPattern = longArrayOf(0L)
+                enableVibration(true)
+            }
+
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             val notificationManager =
                 app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(mChannel)
+
+            notificationManager.deleteNotificationChannel("recipe")
+            notificationManager.createNotificationChannel(channel)
 
             //This is the intent of PendingIntent
             val intentAction = Intent(app, ActionBroadcastReceiver::class.java)
@@ -258,6 +297,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
             intentAction.putExtra("LIST", list.toTypedArray())
             intentAction.putExtra("INDEX", 0)
             intentAction.putExtra("TITLE", recipe.name)
+            intentAction.putExtra("ID_FROM_NOTIF", recipe.id)
 
             val o = list.first()
             val text = when (o) {
@@ -285,10 +325,18 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                 .setContentTitle(recipe.name)
                 .setContentText(text)
                 .setLargeIcon(drawable!!.toBitmap())
+                .setSound(null)
+                .setVibrate(longArrayOf(0L))
                 .addAction(
                     R.drawable.ic_skip_next_black_24dp,
                     app.getString(R.string.next),
                     pIntent
+                )
+                .setContentIntent(
+                    PendingIntent.getActivity(app, 0,
+                        Intent(app, MainActivity::class.java ).apply {
+                            putExtras(bundleOf("ID_FROM_NOTIF" to recipe.id))
+                        }, PendingIntent.FLAG_UPDATE_CURRENT)
                 )
             //.setStyleMediaStyle().setMediaSession(MediaSessionCompat.Token.fromToken(recipe)))
 

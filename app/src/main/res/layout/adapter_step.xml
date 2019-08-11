@@ -48,8 +48,7 @@
             android:id="@+id/containerStep"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/cardBackground"
-            tools:visibility="gone">
+            android:background="@color/cardBackground">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -66,6 +65,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/ic_image_24dp" />
 
             <TextView
@@ -74,9 +74,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
                     android:text="TextView"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/expand"
                     app:layout_constraintStart_toEndOf="@+id/stepImage"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -84,12 +86,14 @@
                     android:id="@+id/expand"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/avd_down_to_up" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

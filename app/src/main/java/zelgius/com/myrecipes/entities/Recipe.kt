@@ -11,6 +11,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import zelgius.com.myrecipes.utils.UiUtils
+import zelgius.com.protobuff.RecipeProto
 import java.io.File
 
 /**
@@ -27,12 +28,12 @@ import java.io.File
  * @constructor  Create a new recipe with no image file, no ingredients and no steps
  */
 @Entity
-data class Recipe (
+data class Recipe(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var name: String,
     @ColumnInfo(name = "image_url") var imageURL: String?,
     var type: Type
-): Parcelable{
+) : Parcelable {
 
 
     @Ignore
@@ -55,7 +56,7 @@ data class Recipe (
 
     @Ignore
     constructor(parcel: Parcel) : this(
-        parcel.readLong().let { if(it >= 0) it else null},
+        parcel.readLong().let { if (it >= 0) it else null },
         parcel.readString()!!,
         parcel.readString(),
         Type.valueOf(parcel.readString()!!)
@@ -71,7 +72,7 @@ data class Recipe (
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id?: -1)
+        parcel.writeLong(id ?: -1)
         parcel.writeString(name)
         parcel.writeString(imageURL)
         parcel.writeString(type.name)
@@ -93,4 +94,30 @@ data class Recipe (
             return arrayOfNulls(size)
         }
     }
+
+
+    @Ignore
+    constructor(recipe: RecipeProto.Recipe) : this(
+        null,
+        recipe.name,
+        if (recipe.hasImageUrl()) recipe.imageUrl else null,
+        Type.valueOf(recipe.type.name)
+    ) {
+        for(i in 0 until recipe.stepsCount)
+            steps.add(Step(recipe.getSteps(i)))
+
+        for(i in 0 until recipe.ingredientsCount)
+            ingredients.add(IngredientForRecipe(recipe.getIngredients(i)))
+    }
+
+
+    fun toProtoBuff(): RecipeProto.Recipe =
+        RecipeProto.Recipe.newBuilder()
+            .setName(name)
+            .setType(RecipeProto.Recipe.Type.valueOf(type.name))
+            .addAllSteps(steps.map {it.toProtoBuff()})
+            .addAllIngredients(ingredients.map {it.toProtoBuff()}).also {
+                if(imageURL != null) it.imageUrl = imageURL
+            }
+            .build()!!
 }

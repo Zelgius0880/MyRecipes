@@ -15,6 +15,7 @@
         <item>@string/teaspoon</item>
         <item>@string/tablespoon</item>
         <item>@string/cup</item>
+        <item>@string/pinch</item>
     </string-array>
 
     <string-array name="select_unit_array">
@@ -26,5 +27,6 @@
         <item>@string/teaspoon_select</item>
         <item>@string/tablespoon_select</item>
         <item>@string/cup_select</item>
+        <item>@string/pinch_select</item>
     </string-array>
 </resources>

@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.entities
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
+import zelgius.com.protobuff.RecipeProto
 
 
 /**
@@ -41,6 +42,14 @@ data class Step(
         parcel.readLong().let { if (it >= 0) it else null }
     )
 
+    @Ignore
+    constructor(step: RecipeProto.Step) : this(
+        null,
+        step.name,
+        step.order,
+        null
+    )
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id ?: -1)
         parcel.writeString(text)
@@ -61,4 +70,10 @@ data class Step(
             return arrayOfNulls(size)
         }
     }
+
+
+    fun toProtoBuff() = RecipeProto.Step.newBuilder()
+        .setName(text)
+        .setOrder(order)
+        .build()!!
 }

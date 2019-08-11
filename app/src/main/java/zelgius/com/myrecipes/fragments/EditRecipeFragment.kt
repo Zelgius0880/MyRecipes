@@ -17,6 +17,7 @@ import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
@@ -86,7 +87,7 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
 
     private val context by lazy { activity as AppCompatActivity }
     private val viewModel by lazy {
-        ViewModelProviders.of(context).get(RecipeViewModel::class.java)
+        ViewModelProvider(requireActivity(), ViewModelProvider.NewInstanceFactory()).get(RecipeViewModel::class.java)
     }
     private val adapter by lazy { EditRecipeExpandableAdapter(context, viewModel) }
     private val headerWrapper by lazy {
@@ -295,7 +296,12 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
 
         (activity as AppCompatActivity).setSupportActionBar(view!!.toolbar)
         NavigationUI.setupActionBarWithNavController(activity!! as AppCompatActivity, navController)
-        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        (activity as AppCompatActivity).supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setTitle(if(arguments?.getBoolean("ADD") == true) R.string.new_recipe else R.string.edit_recipe)
+        }
+
+
     }
 
 
@@ -343,7 +349,7 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
             R.id.save -> {
                 val recipe = viewModel.currentRecipe
                 headerWrapper.complete(recipe)
-                recipe.imageURL = viewModel.selectedImageUrl.value?.toString() ?: ""
+                recipe.imageURL = viewModel.selectedImageUrl.value.toString() ?: ""
                 adapter.complete(recipe)
                 viewModel.currentRecipe = recipe // not really usefull, just there in case
                 viewModel.saveCurrentRecipe().observe(this, Observer {

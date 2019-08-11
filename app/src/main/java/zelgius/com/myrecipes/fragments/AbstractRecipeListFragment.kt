@@ -1,6 +1,7 @@
 package zelgius.com.myrecipes.fragments
 
 import android.os.Bundle
+import android.os.Environment
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -22,6 +23,8 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.RecipePagedAdapter
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.utils.observe
+import java.io.File
 
 abstract class AbstractRecipeListFragment : Fragment() {
     protected lateinit var adapter: RecipePagedAdapter
@@ -67,9 +70,12 @@ abstract class AbstractRecipeListFragment : Fragment() {
         recyclerView.adapter = adapter
 
         adapter.deleteListener = { r ->
-            viewModel.delete(r).observe(this, Observer {
-                undoSnackBar(r, getString(R.string.recipe_removed))
-            })
+            viewModel.loadRecipe(r.id!!).observe(this) { recipe ->
+                if (recipe != null)
+                    viewModel.delete(recipe).observe(this) {
+                        undoSnackBar(recipe, getString(R.string.recipe_removed))
+                    }
+            }
         }
 
         adapter.editListener = { r, extras ->
@@ -108,8 +114,24 @@ abstract class AbstractRecipeListFragment : Fragment() {
                 recipe.id = null
                 //recipe.ingredients.forEach { it.id = null }
                 recipe.steps.forEach { it.id = null }
-                viewModel.saveRecipe(recipe)
-            }.show()
+                viewModel.saveRecipe(recipe).observe(this) {
+                    File(ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${recipe.id}")
+                        .renameTo(
+                            File(
+                                ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                                "${it.id}"
+                            )
+                        )
+                }
+            }
+            .addCallback(object : Snackbar.Callback() {
+                override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                    if (event == DISMISS_EVENT_CONSECUTIVE || event == DISMISS_EVENT_SWIPE || event == DISMISS_EVENT_TIMEOUT) {
+                        viewModel.removeImage(recipe)
+                    }
+                }
+            })
+            .show()
     }
 
 }

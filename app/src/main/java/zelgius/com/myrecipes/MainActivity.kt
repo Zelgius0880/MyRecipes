@@ -1,43 +1,23 @@
 package zelgius.com.myrecipes
 
 import android.app.Activity
-import android.app.SearchManager
-import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.NavOptions
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import androidx.navigation.Navigation.findNavController
-import androidx.navigation.ui.NavigationUI
 import com.facebook.stetho.Stetho
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.activity_main.*
 import net.alhazmy13.mediapicker.Image.ImagePicker
 import zelgius.com.myrecipes.fragments.OnBackPressedListener
-import zelgius.com.myrecipes.utils.AnimationUtils
-import zelgius.com.myrecipes.utils.colorSecondary
+import zelgius.com.myrecipes.utils.observe
 
 
 class MainActivity : AppCompatActivity() {
@@ -51,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private val navController by lazy { findNavController(this, R.id.nav_host_fragment) }
 
-    private val viewModel by lazy { ViewModelProviders.of(this).get(RecipeViewModel::class.java) }
+    private val viewModel by lazy { ViewModelProvider(this, ViewModelProvider.NewInstanceFactory()).get(RecipeViewModel::class.java) }
 
     //private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val googleSignInClient: GoogleSignInClient by lazy {
@@ -70,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         FirebaseApp.initializeApp(this)
         Stetho.initializeWithDefaults(this)
+        if(intent != null) processIntent(intent)
 
         //setSupportActionBar(toolbar)
 
@@ -96,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         }*/
     }
 
-    override fun onStart() {
+    /*override fun onStart() {
         super.onStart()
         viewModel.user = auth.currentUser
     }
@@ -104,9 +85,9 @@ class MainActivity : AppCompatActivity() {
     private fun signIn() {
         val signInIntent = googleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
-    }
+    }*/
 
-    private fun signOut() {
+    /*private fun signOut() {
         // Firebase sign out
         auth.signOut()
 
@@ -114,9 +95,9 @@ class MainActivity : AppCompatActivity() {
         googleSignInClient.signOut().addOnCompleteListener(this) {
             viewModel.user = null
         }
-    }
+    }*/
 
-    private fun revokeAccess() {
+    /*private fun revokeAccess() {
         // Firebase sign out
         auth.signOut()
 
@@ -124,8 +105,33 @@ class MainActivity : AppCompatActivity() {
         googleSignInClient.revokeAccess().addOnCompleteListener(this) {
             viewModel.user = null
         }
+    }*/
+
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        if(intent != null) processIntent(intent)
     }
 
+    private fun processIntent(intent: Intent) {
+        if(intent.hasExtra("ID_FROM_NOTIF")) {
+            viewModel.loadRecipe(intent.getLongExtra("ID_FROM_NOTIF", 0L)).observe(this){
+                if(it != null) {
+                    if(navController.currentDestination?.id != R.id.tabFragment)
+                        navController.navigate(R.id.tabFragment)
+
+                    navController.navigate(
+                        R.id.action_tabFragment_to_recipeFragment
+                        , bundleOf("RECIPE" to it), null, null
+                    )
+
+                    viewModel.loadRecipe(it.id!!)
+                }
+            }
+
+        }
+    }
 
     override fun onSupportNavigateUp(): Boolean {
         val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
@@ -158,13 +164,13 @@ class MainActivity : AppCompatActivity() {
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (resultCode == Activity.RESULT_OK)
             when (requestCode) {
-                /*ImagePicker.IMAGE_PICKER_REQUEST_CODE -> {
+                ImagePicker.IMAGE_PICKER_REQUEST_CODE -> {
                     val paths = data?.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH)
 
                     if (!paths.isNullOrEmpty()) {
                         viewModel.selectedImageUrl.value = Uri.parse("file://${paths.first()}")
                     }
-                }*/
+                }
                 /*RC_SIGN_IN -> {
                     val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                     try {

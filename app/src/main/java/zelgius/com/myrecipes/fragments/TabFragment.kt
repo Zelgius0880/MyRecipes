@@ -1,27 +1,37 @@
 package zelgius.com.myrecipes.fragments
 
+import android.app.Activity.RESULT_OK
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_tab.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
+import zelgius.com.myrecipes.MainActivity
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.VisionBarcodeReaderActivity
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.AnimationUtils
+import zelgius.com.myrecipes.utils.observe
 import kotlin.math.roundToInt
-import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.Observer
 
 
-class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener{
+class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener,
+    MenuItem.OnActionExpandListener {
 
 
     private lateinit var navController: NavController
@@ -104,28 +114,38 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
 
-        if (id == R.id.action_license) {
-            navController.navigate(
-                R.id.licenseFragment, bundleOf(), NavOptions.Builder()
-                    .setEnterAnim(R.anim.nav_default_enter_anim)
-                    .setExitAnim(R.anim.nav_default_exit_anim)
-                    .setPopEnterAnim(R.anim.nav_default_pop_enter_anim)
-                    .setPopExitAnim(R.anim.nav_default_pop_exit_anim)
-                    .build()
-            )
-            return true
+        when (id) {
+            R.id.action_license -> {
+                navController.navigate(
+                    R.id.licenseFragment, bundleOf(), NavOptions.Builder()
+                        .setEnterAnim(R.anim.nav_default_enter_anim)
+                        .setExitAnim(R.anim.nav_default_exit_anim)
+                        .setPopEnterAnim(R.anim.nav_default_pop_enter_anim)
+                        .setPopExitAnim(R.anim.nav_default_pop_exit_anim)
+                        .build()
+                )
+                return true
+            }
+
+            R.id.scan -> {
+
+                startActivityForResult(
+                    Intent(context, VisionBarcodeReaderActivity::class.java),
+                    888
+                )
+            }
         }
 
         return super.onOptionsItemSelected(item)
     }
 
     override fun onQueryTextSubmit(s: String?): Boolean {
-        viewModel.search(s?:"")
+        viewModel.search(s ?: "")
         return true
     }
 
     override fun onQueryTextChange(s: String?): Boolean {
-        if(s != null && s.length > 3)
+        if (s != null && s.length > 3)
             viewModel.search(s)
 
         return s != null && s.length > 3
@@ -147,12 +167,46 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     }
 
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            888 -> {
+                if (resultCode == RESULT_OK && data?.hasExtra("BASE64") == true) {
+                    viewModel.saveFromQrCode(data.getStringExtra("BASE64")!!)
+                        .observe(this) {
+                            if (it == null) {
+                                Snackbar.make(
+                                    (activity as MainActivity).coordinator,
+                                    R.string.import_failed,
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Snackbar.make(
+                                    (activity as MainActivity).coordinator,
+                                    R.string.recipe_saved,
+                                    Snackbar.LENGTH_SHORT
+                                ).setAction(R.string.open) { _ ->
+                                    Navigation.findNavController(requireView()).navigate(
+                                        R.id.action_tabFragment_to_recipeFragment
+                                        , bundleOf("RECIPE" to it), null, null
+                                    )
+
+                                    viewModel.loadRecipe(it.id!!)
+                                }.show()
+
+                            }
+                        }
+                }
+            }
+        }
+    }
+
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    inner class SectionsPagerAdapter(fm: androidx.fragment.app.FragmentManager) :
-        androidx.fragment.app.FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    inner class SectionsPagerAdapter(fm: FragmentManager) :
+        FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
         private val fragments = listOf(
             ListFragment.newInstance(Recipe.Type.MEAL),
@@ -167,7 +221,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         }
 
         override fun getPageTitle(position: Int): CharSequence? =
-            when(position) {
+            when (position) {
                 0 -> getString(R.string.meal)
                 1 -> getString(R.string.dessert)
                 2 -> getString(R.string.other)

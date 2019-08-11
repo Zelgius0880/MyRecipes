@@ -97,6 +97,7 @@ class EditHeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewMo
             ImageDialogFragment().let {
                 if (context is AppCompatActivity)
                     it.show(context.supportFragmentManager, "image_dialog")
+
             }
         }
 

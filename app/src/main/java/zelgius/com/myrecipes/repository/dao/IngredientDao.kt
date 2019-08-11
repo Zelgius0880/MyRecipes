@@ -30,6 +30,9 @@ interface IngredientDao {
     @Query("SELECT id FROM RecipeIngredient WHERE ref_ingredient = :ingredientId AND ref_recipe = :recipeId")
     suspend fun getId(ingredientId: Long, recipeId: Long): Long?
 
+    @Query("SELECT * FROM Ingredient WHERE name = :name LIMIT 1")
+    suspend fun get(name: String): Ingredient?
+
     @Query("DELETE FROM RecipeIngredient WHERE ref_ingredient = :ingredientId AND ref_recipe = :recipeId")
     suspend fun deleteJoin(ingredientId: Long, recipeId: Long): Int
 

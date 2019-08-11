@@ -6,6 +6,7 @@ import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.util.Base64
 import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
@@ -15,17 +16,24 @@ import androidx.core.net.toUri
 import com.amulyakhare.textdrawable.TextDrawable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.glxn.qrgen.android.QRCode
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.utils.Utils.drawText
 import zelgius.com.myrecipes.utils.Utils.scaleCenterCrop
+import zelgius.com.myrecipes.utils.Utils.zipBytes
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.charset.Charset
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.min
 
 
 class PdfGenerator(val context: Context) {
@@ -97,11 +105,15 @@ class PdfGenerator(val context: Context) {
                     recipe.ingredients.filter { i -> i.step == it }.sortedBy { i -> i.sortOrder })
             }
 
+            drawQrCode(recipe)
+
             document.finishPage(page)
             // write the document content
-            createFile(document, File(file, "${recipe.name}.pdf"))
+            val pdf = File(file, "${recipe.name}.pdf")
+            createFile(document, pdf)
             document.close()
 
+            pdf
         }
 
 
@@ -381,6 +393,39 @@ class PdfGenerator(val context: Context) {
         return  linePosition
     }
 
+
+    private fun drawQrCode(recipe: Recipe): Int{
+        val bytes = zipBytes("", recipe.toProtoBuff().toByteArray())
+        val bmp = QRCode.from(Base64.encodeToString(bytes, Base64.NO_PADDING))
+            .withSize(400, 400)
+            .bitmap()
+
+        /*val bmp = QRCode.from(String(bytes, Charset.forName("UTF-8")))
+            .withSize(250, 250)
+            .bitmap()*/
+
+
+        val margin = 200
+        textPaint.apply {
+            reset()
+            color = context.getColor(R.color.md_black_1000)
+            textSize = 24f
+        }
+
+        if(canvas.isHighEnough(bmp.height, linePosition)){
+            canvas.drawBitmap(bmp, margin.toFloat(), A4_HEIGHT - margin - bmp.height.toFloat(), null)
+            drawText(canvas, A4_HEIGHT - margin - bmp.height + 15, textPaint, context.getString(R.string.qrcode_explanation), margin + bmp.width + 25)
+            linePosition = A4_HEIGHT - bmp.height
+        } else {
+            nextPage()
+            canvas.drawBitmap(bmp, margin.toFloat(), linePosition.toFloat(), null)
+            drawText(canvas, linePosition + 15, textPaint, context.getString(R.string.qrcode_explanation), margin + bmp.width + 25)
+            linePosition += bmp.height
+        }
+
+
+        return linePosition
+    }
     /**
      * End the current page, start a new page, reset the linePosition and set the canvas with the new page
      */
@@ -469,6 +514,19 @@ object Utils {
         }
 
         return linePosition + staticLayout.height
+    }
+
+    @Throws(IOException::class)
+    fun zipBytes(filename: String, input: ByteArray): ByteArray {
+        val baos = ByteArrayOutputStream()
+        val zos = ZipOutputStream(baos)
+        val entry = ZipEntry(filename.substring(0, min(filename.length, 0xFFFF)))
+        entry.size = input.size.toLong()
+        zos.putNextEntry(entry)
+        zos.write(input)
+        zos.closeEntry()
+        zos.close()
+        return baos.toByteArray()
     }
 }
 

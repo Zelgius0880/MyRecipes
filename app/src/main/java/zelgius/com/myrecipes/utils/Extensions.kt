@@ -2,14 +2,20 @@ package zelgius.com.myrecipes.utils
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.TypedValue
-import android.view.View
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.google.android.material.textfield.TextInputLayout
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.reflect.full.declaredMemberProperties
@@ -58,3 +64,31 @@ fun Context.getColor(@ColorRes color: Int, alpha: Float) =
  */
 fun Context.dpToPx(dp: Float) =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
+
+
+fun ByteArray.unzip(): ByteArray {
+    val zis = ZipInputStream(ByteArrayInputStream(this))
+    var data: ZipEntry =  zis.nextEntry
+    println(data.name)
+
+    val os = ByteArrayOutputStream()
+    val buffer = ByteArray(1024)
+
+    var byte = zis.read(buffer)
+    while (byte > 0) {
+        os.write(buffer, 0, byte)
+        byte = zis.read(buffer)
+    }
+
+    val result = os.toByteArray()
+    os.close()
+    zis.closeEntry()
+
+    return result
+}
+
+fun <T>LiveData<T>.observe(lifecycleOwner: LifecycleOwner, work: (T) -> Unit) {
+    observe(lifecycleOwner, Observer {
+        work(it)
+    })
+}

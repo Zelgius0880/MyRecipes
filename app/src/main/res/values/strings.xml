@@ -1,21 +1,21 @@
 <resources>
 
-    <string name="creative_license">are under Creative Commons Attribution 4.0 International license</string>
+    <string name="creative_license" translatable="false">are under Creative Commons Attribution 4.0 International license</string>
     <string name="from">From</string>
-    <string name="link_to_fontawsome">https://fontawesome.com</string>
-    <string name="link_to_fontawsome_license">https://fontawesome.com/license</string>
-    <string name="title_activity_recipe">RecipeActivity</string>
+    <string name="link_to_fontawsome" translatable="false">https://fontawesome.com</string>
+    <string name="link_to_fontawsome_license" translatable="false">https://fontawesome.com/license</string>
+    <string name="title_activity_recipe" translatable="false">RecipeActivity</string>
 
     <string name="app_name">MyRecipes</string>
     <string name="action_settings">Settings</string>
-    <string name="section_format">Hello World from section: %1$d</string>
-    <string name="icons">Icons</string>
+    <string name="section_format" translatable="false">Hello World from section: %1$d</string>
+    <string name="icons" translatable="false">Icons</string>
     <string name="dessert">Dessert</string>
     <string name="other">Other</string>
     <string name="meal">Meal</string>
     <string name="search">Search</string>
     <string name="search_hint">Search a recipe</string>
-    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_activity_main2" translatable="false">Main2Activity</string>
     <string name="undo">Undo</string>
     <string name="recipe_removed">Recipe removed</string>
 
@@ -24,7 +24,7 @@
     <string name="add_ingredient">Add an ingredient</string>
     <string name="new_ingredient">New ingredient</string>
     <string name="add_step">Add a step</string>
-    <string name="license">License</string>
+    <string name="license" translatable="false">License</string>
     <string name="save">Save</string>
     <string name="name">Name</string>
     <string name="cancel">Cancel</string>
@@ -51,14 +51,14 @@
 
     <string name="milliliter_abrv">ml</string>
     <string name="liter_abrv">l</string>
-    <string name="unit_abrv"></string>
+    <string name="unit_abrv" translatable="false"></string>
     <string name="teaspoon_abrv">tsp</string>
     <string name="tablespoon_abrv">tbs</string>
     <string name="gramme_abrv">g</string>
     <string name="kilogramme_abrv">kg</string>
     <string name="cup_abrv">cp</string>
 
-    <string name="milliliter_select">(Milliliter)</string>
+    <string name="milliliter_select">ml (Milliliter)</string>
     <string name="liter_select">l (Liter)</string>
     <string name="unit_select">Unit</string>
     <string name="teaspoon_select">tsp (Teaspoon)</string>
@@ -96,6 +96,34 @@
     <string name="next">Next</string>
     <string name="edit_recipe">Edit Recipe</string>
     <string name="recipe_details">Recipe Details</string>
+    <string name="qrcode_explanation">If you scan the QRCode with the application, you will be able to import the recipe in your application</string>
+    <string name="pdf_created">The PDF as been created</string>
+    <string name="open">Open</string>
+    <string name="no_viewer_found">No viewer found</string>
+    <string name="scan_recipe">Scan recipe</string>
+    <string name="import_failed">Something went wrong, please retry</string>
+    <string name="pinch_abrv">pinch</string>
+    <string name="pinch">Pinch</string>
+    <string name="apple_name">Apple(s)</string>
+    <string name="avocado_name">Avocado(es)</string>
+    <string name="brown_sugar_name">Brown sugar</string>
+    <string name="cheese_name">Cheese</string>
+    <string name="chocolate_name">Chocolate</string>
+    <string name="coconut_name" >Coconut(s)</string>
+    <string name="coffee_name">Coffee</string>
+    <string name="hazelnut_name">Hazelnut(s)</string>
+    <string name="honey_name">Honey</string>
+    <string name="nuts_name">Nuts</string>
+    <string name="peanut_name">Peanut(s)</string>
+    <string name="pear_name">Pear(s)</string>
+    <string name="pepper_name">Pepper</string>
+    <string name="potato_name">Potato(es)</string>
+    <string name="raspberry_name">Raspberry</string>
+    <string name="strawberry_name">Strawberry</string>
+    <string name="tomato_name">Tomato(es)</string>
+    <string name="tomato_sauce_name">Tomato sauce</string>
+    <string name="pinch_select">pinch</string>
+
 </resources>
 
 

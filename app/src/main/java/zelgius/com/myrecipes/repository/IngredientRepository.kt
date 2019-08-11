@@ -14,6 +14,11 @@ class IngredientRepository(context: Context) {
     fun get() =
         dao.get()
 
+    suspend fun get(name: String) =
+        withContext(Dispatchers.Default) {
+            dao.get(name)
+        }
+
 
     /**
      * Insert the IngredientForRecipe (create a RecipeIngredient join). If the id of the ingredient is null, it insert the ingredient too

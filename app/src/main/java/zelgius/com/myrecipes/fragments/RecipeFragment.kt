@@ -2,7 +2,9 @@ package zelgius.com.myrecipes.fragments
 
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
@@ -12,14 +14,17 @@ import android.widget.ProgressBar
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import zelgius.com.myrecipes.filepicker.model.DialogConfigs
 import zelgius.com.myrecipes.filepicker.model.DialogProperties
 import zelgius.com.myrecipes.filepicker.view.FilePickerDialog
@@ -74,7 +79,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
     private val context by lazy { activity as AppCompatActivity }
     private val viewModel by lazy {
-        ViewModelProviders.of(context).get(RecipeViewModel::class.java)
+        ViewModelProvider(requireActivity(), ViewModelProvider.NewInstanceFactory()).get(RecipeViewModel::class.java)
     }
     private val adapter by lazy { RecipeExpandableAdapter(context, viewModel) }
     private val headerWrapper by lazy {
@@ -269,7 +274,37 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
             FilePickerDialog(getString(R.string.choose_directory), this).let {
                 it.setDialogSelectionListener { result ->
                     menu.findItem(R.id.pdf).actionView = ProgressBar(context)
-                    viewModel.exportToPdf(viewModel.currentRecipe,File(result.first()))
+                    viewModel.exportToPdf(viewModel.currentRecipe, File(result.first()))
+                        .observe(this@RecipeFragment, Observer {file ->
+                            menu.findItem(R.id.pdf).actionView = null
+
+                            Snackbar.make(view!!, R.string.pdf_created, Snackbar.LENGTH_LONG)
+                                .setAction(R.string.open) {
+                                    val target = Intent(Intent.ACTION_VIEW)
+                                    target.setDataAndType(
+                                        FileProvider.getUriForFile(
+                                            context,
+                                            context.applicationContext.packageName + ".provider",
+                                            file
+                                        ), "application/pdf"
+                                    )
+                                    target.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
+                                    target.addFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION )
+
+                                    val intent = Intent.createChooser(target, "Open File")
+                                    intent.addFlags( Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION )
+                                    try {
+                                        startActivity(intent)
+                                    } catch (e: ActivityNotFoundException) {
+                                        Snackbar.make(
+                                            view!!,
+                                            R.string.no_viewer_found,
+                                            Snackbar.LENGTH_SHORT
+                                        ).show()
+                                    }
+
+                                }.show()
+                        })
 
                 }
                 it.show(fragmentManager!!, "file_picker")

@@ -8,6 +8,7 @@ import androidx.room.Ignore
 import kotlinx.android.synthetic.main.adapter_ingredient.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.utils.round
+import zelgius.com.protobuff.RecipeProto
 import java.text.DecimalFormat
 
 @DatabaseView(
@@ -46,6 +47,22 @@ data class IngredientForRecipe(
         parcel.readLong().let { if (it >= 0) it else null }
     )
 
+    @Ignore
+    constructor(ingredient: RecipeProto.Ingredient) : this(
+        null,
+        ingredient.quantity,
+        Ingredient.Unit.valueOf(ingredient.unit.name),
+        ingredient.name,
+        if(ingredient.hasImageUrl()) ingredient.imageUrl else null,
+        ingredient.sortOrder,
+        null,
+        null
+    ) {
+        if(ingredient.hasStep()) {
+            step = Step(ingredient.step)
+        }
+    }
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeValue(id)
         parcel.writeDouble(quantity)
@@ -81,6 +98,7 @@ data class IngredientForRecipe(
                 Ingredient.Unit.GRAMME -> context.getString(R.string.gramme_abrv)
                 Ingredient.Unit.KILOGRAMME -> context.getString(R.string.kilogramme_abrv)
                 Ingredient.Unit.CUP -> context.getString(R.string.cup_abrv)
+                Ingredient.Unit.PINCH -> context.getString(R.string.pinch_abrv)
             }
 
             return if (item.unit != Ingredient.Unit.CUP) {
@@ -107,4 +125,15 @@ data class IngredientForRecipe(
             }
         }
     }
+
+    fun toProtoBuff() = RecipeProto.Ingredient.newBuilder()
+        .setName(name)
+        .setQuantity(quantity)
+        .setSortOrder(sortOrder)
+        .setUnit(RecipeProto.Ingredient.Unit.valueOf(unit.name))
+        .also {
+            if(step != null) it.step = step?.toProtoBuff()
+            if(imageUrl != null) it.imageUrl = imageUrl
+        }
+        .build()!!
 }

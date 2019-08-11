@@ -31,8 +31,7 @@ import kotlin.concurrent.thread
 import android.content.ActivityNotFoundException
 import androidx.core.content.ContextCompat.startActivity
 import android.content.Intent
-
-
+import androidx.lifecycle.LiveData
 
 
 @RunWith(MockitoJUnitRunner::class)
@@ -66,14 +65,6 @@ class RecipeViewModelTest {
     fun init() {
         Stetho.initializeWithDefaults(context)
 
-    }
-
-    @Test
-    fun newRecipe() {
-        viewModel.newRecipe(recipe).observeOnce {
-            println(it)
-            assertEquals(recipe, it)
-        }
     }
 
     @Test
@@ -225,12 +216,12 @@ class RecipeViewModelTest {
 
         latch = CountDownLatch(2)
 
-        viewModel.searchResult.observeForever{
+        viewModel.searchResult.observeForever {
             assertTrue(it.size > 0)
             latch.countDown()
         }
 
-        viewModel.search("Test").observeForever{
+        viewModel.search("Test").observeForever {
             assertTrue(it.size > 0)
             latch.countDown()
         }
@@ -238,21 +229,23 @@ class RecipeViewModelTest {
         assertTrue(latch.count == 0L)
 
 
-
-
     }
 
-    @Rule @JvmField
-    val mRuntimePermissionRule = GrantPermissionRule.grant(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    @Rule
+    @JvmField
+    val mRuntimePermissionRule =
+        GrantPermissionRule.grant(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-    @Rule @JvmField
+    @Rule
+    @JvmField
     val mActivityRule: ActivityTestRule<MainActivity> = ActivityTestRule(MainActivity::class.java)
 
     @Test
     fun exportToPdf() {
         val file = File("/storage/emulated/0/Download")
         viewModel.createDummySample()
-        viewModel.currentRecipe.imageURL = "file:/storage/emulated/0/Android/data/zelgius.com.myrecipes/files/Pictures/23"
+        viewModel.currentRecipe.imageURL =
+            "file:/storage/emulated/0/Android/data/zelgius.com.myrecipes/files/Pictures/23"
         val latch = CountDownLatch(1)
 
         viewModel.exportToPdf(viewModel.currentRecipe, file).observeOnce {
@@ -276,4 +269,57 @@ class RecipeViewModelTest {
             fail(e.message)
         }*/
     }
+
+    @Test
+    fun saveFromQrCode() {
+
+        var recipe = Recipe()
+        wait(viewModel.saveFromQrCode(BASE_64_RECIPE)){
+            assertNotNull(it)
+
+            recipe = it!!
+        }
+
+        wait(viewModel.loadRecipe(recipe.id!!)){
+            assertNotNull(it)
+
+            compareRecipe(recipe, it!!)
+        }
+
+    }
+
+
+    private fun <T> wait(liveData: LiveData<T>, work: (T) -> Unit) {
+        val latch = CountDownLatch(1)
+
+        liveData.observeOnce {
+            work(it)
+            latch.countDown()
+        }
+
+        latch.await(10, TimeUnit.SECONDS)
+        assertTrue(latch.count == 0L)
+    }
 }
+
+const val BASE_64_RECIPE = """
+    UEsDBBQACAgIAL1wCU8AAAAAAAAAAAAAAAAAAAAA7VfNjhtFEM7uOqvEBzB7QisilYKEkGXNTmyB
+FKQoCyI5JQgwPycUlXvK4wo93bP94xx5BB4CLlx4HV6DR6C6Z8b27hsg2VqtxjXVVV9939clefzR
+K2tqWAZq4XtS3BK8tA5+IB/Y1Be/bEJo/RdXV9zUxSau1xIM1rTWh0LZ5gq9p3D1mXo6X5XlfD4v
+5bNYlOWT1WIxr4q3LdXPbeufeYWa1hzefL4o3xgb2xz48PTxeHyeez+ZnOye55N9fDE5e/z3o/Ff
+j15ZRw1w62MDldWC0XMAbCjMQFnjSQUK0QFW3LJXghNIcyhgSRWgCQS2Yiu50fnowZCCBkNgDyte
+kaliMwNGFbVEhsoQncECvsEGVhpNJWEhgFdyvoOAClqNihxKoy/JEJr9Yc111AhekSbH/ibSDFrr
+goTSJGYGW3ScsPBqI12ilmwSihWnQba0YZUKpNdAEVrSmmSQVKmAr20aYUsapLYUiTo4VuRnsHYy
+PKdi1ikWjNLI6hhaHAZaRt/KyCzi7dtsBb7BREiDtcEZ3ER5JvnX2KqLgbeVyOYFfAE/hsPxoY0u
++julh646a0e1kJKVWKNi4VnKtxt0FByCZKV51qKZVPkuZr6SsFvUSRITTZ6WRW5xpuIqmiCoBE3E
+CkGThURgo6xrSZQJPaMNxABBqBOOrEzvRAUXgxMbZdyeKpEl6i3Lu65DAd9u0HdHZDxRHKVC08ZE
+TRS6i/H4RWApLfcgkiMgw/18VQpjVMG6WVZnLV+yY7IYO3nFLppvIvYoBqoyrbXDLVc4oM687DTt
+TCv6J3Uw1ZCu0k3+OgQDpgM2ukuQ33YDQLKn3BipfqB//7Cnlw0kiIM3e/VnnYjial6L1Jkaab43
+oBFpoYq8N0fvqH3l3eG30Qebk7HnIxUv4DWSEjsmA4Lson5CUebgEuzMmW9IxbU09iJEtmKvmIjA
+AW+x0b9vrM5e+4m32Mj3PcVClA+ptbPCvjW9X/Y3HGvOm0P66ZzQiolZHDVwcIB/t28SYDFbZ7E9
+NcP2EU8dV9xxxR1X3HHFHVfcccUdV9xxxR1X3P9xxU1G048f3us+1xejF3XtL9+rHL7DlSb5JU11
+DSfl2fSTLun6t+uL+y+1je5ycpC1ThE4Lc+HvHsseT9joNt571IEzsqT6acP/2yfjf/54/T64vyr
+GFLiBweJqxyCUflgWvYV/31+MVqiDpfvH+R5CcBoevD7uxxN5z3W3wXDMtZ4G4NPkTtn7g9d0pnR
+a9a/3urSSODOidP/AFBLBwhnfqUhuAMAAIsQAABQSwECFAAUAAgICAC9cAlPZ36lIbgDAACLEAAA
+AAAAAAAAAAAAAAAAAAAAAAAAUEsFBgAAAAABAAEALgAAAOYDAAAAAA
+"""

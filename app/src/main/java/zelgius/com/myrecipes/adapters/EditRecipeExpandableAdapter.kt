@@ -163,41 +163,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                 )
             }
 
-            val abrv = when (item.unit) {
-                Ingredient.Unit.MILLILITER -> itemView.context.getString(R.string.milliliter_abrv)
-                Ingredient.Unit.LITER -> itemView.context.getString(R.string.liter_abrv)
-                Ingredient.Unit.UNIT -> itemView.context.getString(R.string.unit_abrv)
-                Ingredient.Unit.TEASPOON -> itemView.context.getString(R.string.teaspoon_abrv)
-                Ingredient.Unit.TABLESPOON -> itemView.context.getString(R.string.tablespoon_abrv)
-                Ingredient.Unit.GRAMME -> itemView.context.getString(R.string.gramme_abrv)
-                Ingredient.Unit.KILOGRAMME -> itemView.context.getString(R.string.kilogramme_abrv)
-                Ingredient.Unit.CUP -> itemView.context.getString(R.string.cup_abrv)
-            }
-
-            if (item.unit != Ingredient.Unit.CUP) {
-                itemView.ingredientName.text =
-                    String.format(
-                        "%s %s %s",
-                        DecimalFormat("#0.##").format(item.quantity),
-                        abrv,
-                        item.name
-                    )
-            } else {
-                val part1 = if (item.quantity.toInt() == 0) "" else "${item.quantity.toInt()} "
-
-                val part2 = when ("${(item.quantity - item.quantity.toInt()).round(2)}".trim()) {
-                    "0.0", "0" -> ""
-                    "0.33", "0.34" -> "1/3 "
-                    "0.66", "0.67" -> "2/3 "
-                    "0.25" -> "1/4 "
-                    "0.5" -> "1/2 "
-                    "0.75" -> "3/4 "
-                    else -> "${DecimalFormat("#0.##").format(item.quantity - item.quantity.toInt())} "
-                }
-
-                itemView.ingredientName.text =
-                    String.format("%s%s%s %s", part1, part2, abrv, item.name)
-            }
+            itemView.ingredientName.text = IngredientForRecipe.text(context, item)
             UiUtils.getIngredientDrawable(itemView.image, item)
 
             itemView.setOnClickListener { editIngredientListener?.invoke(item) }

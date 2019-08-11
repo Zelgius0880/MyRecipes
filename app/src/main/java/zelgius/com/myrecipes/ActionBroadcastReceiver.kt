@@ -8,6 +8,7 @@ import android.os.Parcelable
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProviders
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Step
@@ -53,7 +54,15 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
                 .setSmallIcon(R.drawable.ic_restaurant_menu_black_24dp)
                 .setContentTitle(title)
                 .setContentText(text)
+                .setVibrate(longArrayOf(0L))
+                .setSound(null)
                 .setLargeIcon(drawable!!.toBitmap())
+                .setContentIntent(
+                    PendingIntent.getActivity(context, 0,
+                        Intent(context, MainActivity::class.java ).apply {
+                            putExtras(bundleOf("ID" to intent.getLongExtra("ID_FROM_NOTIF", 0L)))
+                        }, PendingIntent.FLAG_UPDATE_CURRENT)
+                )
 
             if(index < list.size -1)
                 builder.addAction(

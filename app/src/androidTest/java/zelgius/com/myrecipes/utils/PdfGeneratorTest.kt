@@ -42,6 +42,8 @@ class PdfGeneratorTest {
                 steps.add(Step(null, LONG_STRING + LONG_STRING+ LONG_STRING, steps.size + 1, null))
             }, file)
 
+
+            //Thread.sleep(300000)
             assertTrue(File(file, "${viewModel.currentRecipe.name}.pdf").exists())
         }
     }
