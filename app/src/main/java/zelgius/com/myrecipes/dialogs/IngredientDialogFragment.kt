@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener
@@ -45,7 +46,10 @@ class IngredientDialogFragment : DialogFragment() {
         )
     }
     private val viewModel by lazy {
-        ViewModelProviders.of(activity!!).get(RecipeViewModel::class.java)
+        ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        ).get(RecipeViewModel::class.java)
     }
 
     private val context by lazy { activity!! }
@@ -96,17 +100,22 @@ class IngredientDialogFragment : DialogFragment() {
                     }
 
                     override fun onItemSelected(view: View?, position: Int, id: Long) {
-                        list[position].let { i ->
-                            ingredient.id = i.id
-                            ingredient.name = i.name
-                            ingredient.imageUrl = i.imageURL
+                        dialogView.ingredients.selectedItem.let { i ->
+                            if(i is Ingredient) {
+                                ingredient.id = i.id
+                                ingredient.name = i.name
+                                ingredient.imageUrl = i.imageURL
 
-                            dialogView.spinner.setSelection(units.indexOfFirst { s ->
-                                s == context.getSharedPreferences(
-                                    "UNITS",
-                                    Context.MODE_PRIVATE
-                                ).getString(i.name, null)?: lastSelectedUnit
-                            })
+                                dialogView.spinner.setSelection(units.indexOfFirst { s ->
+                                    s == context.getSharedPreferences(
+                                        "UNITS",
+                                        Context.MODE_PRIVATE
+                                    ).getString(i.name, null)?: lastSelectedUnit
+                                })
+                            }
+                        }
+                        list[position].let { i ->
+
                         }
                     }
 
@@ -184,6 +193,7 @@ class IngredientDialogFragment : DialogFragment() {
                             getString(R.string.teaspoon_select) -> ingredient.unit =
                                 Ingredient.Unit.TEASPOON
                             getString(R.string.cup_select) -> ingredient.unit = Ingredient.Unit.CUP
+                            getString(R.string.pinch_select) -> ingredient.unit = Ingredient.Unit.PINCH
                         }
 
                         lastSelectedUnit = ingredient.unit
@@ -222,6 +232,7 @@ class IngredientDialogFragment : DialogFragment() {
                     getString(R.string.tablespoon_select) -> ingredient.unit == Ingredient.Unit.TABLESPOON
                     getString(R.string.teaspoon_select) -> ingredient.unit == Ingredient.Unit.TEASPOON
                     getString(R.string.cup_select) -> ingredient.unit == Ingredient.Unit.CUP
+                    getString(R.string.pinch_select) -> ingredient.unit == Ingredient.Unit.PINCH
                     else -> false
                 }
             })

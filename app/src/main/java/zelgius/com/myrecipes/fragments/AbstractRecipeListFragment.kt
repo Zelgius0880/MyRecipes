@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,7 +36,10 @@ abstract class AbstractRecipeListFragment : Fragment() {
     private var wrappedAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
     protected lateinit var recyclerViewTouchActionGuardManager: RecyclerViewTouchActionGuardManager
 
-    val viewModel by lazy { ViewModelProviders.of(activity!!).get(RecipeViewModel::class.java) }
+    val viewModel by lazy {  ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        ).get(RecipeViewModel::class.java) }
 
     override fun onDestroyView() {
         if (wrappedAdapter != null)

@@ -46,6 +46,7 @@ message Ingredient {
         GRAMME = 6;
         KILOGRAMME = 7;
         CUP = 8;
+        PINCH = 9;
     }
 
     required Unit unit = 6;

@@ -11,6 +11,7 @@ import android.view.View
 import android.webkit.URLUtil
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.dialog_fragment_image.view.*
@@ -22,7 +23,12 @@ import zelgius.com.myrecipes.RecipeViewModel
 class ImageDialogFragment : DialogFragment() {
 
     private val dialogView by lazy { View.inflate(activity, R.layout.dialog_fragment_image, null) }
-    private val viewModel by lazy { ViewModelProviders.of(activity!!).get(RecipeViewModel::class.java) }
+    private val viewModel by lazy {
+        ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        ).get(RecipeViewModel::class.java)
+    }
 
     private val textWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -66,7 +72,8 @@ class ImageDialogFragment : DialogFragment() {
                 .setTitle(R.string.select_image)
                 .setPositiveButton(R.string.save) { _, _ ->
                     if (dialogView.imageUrl.editText?.text?.isNotEmpty() == true) {
-                        viewModel.selectedImageUrl.value = Uri.parse(dialogView.imageUrl.editText!!.text.toString())
+                        viewModel.selectedImageUrl.value =
+                            Uri.parse(dialogView.imageUrl.editText!!.text.toString())
                     }
                 }
                 .setNegativeButton(R.string.cancel) { _, _ -> }

@@ -71,7 +71,7 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
 
         if (context is LifecycleOwner) {
             viewModel.selectedImageUrl.observe(context, Observer {
-                if(it != null && it.toString().isNotEmpty()) {
+                if(it != null && it.toString().isNotEmpty() && it.toString() != "null") {
                     itemView.imageView.setPadding(0, 0, 0, 0)
                     Picasso.get().apply {
                         //setIndicatorsEnabled(true)

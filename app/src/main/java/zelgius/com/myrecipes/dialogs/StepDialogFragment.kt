@@ -7,6 +7,7 @@ import android.text.InputType
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import zelgius.com.myrecipes.NoticeDialogListener
@@ -28,7 +29,10 @@ import zelgius.com.myrecipes.entities.Step
 class StepDialogFragment : DialogFragment() {
 
     private val dialogView by lazy { View.inflate(activity, R.layout.dialog_fragment_step, null) }
-    private val viewModel by lazy { ViewModelProviders.of(activity!!).get(RecipeViewModel::class.java) }
+    private val viewModel by lazy { ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        ).get(RecipeViewModel::class.java) }
 
     var step = Step(null, "", Int.MAX_VALUE, null)
         .apply { new = true }

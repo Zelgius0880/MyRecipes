@@ -30,17 +30,17 @@
 
                 <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.BROWSABLE" />
+                <!--<category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                         android:host="myrecipes.com"
                         android:pathPrefix="/start"
-                        android:scheme="http" />
+                        android:scheme="http" />-->
                 <!-- note that the leading "/" is required for pathPrefix -->
                 <!-- Accepts URIs that begin with "example://gizmos” -->
-                <data
+                <!--<data
                         android:host="start"
-                        android:scheme="myrecipes" />
+                        android:scheme="myrecipes" />-->
             </intent-filter>
         </activity>
         <activity android:name=".CreditActivity" />

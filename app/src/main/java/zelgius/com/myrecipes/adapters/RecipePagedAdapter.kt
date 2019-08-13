@@ -4,6 +4,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.URLUtil
+import androidx.core.net.toUri
 import androidx.navigation.fragment.FragmentNavigator
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
@@ -50,7 +52,7 @@ class RecipePagedAdapter :
                 Recipe.Type.OTHER -> itemView.context.getString(R.string.other)
             }
 
-            if (!recipe.imageURL.isNullOrEmpty()) {
+            if (!recipe.imageURL.isNullOrEmpty() &&  recipe.imageURL != "null") {
                 Picasso.get().apply {
                     //setIndicatorsEnabled(true)
                     //isLoggingEnabled = true

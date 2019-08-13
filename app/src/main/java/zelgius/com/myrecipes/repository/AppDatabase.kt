@@ -15,7 +15,7 @@ import zelgius.com.myrecipes.repository.dao.StepDao
 @Database(
     entities = [Ingredient::class, Recipe::class, Step::class, RecipeIngredient::class],
     views = [IngredientForRecipe::class],
-    version = 3
+    version = 1
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

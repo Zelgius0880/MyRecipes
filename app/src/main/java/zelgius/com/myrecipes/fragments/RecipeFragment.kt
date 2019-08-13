@@ -79,7 +79,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
     private val context by lazy { activity as AppCompatActivity }
     private val viewModel by lazy {
-        ViewModelProvider(requireActivity(), ViewModelProvider.NewInstanceFactory()).get(RecipeViewModel::class.java)
+         ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        ).get(RecipeViewModel::class.java)
     }
     private val adapter by lazy { RecipeExpandableAdapter(context, viewModel) }
     private val headerWrapper by lazy {

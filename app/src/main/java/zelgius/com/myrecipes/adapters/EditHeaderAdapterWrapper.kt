@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
@@ -103,7 +104,7 @@ class EditHeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewMo
 
         if (context is LifecycleOwner) {
             viewModel.selectedImageUrl.observe(context, Observer {
-                if(it != null && it.toString().isNotEmpty()) {
+                if(it != null && it.toString().isNotEmpty() && it.toString() != "null") {
                     itemView.imageView.setPadding(0, 0, 0, 0)
                     Picasso.get().apply {
                         //setIndicatorsEnabled(true)
