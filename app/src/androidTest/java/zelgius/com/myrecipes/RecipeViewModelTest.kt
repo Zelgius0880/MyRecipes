@@ -75,11 +75,11 @@ class RecipeViewModelTest {
 
         viewModel.createDummySample()
 
-        viewModel.saveCurrentRecipe().observeForever { r ->
+        viewModel.saveCurrentRecipe().observeForever {
 
             //assertTrue(b)
 
-            viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever {
+            viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever { _ ->
 
                 compareRecipe(it, viewModel.currentRecipe)
                 latch.countDown()
@@ -89,7 +89,7 @@ class RecipeViewModelTest {
                 viewModel.currentRecipe.ingredients.removeAt(1)
                 viewModel.currentRecipe.steps.removeAt(0)
 
-                viewModel.saveCurrentRecipe().observeForever { r ->
+                viewModel.saveCurrentRecipe().observeForever {
 
                     //assertTrue(b)
 
@@ -234,7 +234,7 @@ class RecipeViewModelTest {
     @Rule
     @JvmField
     val mRuntimePermissionRule =
-        GrantPermissionRule.grant(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        GrantPermissionRule.grant(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)!!
 
     @Rule
     @JvmField

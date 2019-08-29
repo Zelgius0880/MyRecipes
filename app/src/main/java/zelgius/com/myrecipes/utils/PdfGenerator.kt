@@ -10,10 +10,12 @@ import android.util.Base64
 import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.alpha
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withTranslation
 import androidx.core.net.toUri
 import com.amulyakhare.textdrawable.TextDrawable
+import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.glxn.qrgen.android.QRCode
@@ -34,6 +36,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 
 class PdfGenerator(val context: Context) {
@@ -53,6 +56,7 @@ class PdfGenerator(val context: Context) {
     private val textPaint = TextPaint()
     private val paint = Paint()
 
+    private val alpha = 0.6f
     suspend fun createPdf(recipe: Recipe, file: File) =
         withContext(Dispatchers.IO) {
             linePosition = 200
@@ -98,7 +102,7 @@ class PdfGenerator(val context: Context) {
             recipe.steps.forEach {
                 linePosition += 100
                 //drawSeparator(margin = 700f)
-                linePosition += 100
+                //linePosition += 100
 
                 drawStep(
                     it,
@@ -202,6 +206,16 @@ class PdfGenerator(val context: Context) {
             reset()
             color = context.getColor(R.color.md_black_1000)
             textSize = 48f
+
+            if (item.optional == true || item.step?.optional == true)
+                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+        }
+
+        paint.apply {
+            reset()
+
+            if (item.optional == true || item.step?.optional == true)
+                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
         }
 
         val text = IngredientForRecipe.text(context, item)
@@ -231,10 +245,10 @@ class PdfGenerator(val context: Context) {
                 bmp,
                 margin.toFloat(),
                 linePosition + staticLayout.height / 2f - bmp.height / 2f,
-                null
+                paint
             )
         } else {
-            canvas.drawBitmap(bmp, margin.toFloat(), linePosition.toFloat(), null)
+            canvas.drawBitmap(bmp, margin.toFloat(), linePosition.toFloat(), paint)
 
             drawText(
                 canvas,
@@ -272,7 +286,13 @@ class PdfGenerator(val context: Context) {
         if (!canvas.isHighEnough(bmp.height, linePosition)) nextPage()
 
         val margin = 200f
-        canvas.drawBitmap(bmp, margin, linePosition.toFloat(), null)
+
+        paint.apply {
+            reset()
+            if (step.optional)
+                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+        }
+        canvas.drawBitmap(bmp, margin, linePosition.toFloat(), paint)
 
 
         var tempPosition = linePosition
@@ -317,7 +337,7 @@ class PdfGenerator(val context: Context) {
 
         //if (linePosition >= tempPosition) // position has changed to a new page
 
-        linePosition = if(tempPosition < ingredientPosition)
+        linePosition = if (tempPosition < ingredientPosition)
             ingredientPosition + 50
         else
             tempPosition
@@ -327,22 +347,51 @@ class PdfGenerator(val context: Context) {
             reset()
             color = context.getColor(R.color.md_black_1000)
             textSize = 72f
+
+            if (step.optional)
+                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
         }
 
         //linePosition = tempPosition
-        drawLongText(step.text, A4_WIDTH - bmp.width - 2 * margin.toInt(),  margin.toInt() + bmp.width + 75)
+        tempPosition = linePosition
+        drawLongText(
+            step.text,
+            A4_WIDTH - bmp.width - 2 * margin.toInt(),
+            margin.toInt() + bmp.width + 75,
+            paint = textPaint.apply {
+                reset()
+                color = context.getColor(R.color.md_black_1000)
+                textSize = 72f
 
+                if (step.optional)
+                    alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+            }
+        )
+
+        linePosition = if (linePosition < tempPosition) linePosition // new page
+        else max(
+            linePosition,
+            tempPosition + width
+        ) // max between the text bottom and the image bottom
         return linePosition
     }
 
-    private fun drawLongText(s: String, width: Int, x: Int, marginBottom: Int = 200): Int {
+    private fun drawLongText(
+        s: String,
+        width: Int,
+        x: Int,
+        marginBottom: Int = 200,
+        paint: TextPaint? = null
+    ): Int {
         var text = s
 
-        textPaint.apply {
-            reset()
-            color = context.getColor(R.color.md_black_1000)
-            textSize = 72f
-        }
+        if (paint == null)
+            textPaint.apply {
+                reset()
+                color = context.getColor(R.color.md_black_1000)
+                textSize = 72f
+            }
+        else textPaint.set(paint)
 
         var staticLayout = StaticLayout.Builder.obtain(
             text,
@@ -390,11 +439,11 @@ class PdfGenerator(val context: Context) {
         drawText(canvas, linePosition, textPaint, text, x)
         linePosition += staticLayout.height
 
-        return  linePosition
+        return linePosition
     }
 
 
-    private fun drawQrCode(recipe: Recipe): Int{
+    private fun drawQrCode(recipe: Recipe): Int {
         val bytes = zipBytes("", recipe.toProtoBuff().toByteArray())
         val bmp = QRCode.from(Base64.encodeToString(bytes, Base64.NO_PADDING))
             .withSize(400, 400)
@@ -412,20 +461,38 @@ class PdfGenerator(val context: Context) {
             textSize = 24f
         }
 
-        if(canvas.isHighEnough(bmp.height, linePosition)){
-            canvas.drawBitmap(bmp, margin.toFloat(), A4_HEIGHT - margin - bmp.height.toFloat(), null)
-            drawText(canvas, A4_HEIGHT - margin - bmp.height + 15, textPaint, context.getString(R.string.qrcode_explanation), margin + bmp.width + 25)
+        if (canvas.isHighEnough(bmp.height, linePosition)) {
+            canvas.drawBitmap(
+                bmp,
+                margin.toFloat(),
+                A4_HEIGHT - margin - bmp.height.toFloat(),
+                null
+            )
+            drawText(
+                canvas,
+                A4_HEIGHT - margin - bmp.height + 15,
+                textPaint,
+                context.getString(R.string.qrcode_explanation),
+                margin + bmp.width + 25
+            )
             linePosition = A4_HEIGHT - bmp.height
         } else {
             nextPage()
             canvas.drawBitmap(bmp, margin.toFloat(), linePosition.toFloat(), null)
-            drawText(canvas, linePosition + 15, textPaint, context.getString(R.string.qrcode_explanation), margin + bmp.width + 25)
+            drawText(
+                canvas,
+                linePosition + 15,
+                textPaint,
+                context.getString(R.string.qrcode_explanation),
+                margin + bmp.width + 25
+            )
             linePosition += bmp.height
         }
 
 
         return linePosition
     }
+
     /**
      * End the current page, start a new page, reset the linePosition and set the canvas with the new page
      */

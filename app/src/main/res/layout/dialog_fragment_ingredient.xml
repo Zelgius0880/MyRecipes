@@ -60,17 +60,16 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <Spinner
+            android:id="@+id/spinner"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/spinner"
-            app:layout_constraintStart_toEndOf="@+id/quantity"
             android:layout_marginStart="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="8dp"
-            app:layout_constraintHorizontal_weight="2"
-            app:layout_constraintTop_toTopOf="@+id/quantity"
             app:layout_constraintBottom_toBottomOf="@+id/quantity"
-            app:layout_constraintHorizontal_bias="0.5"/>
+            app:layout_constraintEnd_toStartOf="@+id/optional"
+            app:layout_constraintHorizontal_weight="2"
+            app:layout_constraintStart_toEndOf="@+id/quantity"
+            app:layout_constraintTop_toTopOf="@+id/quantity" />
 
     <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
@@ -141,5 +140,14 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:visibility="gone"/>
+
+    <CheckBox
+            android:id="@+id/optional"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@string/optional"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/quantity" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

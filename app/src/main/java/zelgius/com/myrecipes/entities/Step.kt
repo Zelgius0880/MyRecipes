@@ -2,6 +2,7 @@ package zelgius.com.myrecipes.entities
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.core.os.ParcelCompat
 import androidx.room.*
 import zelgius.com.protobuff.RecipeProto
 
@@ -28,6 +29,7 @@ data class Step(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var text: String,
     var order: Int = Int.MAX_VALUE,
+    var optional: Boolean,
     @ColumnInfo(name = "ref_recipe") var refRecipe: Long?
 ) : Parcelable {
 
@@ -39,6 +41,7 @@ data class Step(
         parcel.readLong().let { if (it >= 0) it else null },
         parcel.readString()!!,
         parcel.readInt(),
+        ParcelCompat.readBoolean(parcel),
         parcel.readLong().let { if (it >= 0) it else null }
     )
 
@@ -47,6 +50,7 @@ data class Step(
         null,
         step.name,
         step.order,
+        false,
         null
     )
 
@@ -54,6 +58,7 @@ data class Step(
         parcel.writeLong(id ?: -1)
         parcel.writeString(text)
         parcel.writeInt(order)
+        ParcelCompat.writeBoolean(parcel, optional)
         parcel.writeLong(refRecipe ?: -1)
     }
 

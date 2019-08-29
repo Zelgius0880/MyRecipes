@@ -40,6 +40,7 @@ class IngredientRepository(context: Context) {
                     null,
                     item.quantity,
                     item.unit,
+                    item.optional,
                     item.sortOrder,
                     id,
                     recipe.id,
@@ -80,6 +81,7 @@ class IngredientRepository(context: Context) {
                         null,
                         item.quantity,
                         item.unit,
+                        item.optional,
                         item.sortOrder,
                         item.id,
                         item.refRecipe,
@@ -88,7 +90,7 @@ class IngredientRepository(context: Context) {
                 )
                 0
             }else
-                dao.update(RecipeIngredient(id, item.quantity, item.unit, item.sortOrder, item.id, item.refRecipe, item.refStep))
+                dao.update(RecipeIngredient(id, item.quantity, item.unit, item.optional, item.sortOrder, item.id, item.refRecipe, item.refStep))
         }
 
 

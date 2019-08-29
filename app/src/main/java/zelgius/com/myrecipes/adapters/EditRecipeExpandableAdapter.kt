@@ -58,6 +58,8 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         setHasStableIds(true)
     }
 
+    private val alpha = 0.6f
+
     private fun createProvider() {
         val list = mutableListOf<Pair<StepItem, MutableList<DataItem>>>()
 
@@ -167,6 +169,11 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
             UiUtils.getIngredientDrawable(itemView.image, item)
 
             itemView.setOnClickListener { editIngredientListener?.invoke(item) }
+
+            if(item.optional == true || item.step?.optional == true) {
+                itemView.image.alpha = alpha
+                itemView.ingredientName.alpha = alpha
+            }
         }
     }
 
@@ -262,6 +269,11 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                 animation?.start()
 
             }
+
+            if(item?.optional == true) {
+                itemView.stepImage.alpha = alpha
+                itemView.step.alpha = alpha
+            }
         }
     }
 
@@ -327,6 +339,11 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                     itemView.stepImage.visibility = View.VISIBLE
                     itemView.behindViewStep.visibility = View.VISIBLE
                 }
+            }
+
+            if(item.optional) {
+                itemView.stepImage.alpha = alpha
+                itemView.step.alpha = alpha
             }
         }
     }
@@ -441,7 +458,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
     fun update(item: IngredientForRecipe) {
         val i = provider.list.indexOfLast { item.step == it.first.item }
         if (i >= 0) {
-            item.sortOrder = provider.getChildCount(i)
+            //item.sortOrder = provider.getChildCount(i)
             expandableItemManager?.notifyChildItemChanged(i,
                 provider.list[i].second.indexOfFirst { it is IngredientItem && it.item == item }
             )
@@ -449,8 +466,14 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
     }
 
     fun update(item: Step) {
-        item.order = provider.groupCount
-        expandableItemManager?.notifyGroupItemChanged(provider.list.indexOfLast { item == it.first.item })
+        //item.order = provider.groupCount
+        val indexOf = provider.list.indexOfLast { item == it.first.item }
+        expandableItemManager?.notifyGroupItemChanged(indexOf)
+
+        provider.list[indexOf].second.forEachIndexed { i, _->
+            expandableItemManager?.notifyChildItemChanged(indexOf,i)
+
+        }
     }
 
     fun remove(item: IngredientForRecipe) {

@@ -266,10 +266,15 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         val list = mutableListOf<Parcelable>()
         list.addAll(recipe.ingredients.filter { it.step == null }.sortedBy { it.sortOrder })
         recipe.steps.forEach { s ->
-            list.addAll(recipe.ingredients.filter { it.step == s }.sortedBy { it.sortOrder })
+            list.addAll(recipe.ingredients.filter {
+                with(it.step == s){
+                    if(this) it.optional = it.optional == true || s.optional
+
+                    this
+                }
+            }.sortedBy { it.sortOrder })
             list.add(s)
         }
-
 
         if (list.isNotEmpty()) {
             val name = app.getString(R.string.channel_name)
@@ -304,6 +309,10 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                 is Step -> o.text
                 is IngredientForRecipe -> IngredientForRecipe.text(app, o)
                 else -> error("Should not be there")
+            }.let {
+                if(o is Step && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
+                    "($it)"
+                else it
             }
 
             val drawable = when (o) {
@@ -404,9 +413,9 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                 )
             )
 
-            steps.add(Step(null, "Step 1", Int.MAX_VALUE, null).apply { order = 1 })
-            steps.add(Step(null, "Step 2", Int.MAX_VALUE, null).apply { order = 2 })
-            steps.add(Step(null, "Step 3", Int.MAX_VALUE, null).apply {
+            steps.add(Step(null, "Step 1", Int.MAX_VALUE,true, null).apply { order = 1 })
+            steps.add(Step(null, "Step 2", Int.MAX_VALUE,false, null).apply { order = 2 })
+            steps.add(Step(null, "Step 3", Int.MAX_VALUE, false, null).apply {
                 order = 3
                 ingredients.add(
                     IngredientForRecipe(

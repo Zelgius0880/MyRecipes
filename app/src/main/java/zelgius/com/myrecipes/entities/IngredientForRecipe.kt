@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.entities
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.core.os.ParcelCompat
 import androidx.room.DatabaseView
 import androidx.room.Ignore
 import kotlinx.android.synthetic.main.adapter_ingredient.view.*
@@ -13,9 +14,9 @@ import java.text.DecimalFormat
 
 @DatabaseView(
     """
-    SELECT ri.quantity, ri.unit, ri.ref_recipe AS refRecipe, ri.ref_step AS refStep, ri.sort_order AS sortOrder,
-     i.name, i.id, i.image_url AS imageUrl FROM RecipeIngredient ri
-        INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
+SELECT ri.quantity, ri.unit, ri.ref_recipe AS refRecipe, ri.ref_step AS refStep, ri.sort_order AS sortOrder,
+i.name, i.id, i.image_url AS imageUrl, ri.optional FROM RecipeIngredient ri
+INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
         """
 )
 data class IngredientForRecipe(
@@ -24,6 +25,7 @@ data class IngredientForRecipe(
     var unit: Ingredient.Unit,
     var name: String,
     var imageUrl: String?,
+    var optional: Boolean?,
     var sortOrder: Int,
     var refRecipe: Long?,
     var refStep: Long?
@@ -36,12 +38,25 @@ data class IngredientForRecipe(
     var step: Step? = null
 
     @Ignore
+    constructor(
+        id: Long?,
+        quantity: Double,
+        unit: Ingredient.Unit,
+        name: String,
+        imageUrl: String?,
+        sortOrder: Int,
+        refRecipe: Long?,
+        refStep: Long?
+    ) : this(id, quantity, unit, name, imageUrl, false, sortOrder, refRecipe, refStep)
+
+    @Ignore
     constructor(parcel: Parcel) : this(
         parcel.readValue(Long::class.java.classLoader) as? Long,
         parcel.readDouble(),
         Ingredient.Unit.valueOf(parcel.readString()!!),
         parcel.readString()!!,
         parcel.readString(),
+        ParcelCompat.readBoolean(parcel),
         parcel.readInt(),
         parcel.readLong().let { if (it >= 0) it else null },
         parcel.readLong().let { if (it >= 0) it else null }
@@ -53,12 +68,13 @@ data class IngredientForRecipe(
         ingredient.quantity,
         Ingredient.Unit.valueOf(ingredient.unit.name),
         ingredient.name,
-        if(ingredient.hasImageUrl()) ingredient.imageUrl else null,
+        if (ingredient.hasImageUrl()) ingredient.imageUrl else null,
+        false,
         ingredient.sortOrder,
         null,
         null
     ) {
-        if(ingredient.hasStep()) {
+        if (ingredient.hasStep()) {
             step = Step(ingredient.step)
         }
     }
@@ -69,6 +85,7 @@ data class IngredientForRecipe(
         parcel.writeString(unit.name)
         parcel.writeString(name)
         parcel.writeString(imageUrl)
+        ParcelCompat.writeBoolean(parcel, optional?:false)
         parcel.writeInt(sortOrder)
         parcel.writeLong(refRecipe ?: -1)
         parcel.writeLong(refStep ?: -1)
@@ -130,10 +147,11 @@ data class IngredientForRecipe(
         .setName(name)
         .setQuantity(quantity)
         .setSortOrder(sortOrder)
+        .setIsOptional(optional?:false)
         .setUnit(RecipeProto.Ingredient.Unit.valueOf(unit.name))
         .also {
-            if(step != null) it.step = step?.toProtoBuff()
-            if(imageUrl != null) it.imageUrl = imageUrl
+            if (step != null) it.step = step?.toProtoBuff()
+            if (imageUrl != null) it.imageUrl = imageUrl
         }
         .build()!!
 }

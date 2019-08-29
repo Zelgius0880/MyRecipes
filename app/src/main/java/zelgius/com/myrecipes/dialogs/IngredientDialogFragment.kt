@@ -12,7 +12,6 @@ import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener
 import kotlinx.android.synthetic.main.dialog_fragment_ingredient.view.*
@@ -113,9 +112,6 @@ class IngredientDialogFragment : DialogFragment() {
                                     ).getString(i.name, null)?: lastSelectedUnit
                                 })
                             }
-                        }
-                        list[position].let { i ->
-
                         }
                     }
 
@@ -222,6 +218,8 @@ class IngredientDialogFragment : DialogFragment() {
                 ingredient.unit = lastSelectedUnit
             }
 
+            dialogView.optional.isChecked = ingredient.optional?:false
+
             dialogView.spinner.setSelection(units.indexOfFirst { s ->
                 when (s) {
                     getString(R.string.gramme_select) -> ingredient.unit == Ingredient.Unit.GRAMME
@@ -263,6 +261,7 @@ class IngredientDialogFragment : DialogFragment() {
                                     dialogView.quantity.error =
                                         getString(R.string.error_not_a_number)
                                 }
+
                                 if (new) {
                                     if (dialogView.name.editText?.text?.isEmpty() != false) {
                                         dialogView.name.error = getString(R.string.field_required)
@@ -271,6 +270,7 @@ class IngredientDialogFragment : DialogFragment() {
 
                                         ingredient.name = dialogView.name.editText!!.text.toString()
                                         ingredient.imageUrl = null
+                                        ingredient.optional = dialogView.optional.isChecked
                                         dismiss()
 
                                         context.getSharedPreferences(
@@ -303,6 +303,7 @@ class IngredientDialogFragment : DialogFragment() {
                                         dialogView.error.text =
                                             getString(R.string.select_an_ingredient)
                                     } else {
+                                        ingredient.optional = dialogView.optional.isChecked
                                         dismiss()
 
                                         context.getSharedPreferences(

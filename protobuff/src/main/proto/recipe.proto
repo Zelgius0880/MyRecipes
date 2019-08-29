@@ -50,4 +50,6 @@ message Ingredient {
     }
 
     required Unit unit = 6;
+    optional bool isOptional = 7;
+
 }

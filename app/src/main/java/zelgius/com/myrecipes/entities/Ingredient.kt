@@ -27,6 +27,7 @@ data class RecipeIngredient(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var quantity: Double,
     var unit: Ingredient.Unit,
+    var optional: Boolean?,
     @ColumnInfo(name = "sort_order") var sortOrder: Int,
     @ColumnInfo(name = "ref_ingredient") var refIngredient: Long?,
     @ColumnInfo(name = "ref_recipe") var refRecipe: Long?,

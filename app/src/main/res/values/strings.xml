@@ -123,6 +123,7 @@
     <string name="tomato_name">Tomato(es)</string>
     <string name="tomato_sauce_name">Tomato sauce</string>
     <string name="pinch_select">pinch</string>
+    <string name="optional">Optional</string>
 
 </resources>
 

@@ -8,12 +8,10 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Step
 
 
@@ -34,7 +32,7 @@ class StepDialogFragment : DialogFragment() {
             ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
         ).get(RecipeViewModel::class.java) }
 
-    var step = Step(null, "", Int.MAX_VALUE, null)
+    var step = Step(null, "", Int.MAX_VALUE,false, null)
         .apply { new = true }
     var listener: NoticeDialogListener? = null
 
@@ -55,6 +53,7 @@ class StepDialogFragment : DialogFragment() {
         return activity?.let {
             if(!step.new){
                 dialogView.text.editText?.setText(step.text)
+                dialogView.optional.isChecked = step.optional
             }
 
             return AlertDialog.Builder(it)
@@ -68,7 +67,7 @@ class StepDialogFragment : DialogFragment() {
                     }
                 }
                 .create().apply {
-                    dialogView.text.editText?.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                    dialogView.text.editText?.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_AUTO_CORRECT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
                     setOnShowListener {
                         getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
 
@@ -78,6 +77,7 @@ class StepDialogFragment : DialogFragment() {
                                 //ingredient = IngredientForRecipe(null, dialogView.quantity.toDouble(), Ingredient.Unit.valueOf() dialogView.name.editText!!.text.toString(), "")
 
                                 step.text = dialogView.text.editText!!.text.toString()
+                                step.optional = dialogView.optional.isChecked
                                 dismiss()
                                 activity.let { d ->
                                     if (d is NoticeDialogListener) d.onDialogPositiveClick(this@StepDialogFragment)

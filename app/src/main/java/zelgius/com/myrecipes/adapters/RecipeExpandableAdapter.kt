@@ -18,6 +18,7 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemVie
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.adapter_ingredient.view.*
 import kotlinx.android.synthetic.main.adapter_step.view.*
+import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.entities.Ingredient
@@ -55,6 +56,8 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         expandableItemManager?.expandGroup(0)
 
     }
+
+    private val alpha = 0.6f
 
     private fun createProvider() {
         val list = mutableListOf<Pair<StepItem, MutableList<DataItem>>>()
@@ -127,6 +130,11 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
             itemView.ingredientName.text = IngredientForRecipe.text(context, item)
 
             UiUtils.getIngredientDrawable(itemView.image, item)
+
+            if(item.optional == true || item.step?.optional == true) {
+                itemView.image.alpha = alpha
+                itemView.ingredientName.alpha = alpha
+            }
         }
     }
 
@@ -191,6 +199,11 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
                 animation?.start()
 
             }
+
+            if(item?.optional == true) {
+                itemView.stepImage.alpha = alpha
+                itemView.step.alpha = alpha
+            }
         }
     }
 
@@ -231,6 +244,11 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
                         ContextCompat.getColor(itemView.context, R.color.md_cyan_A700)
                     )
             )
+
+            if(item.optional) {
+                itemView.stepImage.alpha = alpha
+                itemView.step.alpha = alpha
+            }
         }
     }
 

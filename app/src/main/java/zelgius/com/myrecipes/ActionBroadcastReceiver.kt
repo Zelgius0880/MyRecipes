@@ -33,6 +33,10 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
                 is Step -> o.text
                 is IngredientForRecipe -> IngredientForRecipe.text(context, o)
                 else -> error("Should not be there")
+            }.let {
+                if(o is Step && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
+                    "($it)"
+                else it
             }
 
             val drawable = when (o) {
