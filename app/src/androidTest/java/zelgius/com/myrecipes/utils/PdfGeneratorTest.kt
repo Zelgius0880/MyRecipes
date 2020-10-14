@@ -12,7 +12,7 @@ import java.io.File
 
 class PdfGeneratorTest {
 
-    val context by lazy { ApplicationProvider.getApplicationContext<Application>()!! }
+    private val context by lazy { ApplicationProvider.getApplicationContext<Application>()!! }
 
     private val viewModel: RecipeViewModel by lazy { RecipeViewModel(context) }
 
@@ -39,7 +39,14 @@ class PdfGeneratorTest {
             // Test with storage image
             PdfGenerator(context).createPdf(viewModel.createDummySample().apply {
                 name = "Long Step $name"
-                steps.add(Step(null, LONG_STRING + LONG_STRING+ LONG_STRING, steps.size + 1, null))
+                steps.add(
+                    Step(
+                        id = null,
+                        text = LONG_STRING + LONG_STRING + LONG_STRING, order = steps.size + 1,
+                        optional = false,
+                        refRecipe = null
+                    )
+                )
             }, file)
 
 

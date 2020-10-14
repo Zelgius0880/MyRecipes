@@ -2,10 +2,8 @@ package zelgius.com.myrecipes.worker
 
 import android.content.Context
 import android.os.Environment.DIRECTORY_PICTURES
-import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import zelgius.com.myrecipes.TAG
 import zelgius.com.myrecipes.repository.AppDatabase
 import java.io.File
 import java.net.URL

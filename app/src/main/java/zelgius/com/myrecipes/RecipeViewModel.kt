@@ -20,9 +20,7 @@ import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.jetbrains.annotations.TestOnly
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
@@ -226,7 +224,12 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
             viewModelScope.launch {
                 result.value = try {
                     val bytes = Base64.decode(scannedBase64, Base64.NO_PADDING).unzip()
-                    val proto = RecipeProto.Recipe.parseFrom(bytes)
+
+                    @Suppress("BlockingMethodInNonBlockingContext")
+                    val proto =
+                        coroutineScope {
+                            RecipeProto.Recipe.parseFrom(bytes)
+                        }
                     val recipe = Recipe(proto)
 
                     recipe.ingredients.forEach {
@@ -267,8 +270,8 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         list.addAll(recipe.ingredients.filter { it.step == null }.sortedBy { it.sortOrder })
         recipe.steps.forEach { s ->
             list.addAll(recipe.ingredients.filter {
-                with(it.step == s){
-                    if(this) it.optional = it.optional == true || s.optional
+                with(it.step == s) {
+                    if (this) it.optional = it.optional == true || s.optional
 
                     this
                 }
@@ -310,7 +313,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                 is IngredientForRecipe -> IngredientForRecipe.text(app, o)
                 else -> error("Should not be there")
             }.let {
-                if(o is Step && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
+                if (o is Step && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
                     "($it)"
                 else it
             }
@@ -342,10 +345,12 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                     pIntent
                 )
                 .setContentIntent(
-                    PendingIntent.getActivity(app, 0,
-                        Intent(app, MainActivity::class.java ).apply {
+                    PendingIntent.getActivity(
+                        app, 0,
+                        Intent(app, MainActivity::class.java).apply {
                             putExtras(bundleOf("ID_FROM_NOTIF" to recipe.id))
-                        }, PendingIntent.FLAG_UPDATE_CURRENT)
+                        }, PendingIntent.FLAG_UPDATE_CURRENT
+                    )
                 )
             //.setStyleMediaStyle().setMediaSession(MediaSessionCompat.Token.fromToken(recipe)))
 
@@ -413,8 +418,8 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                 )
             )
 
-            steps.add(Step(null, "Step 1", Int.MAX_VALUE,true, null).apply { order = 1 })
-            steps.add(Step(null, "Step 2", Int.MAX_VALUE,false, null).apply { order = 2 })
+            steps.add(Step(null, "Step 1", Int.MAX_VALUE, true, null).apply { order = 1 })
+            steps.add(Step(null, "Step 2", Int.MAX_VALUE, false, null).apply { order = 2 })
             steps.add(Step(null, "Step 3", Int.MAX_VALUE, false, null).apply {
                 order = 3
                 ingredients.add(

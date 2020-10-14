@@ -4,9 +4,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.URLUtil
-import androidx.core.net.toUri
 import androidx.navigation.fragment.FragmentNavigator
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -23,7 +22,6 @@ import kotlinx.android.synthetic.main.adapter_fragment_recipe.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.dpToPx
-import androidx.navigation.fragment.FragmentNavigatorExtras
 
 
 class RecipePagedAdapter :
@@ -230,14 +228,6 @@ class RecipePagedAdapter :
                 notifyItemChanged(position)
                 mSetPinned = true
             }
-        }
-
-        override fun onSlideAnimationEnd() {
-            super.onSlideAnimationEnd()
-
-            /*if (mSetPinned && mAdapter!!.mEventListener != null) {
-                mAdapter!!.mEventListener.onItemPinned(mPosition)
-            }*/
         }
 
     }

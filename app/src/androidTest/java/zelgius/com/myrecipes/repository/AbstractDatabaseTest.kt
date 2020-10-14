@@ -3,10 +3,11 @@ package zelgius.com.myrecipes.repository
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.*
-import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import com.facebook.stetho.Stetho
-import org.junit.*
+import org.junit.AfterClass
+import org.junit.BeforeClass
+import org.junit.Rule
 import java.io.IOException
 
 

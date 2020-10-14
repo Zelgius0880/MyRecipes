@@ -4,7 +4,6 @@ package zelgius.com.myrecipes.fragments
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
@@ -17,17 +16,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import zelgius.com.myrecipes.filepicker.model.DialogConfigs
-import zelgius.com.myrecipes.filepicker.model.DialogProperties
-import zelgius.com.myrecipes.filepicker.view.FilePickerDialog
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
 import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
@@ -36,8 +30,7 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import kotlinx.android.synthetic.main.fragment_recipe.header
-import kotlinx.android.synthetic.main.fragment_recipe.list
+import kotlinx.android.synthetic.main.fragment_recipe.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
 import kotlinx.android.synthetic.main.layout_header.*
 import zelgius.com.myrecipes.R
@@ -46,6 +39,9 @@ import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.filepicker.model.DialogConfigs
+import zelgius.com.myrecipes.filepicker.model.DialogProperties
+import zelgius.com.myrecipes.filepicker.view.FilePickerDialog
 import zelgius.com.myrecipes.utils.UiUtils
 import java.io.File
 
@@ -59,7 +55,6 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     RecyclerViewExpandableItemManager.OnGroupCollapseListener {
 
     companion object {
-        const val REQUEST_CODE = 543
         const val SAVED_STATE_EXPANDABLE_ITEM_MANAGER = "RecyclerViewExpandableItemManager"
 
     }
@@ -136,11 +131,11 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
         viewModel.editMode.value = true
 
-        viewModel.editMode.observe(this, Observer {
+        viewModel.editMode.observe(viewLifecycleOwner,  {
             adapter.notifyDataSetChanged()
         })
 
-        viewModel.selectedRecipe.observe(this, Observer {
+        viewModel.selectedRecipe.observe(viewLifecycleOwner,  {
             viewModel.currentRecipe = it
             adapter.recipe = it
             adapter.notifyDataSetChanged()
@@ -151,7 +146,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
             activity?.actionBar?.title = it.name
         })
 
-        viewModel.selectedImageUrl.observe(this, Observer {
+        viewModel.selectedImageUrl.observe(viewLifecycleOwner,  {
             if (it != null && it.toString().isNotEmpty()) {
                 imageView.setPadding(0, 0, 0, 0)
                 imageView.setImageURI(it)
@@ -195,8 +190,8 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     override fun onResume() {
         super.onResume()
 
-        (activity as AppCompatActivity).setSupportActionBar(view!!.toolbar)
-        NavigationUI.setupActionBarWithNavController(activity!! as AppCompatActivity, navController)
+        (activity as AppCompatActivity).setSupportActionBar(requireView().toolbar)
+        NavigationUI.setupActionBarWithNavController(requireActivity() as AppCompatActivity, navController)
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
@@ -209,7 +204,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.pdf -> {
-                Dexter.withActivity(activity)
+                Dexter.withContext(activity)
                     .withPermissions(
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -267,10 +262,11 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
     fun setupFilePicker() {
         DialogProperties().apply {
-            selection_mode = DialogConfigs.SINGLE_MODE
-            selection_type = DialogConfigs.DIR_SELECT
-            root = Environment.getExternalStorageDirectory()
-            error_dir = File(DialogConfigs.DEFAULT_DIR)
+            selectionMode = DialogConfigs.SINGLE_MODE
+            selectionType = DialogConfigs.DIR_SELECT
+            root = Environment.getExternalStorageDirectory() // TODO change the external storage access
+
+            errorDir = File(DialogConfigs.DEFAULT_DIR)
             offset = File(DialogConfigs.DEFAULT_DIR)
             extensions = null
 
@@ -278,10 +274,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
                 it.setDialogSelectionListener { result ->
                     menu.findItem(R.id.pdf).actionView = ProgressBar(context)
                     viewModel.exportToPdf(viewModel.currentRecipe, File(result.first()))
-                        .observe(this@RecipeFragment, Observer {file ->
+                        .observe(this@RecipeFragment,  {file ->
                             menu.findItem(R.id.pdf).actionView = null
 
-                            Snackbar.make(view!!, R.string.pdf_created, Snackbar.LENGTH_LONG)
+                            Snackbar.make(requireView(), R.string.pdf_created, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.open) {
                                     val target = Intent(Intent.ACTION_VIEW)
                                     target.setDataAndType(
@@ -300,7 +296,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
                                         startActivity(intent)
                                     } catch (e: ActivityNotFoundException) {
                                         Snackbar.make(
-                                            view!!,
+                                            requireView(),
                                             R.string.no_viewer_found,
                                             Snackbar.LENGTH_SHORT
                                         ).show()
@@ -310,7 +306,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
                         })
 
                 }
-                it.show(fragmentManager!!, "file_picker")
+                it.show(parentFragmentManager, "file_picker")
             }
         }
     }

@@ -8,7 +8,6 @@ public abstract class DialogConfigs {
     public static final int MULTI_MODE = 1;
     public static final int FILE_SELECT = 0;
     public static final int DIR_SELECT = 1;
-    public static final int FILE_AND_DIR_SELECT = 2;
 
     /*  PARENT_DIRECTORY*/
     public static final String DIRECTORY_SEPERATOR = "/";

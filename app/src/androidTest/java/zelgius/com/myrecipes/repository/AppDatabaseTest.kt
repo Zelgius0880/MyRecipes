@@ -3,9 +3,7 @@ package zelgius.com.myrecipes.repository
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Assert.*
 import org.junit.Rule
-import androidx.sqlite.db.SupportSQLiteDatabase
 import org.junit.Test
 
 const val TEST_DB_NAME = "test_db.db"

@@ -1,26 +1,15 @@
 package zelgius.com.myrecipes.fragments
 
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
-import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.adapters.RecipePagedAdapter
 import zelgius.com.myrecipes.entities.Recipe
 
 /**
@@ -59,7 +48,7 @@ class ListFragment : AbstractRecipeListFragment() {
             Recipe.Type.MEAL -> viewModel.mealList
             Recipe.Type.DESSERT -> viewModel.dessertList
             Recipe.Type.OTHER -> viewModel.otherList
-        }.observe(this@ListFragment, Observer {
+        }.observe(this@ListFragment, {
             adapter.submitList(it)
         })
 

@@ -1,7 +1,5 @@
 package zelgius.com.myrecipes.adapters
 
-import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
-
 abstract class DataItem(var adapterId: Long) {
     abstract val isSectionHeader: Boolean
     private var nextChildId = 0L
@@ -28,10 +26,6 @@ class AdapterDataProvider<P : DataItem, C : DataItem>(val list: MutableList<Pair
 
     val groupCount: Int
         get() = list.size
-
-    init {
-
-    }
 
     fun getChildCount(groupPosition: Int): Int {
         return list[groupPosition].second.size
@@ -116,9 +110,6 @@ class AdapterDataProvider<P : DataItem, C : DataItem>(val list: MutableList<Pair
         list.add(item to mutableListOf())
     }
 
-    fun addGroupItem(position: Int,item: P){
-        list.add(position, item to mutableListOf())
-    }
 
     fun addChildItem(groupPosition: Int,item: C){
         list[groupPosition].second.add(item)
@@ -126,64 +117,4 @@ class AdapterDataProvider<P : DataItem, C : DataItem>(val list: MutableList<Pair
     fun addChildItem(groupPosition: Int, childPosition: Int, item: C){
         list[groupPosition].second.add(childPosition, item)
     }
-
-    fun undoLastRemoval(): Long {
-        return when {
-            mLastRemovedGroup != null -> undoGroupRemoval()
-            mLastRemovedChild != null -> undoChildRemoval()
-            else -> RecyclerViewExpandableItemManager.NO_EXPANDABLE_POSITION
-        }
-    }
-
-    private fun undoGroupRemoval(): Long {
-        val insertedPosition: Int
-        if (mLastRemovedGroupPosition >= 0 && mLastRemovedGroupPosition < list.size) {
-            insertedPosition = mLastRemovedGroupPosition
-        } else {
-            insertedPosition = list.size
-        }
-
-        if (mLastRemovedGroup != null)
-            list.add(insertedPosition, mLastRemovedGroup!!)
-
-        mLastRemovedGroup = null
-        mLastRemovedGroupPosition = -1
-
-        return RecyclerViewExpandableItemManager.getPackedPositionForGroup(insertedPosition)
-    }
-
-    private fun undoChildRemoval(): Long {
-        var group: Pair<P, MutableList<C>>? = null
-        var groupPosition = -1
-
-        // find the group
-        for (i in list.indices) {
-            if (list[i].first.adapterId == mLastRemovedChildParentGroupId) {
-                group = list[i]
-                groupPosition = i
-                break
-            }
-        }
-
-        if (group == null) {
-            return RecyclerViewExpandableItemManager.NO_EXPANDABLE_POSITION
-        }
-
-        val insertedPosition = if (mLastRemovedChildPosition >= 0 && mLastRemovedChildPosition < group.second.size) {
-            mLastRemovedChildPosition
-        } else {
-            group.second.size
-        }
-
-        mLastRemovedChild?.also {
-            group.second.add(insertedPosition, it)
-        }
-
-        mLastRemovedChildParentGroupId = -1
-        mLastRemovedChildPosition = -1
-        mLastRemovedChild = null
-
-        return RecyclerViewExpandableItemManager.getPackedPositionForChild(groupPosition, insertedPosition)
-    }
-
 }

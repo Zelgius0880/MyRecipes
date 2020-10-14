@@ -1,7 +1,6 @@
 package zelgius.com.myrecipes.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,25 +17,20 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemVie
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.adapter_ingredient.view.*
 import kotlinx.android.synthetic.main.adapter_step.view.*
-import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.ViewUtils
 import zelgius.com.myrecipes.utils.dpToPx
-import zelgius.com.myrecipes.utils.round
-import java.text.DecimalFormat
 
 
 class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) :
     AbstractExpandableItemAdapter<RecipeExpandableAdapter.StepSectionViewHolder, AbstractExpandableItemViewHolder>() {
 
     private lateinit var recyclerView: RecyclerView
-    lateinit var layoutManager: LinearLayoutManager
+    private lateinit var layoutManager: LinearLayoutManager
     lateinit var provider: AdapterDataProvider<StepItem, DataItem>
     var expandableItemManager: RecyclerViewExpandableItemManager? = null
         set(value) {
@@ -63,18 +57,18 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         val list = mutableListOf<Pair<StepItem, MutableList<DataItem>>>()
 
         list.add(StepItem(0, null) to recipe.ingredients
-            .sortedWith(Comparator { o1, o2 ->
+            .sortedWith { o1, o2 ->
                 when {
                     o1.step == null && o2.step != null -> -1
                     o2.step == null && o1.step != null -> 1
                     else -> o1.sortOrder - o2.sortOrder
                 }
-            })
+            }
             .mapIndexed { i, item ->
                 IngredientItem(
                     item.id ?: i.toLong(),
                     item
-                ) as DataItem
+                )
             } // Flagged as 'No cast needed' but actually needed
             .toMutableList())
 

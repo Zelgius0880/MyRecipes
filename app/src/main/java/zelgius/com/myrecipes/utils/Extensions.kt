@@ -2,41 +2,22 @@ package zelgius.com.myrecipes.utils
 
 import android.content.Context
 import android.graphics.Color
-import android.net.Uri
 import android.util.TypedValue
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.android.material.textfield.TextInputLayout
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import kotlin.math.round
 import kotlin.math.roundToInt
-import kotlin.reflect.full.declaredMemberProperties
-
-fun Any.asMap(): Map<String, Any?> =
-    this::class.declaredMemberProperties.map {
-        it.name to it.getter.call(this)
-    }.toMap()
-
 
 fun TextInputLayout.toDouble()
         = editText!!.text.toString().replace(',', '.').toDouble()
-
-fun Context.resourcePath() =
-    Uri.parse("android.resource://$packageName")
-
-fun Context.asstesPath() =
-    Uri.parse("file:///android_asset/")
-
-fun Context.getCompatColor(@ColorRes color: Int) = ContextCompat.getColor(this, color)
-
 
 fun Double.round(decimals: Int): Double {
     var multiplier = 1.0
@@ -68,7 +49,7 @@ fun Context.dpToPx(dp: Float) =
 
 fun ByteArray.unzip(): ByteArray {
     val zis = ZipInputStream(ByteArrayInputStream(this))
-    var data: ZipEntry =  zis.nextEntry
+    val data: ZipEntry =  zis.nextEntry
     println(data.name)
 
     val os = ByteArrayOutputStream()

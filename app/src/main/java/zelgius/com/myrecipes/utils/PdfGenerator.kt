@@ -7,15 +7,12 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.util.Base64
-import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.alpha
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withTranslation
 import androidx.core.net.toUri
 import com.amulyakhare.textdrawable.TextDrawable
-import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.glxn.qrgen.android.QRCode
@@ -30,7 +27,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.charset.Charset
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.math.ceil
@@ -85,13 +81,13 @@ class PdfGenerator(val context: Context) {
                 200
             )
             val ingredients =
-                recipe.ingredients.sortedWith(Comparator { o1, o2 ->
+                recipe.ingredients.sortedWith { o1, o2 ->
                     when {
                         o1.step == null && o2.step != null -> -1
                         o2.step == null && o1.step != null -> 1
                         else -> o1.sortOrder - o2.sortOrder
                     }
-                })
+                }
 
             linePosition += 100
             ingredients.forEach {

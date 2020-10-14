@@ -19,7 +19,7 @@ public class MarkedItemList {
     }
 
     public static boolean hasItem(String key) {
-        return ourInstance.containsKey(key);
+        return !ourInstance.containsKey(key);
     }
 
     public static void clearSelectionList() {

@@ -1,8 +1,6 @@
 package zelgius.com.myrecipes.utils
 
 import android.content.Context
-import android.content.res.Resources
-import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
@@ -51,7 +49,7 @@ object UiUtils {
      * @param color Int?        if not null, set the color of the letter of the ingredient, else the color will be white
      * @return (Drawable?)
      */
-    fun getDrawableForImageView(context: Context, item: IngredientForRecipe, padding: Float = 8f, @ColorInt color: Int? = null) =
+    fun getDrawableForImageView(context: Context, item: IngredientForRecipe, padding: Float = 8f, @ColorInt color: Int? = null): Drawable =
         getDrawableForImageView(context, Ingredient(name = item.name, imageURL = item.imageUrl, id = item.id), padding = padding, color = color)
 
     /**
@@ -62,13 +60,13 @@ object UiUtils {
      * @param color Int?        if not null, set the color of the letter of the ingredient, else the color will be white
      * @return (Drawable?)
      */
-    fun getDrawableForImageView(context: Context, item: Ingredient, padding: Float = 8f, @ColorInt color: Int? = null) =
+    private fun getDrawableForImageView(context: Context, item: Ingredient, padding: Float = 8f, @ColorInt color: Int? = null): Drawable =
         DefaultIngredients.values().find { it.url == item.imageURL }.let {
             if (it != null) {
                 LayerDrawable(
                     arrayOf(
-                        context.getDrawable(R.drawable.background_circle)
-                        , context.getDrawable(it.drawable)
+                        ContextCompat.getDrawable(context, R.drawable.background_circle)
+                        ,  ContextCompat.getDrawable(context, it.drawable)
                     )
                 ).apply {
                     val dp = context.dpToPx(padding).roundToInt()
@@ -99,7 +97,7 @@ object UiUtils {
     ): Drawable? {
         DefaultIngredients.values().find { it.url == drawableName }.let {
             if (it != null) {
-                return context.getDrawable(it.drawable)
+                return  ContextCompat.getDrawable(context, it.drawable)
             } else
                 return TextDrawable.builder()
                     .beginConfig()
@@ -130,7 +128,7 @@ object UiUtils {
                             imageView.context,
                             color
                         )
-                    ), imageView.context.getDrawable(drawable)
+                    ),  ContextCompat.getDrawable(imageView.context, drawable)
                 )
             ).apply {
                 val px = imageView.context.dpToPx(dp).roundToInt()
@@ -138,57 +136,6 @@ object UiUtils {
             }
         )
     }
-
-
-    fun generateCircleBitmap(
-        context: Context,
-        circleColor: Int,
-        diameterDP: Float,
-        text: String?
-    ): Bitmap {
-        val textColor = -0x1
-
-        val metrics = Resources.getSystem().displayMetrics
-        val diameterPixels = diameterDP * (metrics.densityDpi / 160f)
-        val radiusPixels = diameterPixels / 2
-
-        // Create the bitmap
-        val output = Bitmap.createBitmap(
-            diameterPixels.toInt(), diameterPixels.toInt(),
-            Bitmap.Config.ARGB_8888
-        )
-
-        // Create the canvas to draw on
-        val canvas = Canvas(output)
-        canvas.drawARGB(0, 0, 0, 0)
-
-        // Draw the background_circle
-        val paintC = Paint()
-        paintC.isAntiAlias = true
-        paintC.color = circleColor
-        canvas.drawCircle(radiusPixels, radiusPixels, radiusPixels, paintC)
-
-        // Draw the text
-        if (text != null && text.isNotEmpty()) {
-            val paintT = Paint()
-            paintT.color = textColor
-            paintT.isAntiAlias = true
-            paintT.textSize = radiusPixels * 2
-            val typeFace = Typeface.createFromAsset(context.assets, "fonts/Roboto-Thin.ttf")
-            paintT.typeface = typeFace
-            val textBounds = Rect()
-            paintT.getTextBounds(text, 0, text.length, textBounds)
-            canvas.drawText(
-                text,
-                radiusPixels - textBounds.exactCenterX(),
-                radiusPixels - textBounds.exactCenterY(),
-                paintT
-            )
-        }
-
-        return output
-    }
-
 
     fun bindHeader(recipe: Recipe, viewHolder: HeaderViewHolder) {
         val context = viewHolder.root.context

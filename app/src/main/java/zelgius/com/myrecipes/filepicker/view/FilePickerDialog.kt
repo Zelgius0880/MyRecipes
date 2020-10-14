@@ -100,7 +100,7 @@ class FilePickerDialog(private val  titleStr: String? = null) : DialogFragment()
                             val buttonLabel = "$positiveBtnNameStr ($size) "
                             select!!.text = buttonLabel
                         }
-                        if (properties.selection_mode == DialogConfigs.SINGLE_MODE) {
+                        if (properties.selectionMode == DialogConfigs.SINGLE_MODE) {
                             /*  If a single file has to be selected, clear the previously checked
                                  *  checkbox from the list.
                                  */
@@ -126,7 +126,7 @@ class FilePickerDialog(private val  titleStr: String? = null) : DialogFragment()
                         } else if (properties.root.exists() && properties.root.isDirectory) {
                             currLoc = File(properties.root.absolutePath)
                         } else {
-                            currLoc = File(properties.error_dir.absolutePath)
+                            currLoc = File(properties.errorDir.absolutePath)
                         }
                         dname.text = currLoc.name
                         dirPath.text = currLoc.absolutePath
@@ -149,9 +149,9 @@ class FilePickerDialog(private val  titleStr: String? = null) : DialogFragment()
 
 
     private fun validateOffsetPath(): Boolean {
-        val offset_path = properties.offset.absolutePath
-        val root_path = properties.root.absolutePath
-        return offset_path != root_path && offset_path.contains(root_path)
+        val offsetPath = properties.offset.absolutePath
+        val rootPath = properties.root.absolutePath
+        return offsetPath != rootPath && offsetPath.contains(rootPath)
     }
 
     private val listener: (View, Int) -> Unit =  { view, i ->
@@ -185,15 +185,6 @@ class FilePickerDialog(private val  titleStr: String? = null) : DialogFragment()
         }
     }
 
-
-    fun getProperties(): DialogProperties? {
-        return properties
-    }
-
-    fun setProperties(properties: DialogProperties) {
-        this.properties = properties
-        filter = ExtensionFilter(properties)
-    }
 
     fun setDialogSelectionListener(callbacks: (Array<String>)->Unit) {
         this.callbacks = callbacks
@@ -333,10 +324,5 @@ class FilePickerDialog(private val  titleStr: String? = null) : DialogFragment()
         MarkedItemList.clearSelectionList()
         internalList.clear()
         super.dismiss()
-    }
-
-    companion object {
-
-        val EXTERNAL_READ_PERMISSION_GRANT = 112
     }
 }

@@ -11,7 +11,9 @@ import zelgius.com.myrecipes.utils.UiUtils
 
 class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingredient>) :
     ArrayAdapter<Ingredient>(context, R.layout.adapter_autocomplete_ingredient), Filterable, ISpinnerSelectedView {
-    private var resultList: List<Ingredient> = ingredients.subList(0, Math.min(5, ingredients.size))
+    private var resultList: List<Ingredient> = ingredients.subList(0,
+        5.coerceAtMost(ingredients.size)
+    )
 
     override fun getCount(): Int {
         return resultList.size
@@ -56,7 +58,7 @@ class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingr
             override fun performFiltering(constraint: CharSequence): FilterResults {
                 val filterResults = FilterResults()
                 if (constraint.isEmpty())
-                    resultList = ingredients.subList(0, Math.min(5, ingredients.size))
+                    resultList = ingredients.subList(0, 5.coerceAtMost(ingredients.size))
                 else {
                     // Retrieve the autocomplete results.
                     resultList = ingredients.filterIndexed { _, ingredient ->
@@ -84,9 +86,5 @@ class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingr
     private inner class ViewHolder {
         lateinit var image: ImageView
         lateinit var name: TextView
-    }
-
-    enum class ItemViewType {
-        ITEM, NO_SELECTION_ITEM
     }
 }

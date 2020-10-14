@@ -1,16 +1,11 @@
 package zelgius.com.myrecipes.entities
 
-import android.content.Context
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.InsetDrawable
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.annotation.ColorInt
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.protobuff.RecipeProto
 import java.io.File
 

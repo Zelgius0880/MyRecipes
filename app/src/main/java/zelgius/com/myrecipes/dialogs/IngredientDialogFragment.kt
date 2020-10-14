@@ -10,7 +10,6 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener
@@ -33,7 +32,7 @@ import java.text.DecimalFormat
  * @property ingredient IngredientForRecipe?             the selected ingredient. If new ingredient, id will be null, else it is the id in the database
  * @property new Boolean                        TRUE if it is a new ingredient, false otherwise
  * @property listener NoticeDialogListener?     the [NoticeDialogListener] listener called when valid or cancel the dialog.
- * If the [Activity] implements [NoticeDialogListener], the listener is not used and the method of the [Activity] will be called instead. Can be null
+ * If the Activity implements [NoticeDialogListener], the listener is not used and the method of the Activity will be called instead. Can be null
  */
 class IngredientDialogFragment : DialogFragment() {
 
@@ -91,7 +90,7 @@ class IngredientDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             // Use the Builder class for convenient dialog construction
-            viewModel.ingredients.observe(this, Observer { list ->
+            viewModel.ingredients.observe(this, { list ->
                 dialogView.ingredients.setAdapter(IngredientAutoCompleteAdapter(context, list))
                 dialogView.ingredients.setOnItemSelectedListener(object : OnItemSelectedListener {
                     override fun onNothingSelected() {
@@ -154,7 +153,7 @@ class IngredientDialogFragment : DialogFragment() {
                 }
             }
 
-            val spinnerArrayAdapter = ArrayAdapter<String>(
+            val spinnerArrayAdapter = ArrayAdapter(
                 it, android.R.layout.simple_spinner_item, units
 
             ) //selected item will look like a spinner set from XML

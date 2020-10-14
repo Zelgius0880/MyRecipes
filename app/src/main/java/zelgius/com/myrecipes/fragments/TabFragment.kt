@@ -112,9 +112,8 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
 
-        when (id) {
+        when (item.itemId) {
             R.id.action_license -> {
                 navController.navigate(
                     R.id.licenseFragment, bundleOf(), NavOptions.Builder()

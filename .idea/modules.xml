@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MyRecipes.iml" filepath="$PROJECT_DIR$/MyRecipes.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/protobuff/protobuff.iml" filepath="$PROJECT_DIR$/protobuff/protobuff.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/MyRecipes.iml" filepath="$PROJECT_DIR$/.idea/modules/MyRecipes.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MyRecipes.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MyRecipes.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/protobuff/MyRecipes.protobuff.iml" filepath="$PROJECT_DIR$/.idea/modules/protobuff/MyRecipes.protobuff.iml" />
     </modules>
   </component>
 </project>

@@ -24,7 +24,6 @@ class IngredientRepository(context: Context) {
      * Insert the IngredientForRecipe (create a RecipeIngredient join). If the id of the ingredient is null, it insert the ingredient too
      * @param item IngredientForRecipe
      * @param recipe Recipe
-     * @param step Step?
      * @return Long the id of the inserted item
      */
     suspend fun insert(item: IngredientForRecipe, recipe: Recipe): Long =

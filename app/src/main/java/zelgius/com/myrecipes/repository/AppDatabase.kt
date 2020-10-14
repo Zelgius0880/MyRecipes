@@ -1,6 +1,5 @@
 package zelgius.com.myrecipes.repository
 
-import android.content.ContentValues
 import android.content.Context
 import androidx.core.content.contentValuesOf
 import androidx.room.*
@@ -9,7 +8,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import zelgius.com.myrecipes.entities.*
 import zelgius.com.myrecipes.repository.dao.IngredientDao
 import zelgius.com.myrecipes.repository.dao.RecipeDao
-import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.repository.dao.StepDao
 
 
@@ -89,7 +87,7 @@ abstract class AppDatabase : RoomDatabase() {
             it.execSQL("ALTER TABLE RecipeIngredient ADD COLUMN optional INTEGER DEFAULT 0")
         }
 
-        val MIGRATION_2_3 = createMigration(2, 3){
+        private val MIGRATION_2_3 = createMigration(2, 3){
             it.execSQL("DROP VIEW IngredientForRecipe")
             it.execSQL("""
 CREATE VIEW `IngredientForRecipe` AS SELECT ri.quantity, ri.unit, ri.ref_recipe AS refRecipe, ri.ref_step AS refStep, ri.sort_order AS sortOrder,
@@ -98,7 +96,7 @@ INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
 """)
         }
 
-        val MIGRATION_3_4 = createMigration(3, 4){
+        private val MIGRATION_3_4 = createMigration(3, 4){
             it.execSQL("ALTER TABLE Step ADD COLUMN optional INTEGER NOT NULL DEFAULT 0")
         }
 

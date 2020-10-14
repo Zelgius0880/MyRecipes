@@ -7,11 +7,9 @@ import android.text.InputType
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.entities.Step
 
 
@@ -20,17 +18,12 @@ import zelgius.com.myrecipes.entities.Step
  * [AlertDialog] for choosing or creating an ingredient
  *
  * @property step Step?             the selected step. If new step, id will be null, else it is the id in the database
- * @property new Boolean                        TRUE if it is a new ingredient, false otherwise
  * @property listener NoticeDialogListener?     the [NoticeDialogListener] listener called when valid or cancel the dialog.
- * If the [Activity] implements [NoticeDialogListener], the listener is not used and the method of the [Activity] will be called instead. Can be null
+ * If the Activity implements [NoticeDialogListener], the listener is not used and the method of the Activity will be called instead. Can be null
  */
 class StepDialogFragment : DialogFragment() {
 
     private val dialogView by lazy { View.inflate(activity, R.layout.dialog_fragment_step, null) }
-    private val viewModel by lazy { ViewModelProvider(
-            requireActivity(),
-            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
-        ).get(RecipeViewModel::class.java) }
 
     var step = Step(null, "", Int.MAX_VALUE,false, null)
         .apply { new = true }

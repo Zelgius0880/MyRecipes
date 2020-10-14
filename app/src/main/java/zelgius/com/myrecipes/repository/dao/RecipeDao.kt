@@ -3,7 +3,6 @@ package zelgius.com.myrecipes.repository.dao
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.*
-import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.Recipe
 
 @Dao

@@ -3,63 +3,37 @@ package zelgius.com.myrecipes
 import android.app.Application
 import android.os.Environment
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.core.net.toFile
-import androidx.core.net.toUri
-import androidx.paging.toLiveData
+import androidx.lifecycle.LiveData
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.ActivityTestRule
 import androidx.test.rule.GrantPermissionRule
-import org.junit.Test
-
+import com.facebook.stetho.Stetho
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoJUnitRunner
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
+import org.mockito.junit.MockitoRule
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.repository.observeOnce
+import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import com.facebook.stetho.Stetho
-import zelgius.com.myrecipes.repository.AppDatabase
-import zelgius.com.myrecipes.repository.RecipeRepository
-import java.io.File
-import kotlin.concurrent.thread
-import android.content.ActivityNotFoundException
-import androidx.core.content.ContextCompat.startActivity
-import android.content.Intent
-import androidx.lifecycle.LiveData
 
 
 @RunWith(MockitoJUnitRunner::class)
 class RecipeViewModelTest {
     @get:Rule
-    val mockitoRule = MockitoJUnit.rule()
+    val mockitoRule: MockitoRule = MockitoJUnit.rule()
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    val context by lazy { ApplicationProvider.getApplicationContext<Application>()!! }
+    private val context: Application by lazy { ApplicationProvider.getApplicationContext()!! }
 
     private val viewModel: RecipeViewModel by lazy { RecipeViewModel(context) }
-
-    private val recipe = Recipe(null, "Recipe for testing", "image", Recipe.Type.OTHER).apply {
-        ingredients.add(
-            IngredientForRecipe(
-                null,
-                2.0,
-                Ingredient.Unit.KILOGRAMME,
-                "test",
-                "test",
-                2,
-                null,
-                null
-            )
-        )
-    }
 
     @Before
     fun init() {
@@ -152,8 +126,8 @@ class RecipeViewModelTest {
 
                     //assertTrue(b)
 
-                    viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever {
-                        compareRecipe(it!!, r)
+                    viewModel.loadRecipe(viewModel.currentRecipe.id!!).observeForever {r1 ->
+                        compareRecipe(r1!!, r)
 
                         latch.countDown()
 
@@ -162,7 +136,7 @@ class RecipeViewModelTest {
                         assertTrue(
                             File(
                                 context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                                "${it.id}"
+                                "${r1.id}"
                             )
                                 .exists()
                         )

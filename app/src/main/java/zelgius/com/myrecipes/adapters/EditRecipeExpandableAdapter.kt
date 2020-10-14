@@ -23,12 +23,12 @@ import kotlinx.android.synthetic.main.adapter_ingredient.view.*
 import kotlinx.android.synthetic.main.adapter_step.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.entities.Step
-import zelgius.com.myrecipes.utils.*
-import java.text.DecimalFormat
+import zelgius.com.myrecipes.utils.UiUtils
+import zelgius.com.myrecipes.utils.ViewUtils
+import zelgius.com.myrecipes.utils.dpToPx
 import kotlin.math.min
 
 
@@ -40,7 +40,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
     ExpandableSwipeableItemAdapter<EditRecipeExpandableAdapter.StepSectionViewHolder, AbstractDraggableSwipeableItemViewHolder> {
 
     private lateinit var recyclerView: RecyclerView
-    lateinit var layoutManager: LinearLayoutManager
+    private lateinit var layoutManager: LinearLayoutManager
     lateinit var provider: AdapterDataProvider<StepItem, DataItem>
     var expandableItemManager: RecyclerViewExpandableItemManager? = null
     var dragDropManager: RecyclerViewDragDropManager? = null
@@ -69,7 +69,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                 IngredientItem(
                     item.id ?: i.toLong(),
                     item
-                ) as DataItem
+                )
             } // Flagged as 'No cast needed' but actually needed
             .toMutableList())
 

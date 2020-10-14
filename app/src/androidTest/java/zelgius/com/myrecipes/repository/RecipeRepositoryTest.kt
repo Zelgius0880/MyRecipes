@@ -12,7 +12,7 @@ class RecipeRepositoryTest : AbstractDatabaseTest() {
     private val recipeDao by lazy { db.recipeDao }
 
     private val recipe = Recipe(null, "Recipe for testing", "image", Recipe.Type.OTHER)
-    val repo by lazy { RecipeRepository(context) }
+    private val repo by lazy { RecipeRepository(context) }
 
     @Test
     @Throws(Exception::class)

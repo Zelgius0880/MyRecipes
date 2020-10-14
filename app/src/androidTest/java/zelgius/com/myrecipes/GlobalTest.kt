@@ -17,7 +17,7 @@ import kotlin.math.min
 
 class GlobalTest {
 
-    val context by lazy { ApplicationProvider.getApplicationContext<Application>()!! }
+    private val context by lazy { ApplicationProvider.getApplicationContext<Application>()!! }
 
     private val viewModel: RecipeViewModel by lazy { RecipeViewModel(context) }
     @Test

@@ -6,7 +6,6 @@ import android.os.Parcelable
 import androidx.core.os.ParcelCompat
 import androidx.room.DatabaseView
 import androidx.room.Ignore
-import kotlinx.android.synthetic.main.adapter_ingredient.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.utils.round
 import zelgius.com.protobuff.RecipeProto

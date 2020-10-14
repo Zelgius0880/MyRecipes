@@ -1,8 +1,6 @@
 package zelgius.com.myrecipes.dialogs
 
-import android.app.Activity.RESULT_OK
 import android.app.Dialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -12,7 +10,6 @@ import android.webkit.URLUtil
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.dialog_fragment_image.view.*
 import net.alhazmy13.mediapicker.Image.ImagePicker

@@ -16,9 +16,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -34,15 +32,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_recipe_edit.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
 import kotlinx.android.synthetic.main.layout_header_edit.*
-import kotlinx.android.synthetic.main.layout_header_edit.imageView
 import net.alhazmy13.mediapicker.Image.ImagePicker
 import zelgius.com.myrecipes.MainActivity
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.adapters.EditHeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.EditRecipeExpandableAdapter
+import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.dialogs.IngredientDialogFragment
 import zelgius.com.myrecipes.dialogs.StepDialogFragment
 import zelgius.com.myrecipes.entities.Recipe
@@ -60,7 +57,6 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
     RecyclerViewExpandableItemManager.OnGroupCollapseListener {
 
     companion object {
-        const val REQUEST_CODE = 543
         const val SAVED_STATE_EXPANDABLE_ITEM_MANAGER = "RecyclerViewExpandableItemManager"
 
     }
@@ -178,11 +174,11 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
 
         fab.setImageResource(R.drawable.ic_playlist_plus)
 
-        viewModel.editMode.observe(this, Observer {
+        viewModel.editMode.observe(viewLifecycleOwner, {
             adapter.notifyDataSetChanged()
         })
 
-        viewModel.selectedRecipe.observe(this, Observer {
+        viewModel.selectedRecipe.observe(viewLifecycleOwner, {
             viewModel.currentRecipe = it
             adapter.recipe = it
             adapter.notifyDataSetChanged()
@@ -191,7 +187,7 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
             headerWrapper.notifyDataSetChanged()
         })
 
-        viewModel.selectedImageUrl.observe(this, Observer {
+        viewModel.selectedImageUrl.observe(viewLifecycleOwner, {
             if(it != null && it.toString().isNotEmpty()) {
                 imageView.setPadding(0, 0, 0, 0)
                 imageView.setImageURI(it)
@@ -268,13 +264,13 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
 
         adapter.editIngredientListener = {
             IngredientDialogFragment.newInstance(it, this)
-                .show(fragmentManager!!, "dialog_ingredient")
+                .show(parentFragmentManager, "dialog_ingredient")
         }
 
         adapter.editStepListener = {
             it.new = false
             StepDialogFragment.newInstance(it, this)
-                .show(fragmentManager!!, "dialog_step")
+                .show(parentFragmentManager, "dialog_step")
         }
 
         fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
@@ -286,19 +282,19 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
                     )!!
 
         addIngredient.setOnClickListener {
-            IngredientDialogFragment.newInstance(this).show(fragmentManager!!, "dialog_ingredient")
+            IngredientDialogFragment.newInstance(this).show(parentFragmentManager, "dialog_ingredient")
         }
 
         addStep.setOnClickListener {
-            StepDialogFragment.newInstance(this).show(fragmentManager!!, "dialog_step")
+            StepDialogFragment.newInstance(this).show(parentFragmentManager, "dialog_step")
         }
     }
 
     override fun onResume() {
         super.onResume()
 
-        (activity as AppCompatActivity).setSupportActionBar(view!!.toolbar)
-        NavigationUI.setupActionBarWithNavController(activity!! as AppCompatActivity, navController)
+        (activity as AppCompatActivity).setSupportActionBar(requireView().toolbar)
+        NavigationUI.setupActionBarWithNavController(requireActivity() as AppCompatActivity, navController)
         (activity as AppCompatActivity).supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setTitle(if(arguments?.getBoolean("ADD") == true) R.string.new_recipe else R.string.edit_recipe)
@@ -350,12 +346,12 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
             }
 
             R.id.save -> {
-                val recipe = viewModel.currentRecipe
+                val recipe: Recipe = viewModel.currentRecipe
                 headerWrapper.complete(recipe)
-                recipe.imageURL = viewModel.selectedImageUrl.value.toString() ?: ""
+                recipe.imageURL = viewModel.selectedImageUrl.value.toString()
                 adapter.complete(recipe)
-                viewModel.currentRecipe = recipe // not really usefull, just there in case
-                viewModel.saveCurrentRecipe().observe(this, Observer {
+                viewModel.currentRecipe = recipe // not really useful, just there in case
+                viewModel.saveCurrentRecipe().observe(this, {
                     Snackbar.make(
                         (activity as MainActivity).coordinator,
                         R.string.recipe_saved,
@@ -420,7 +416,7 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+        //super.onActivityResult(requestCode, resultCode, data)
 
         if (data != null && requestCode == ImagePicker.IMAGE_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val paths = data.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH)!!
