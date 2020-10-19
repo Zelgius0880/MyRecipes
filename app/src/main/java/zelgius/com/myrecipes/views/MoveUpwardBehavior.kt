@@ -1,6 +1,10 @@
 package zelgius.com.myrecipes.views
 
 
+import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
+import android.util.AttributeSet
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat.animate
@@ -11,13 +15,25 @@ import com.google.android.material.snackbar.Snackbar
  */
 
 //Use this class only if you want toslide up the FAB whenever the seekbar appear, if u don't want this funcionality delete this file
-class MoveUpwardBehavior : CoordinatorLayout.Behavior<View>() {
+class MoveUpwardBehavior : CoordinatorLayout.Behavior<View> {
 
-    override fun layoutDependsOn(parent: CoordinatorLayout, child: View, dependency: View): Boolean {
+    constructor()
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+
+    override fun layoutDependsOn(
+        parent: CoordinatorLayout,
+        child: View,
+        dependency: View
+    ): Boolean {
         return dependency is Snackbar.SnackbarLayout
     }
 
-    override fun onDependentViewChanged(parent: CoordinatorLayout, child: View, dependency: View): Boolean {
+    override fun onDependentViewChanged(
+        parent: CoordinatorLayout,
+        child: View,
+        dependency: View
+    ): Boolean {
         val translationY = 0f.coerceAtMost(dependency.translationY - dependency.height)
         child.translationY = translationY
         return true

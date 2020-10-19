@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.utils
 import android.content.Context
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
+import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
@@ -23,10 +24,7 @@ import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.utils.Utils.drawText
 import zelgius.com.myrecipes.utils.Utils.scaleCenterCrop
 import zelgius.com.myrecipes.utils.Utils.zipBytes
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.math.ceil
@@ -53,7 +51,7 @@ class PdfGenerator(val context: Context) {
     private val paint = Paint()
 
     private val alpha = 0.6f
-    suspend fun createPdf(recipe: Recipe, file: File) =
+    suspend fun createPdf(recipe: Recipe, uri: Uri) =
         withContext(Dispatchers.IO) {
             linePosition = 200
             // create a new document
@@ -109,11 +107,11 @@ class PdfGenerator(val context: Context) {
 
             document.finishPage(page)
             // write the document content
-            val pdf = File(file, "${recipe.name}.pdf")
-            createFile(document, pdf)
+            val output = context.contentResolver.openOutputStream(uri)!!
+            createFile(document, output)
             document.close()
 
-            pdf
+            uri
         }
 
 
@@ -126,7 +124,7 @@ class PdfGenerator(val context: Context) {
 
         val bmp = scaleCenterCrop(
             BitmapFactory.decodeFile(recipe.imageURL?.toUri()?.path)
-                ?: context.getDrawable(R.drawable.ic_dish)!!.toBitmap(400, 400),
+                ?: ContextCompat.getDrawable(context, R.drawable.ic_dish)!!.toBitmap(400, 400),
             400, 400
         )
 
@@ -502,12 +500,9 @@ class PdfGenerator(val context: Context) {
     }
 
 
-    private fun createFile(document: PdfDocument, file: File) {
-        if (file.parentFile?.exists() != true) {
-            file.mkdirs()
-        }
+    private fun createFile(document: PdfDocument, outputStream: OutputStream) {
         try {
-            document.writeTo(FileOutputStream(file))
+            document.writeTo(outputStream)
         } catch (e: IOException) {
             e.printStackTrace()
         }

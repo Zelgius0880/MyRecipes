@@ -69,9 +69,9 @@ abstract class AbstractRecipeListFragment : Fragment() {
         recyclerView.adapter = adapter
 
         adapter.deleteListener = { r ->
-            viewModel.loadRecipe(r.id!!).observe(this) { recipe ->
+            viewModel.loadRecipe(r.id!!).observe(viewLifecycleOwner) { recipe ->
                 if (recipe != null)
-                    viewModel.delete(recipe).observe(this) {
+                    viewModel.delete(recipe).observe(viewLifecycleOwner) {
                         undoSnackBar(recipe, getString(R.string.recipe_removed))
                     }
             }
@@ -108,12 +108,12 @@ abstract class AbstractRecipeListFragment : Fragment() {
 
 
     private fun undoSnackBar(recipe: Recipe, text: String) {
-        Snackbar.make(parentFragment!!.view!!, text, Snackbar.LENGTH_LONG)
+        Snackbar.make(requireParentFragment().requireView(), text, Snackbar.LENGTH_LONG)
             .setAction(R.string.undo) {
                 recipe.id = null
                 //recipe.ingredients.forEach { it.id = null }
                 recipe.steps.forEach { it.id = null }
-                viewModel.saveRecipe(recipe).observe(this) {
+                viewModel.saveRecipe(recipe).observe(viewLifecycleOwner) {
                     File(ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${recipe.id}")
                         .renameTo(
                             File(

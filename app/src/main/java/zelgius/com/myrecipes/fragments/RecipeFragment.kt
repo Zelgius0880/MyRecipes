@@ -1,19 +1,17 @@
 package zelgius.com.myrecipes.fragments
 
 
-import android.Manifest
-import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.os.Parcelable
 import android.transition.TransitionInflater
 import android.view.*
-import android.widget.ProgressBar
 import androidx.activity.addCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -25,11 +23,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
 import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import kotlinx.android.synthetic.main.fragment_recipe.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
 import kotlinx.android.synthetic.main.layout_header.*
@@ -39,11 +32,7 @@ import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.filepicker.model.DialogConfigs
-import zelgius.com.myrecipes.filepicker.model.DialogProperties
-import zelgius.com.myrecipes.filepicker.view.FilePickerDialog
 import zelgius.com.myrecipes.utils.UiUtils
-import java.io.File
 
 
 /**
@@ -74,7 +63,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
     private val context by lazy { activity as AppCompatActivity }
     private val viewModel by lazy {
-         ViewModelProvider(
+        ViewModelProvider(
             requireActivity(),
             ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
         ).get(RecipeViewModel::class.java)
@@ -92,6 +81,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     private lateinit var menu: Menu
 
     private lateinit var navController: NavController
+    private lateinit var selectDocument: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,6 +95,28 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
         requireActivity().onBackPressedDispatcher.addCallback(this) {
             popFragment()
+        }
+
+        selectDocument = registerForActivityResult(ActivityResultContracts.CreateDocument()) {
+            viewModel.exportToPdf(viewModel.currentRecipe, it)
+                .observe(this@RecipeFragment) { uri ->
+                    menu.findItem(R.id.pdf).actionView = null
+
+                    Snackbar.make(requireView(), R.string.pdf_created, Snackbar.LENGTH_LONG)
+                        .setAction(R.string.open) {
+                            requireContext().startActivity(
+                                Intent.createChooser(
+                                    Intent(Intent.ACTION_VIEW)
+                                        .setDataAndType(uri, "application/pdf")
+                                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY),
+                                    getString(R.string.select_file)
+                                )
+                            )
+                        }
+                        .show()
+                }
+
         }
     }
 
@@ -131,11 +143,11 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
         viewModel.editMode.value = true
 
-        viewModel.editMode.observe(viewLifecycleOwner,  {
+        viewModel.editMode.observe(viewLifecycleOwner, {
             adapter.notifyDataSetChanged()
         })
 
-        viewModel.selectedRecipe.observe(viewLifecycleOwner,  {
+        viewModel.selectedRecipe.observe(viewLifecycleOwner, {
             viewModel.currentRecipe = it
             adapter.recipe = it
             adapter.notifyDataSetChanged()
@@ -146,7 +158,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
             activity?.actionBar?.title = it.name
         })
 
-        viewModel.selectedImageUrl.observe(viewLifecycleOwner,  {
+        viewModel.selectedImageUrl.observe(viewLifecycleOwner, {
             if (it != null && it.toString().isNotEmpty()) {
                 imageView.setPadding(0, 0, 0, 0)
                 imageView.setImageURI(it)
@@ -191,7 +203,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         super.onResume()
 
         (activity as AppCompatActivity).setSupportActionBar(requireView().toolbar)
-        NavigationUI.setupActionBarWithNavController(requireActivity() as AppCompatActivity, navController)
+        NavigationUI.setupActionBarWithNavController(
+            requireActivity() as AppCompatActivity,
+            navController
+        )
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
@@ -204,7 +219,9 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.pdf -> {
-                Dexter.withContext(activity)
+                selectDocument.launch("${viewModel.currentRecipe.name}.pdf")
+
+                /*Dexter.withContext(activity)
                     .withPermissions(
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -222,7 +239,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
                             }
                         }
                     })
-                    .check()
+                    .check()*/
                 true
             }
             R.id.play -> {
@@ -261,6 +278,8 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     }
 
     fun setupFilePicker() {
+/*
+
         DialogProperties().apply {
             selectionMode = DialogConfigs.SINGLE_MODE
             selectionType = DialogConfigs.DIR_SELECT
@@ -274,7 +293,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
                 it.setDialogSelectionListener { result ->
                     menu.findItem(R.id.pdf).actionView = ProgressBar(context)
                     viewModel.exportToPdf(viewModel.currentRecipe, File(result.first()))
-                        .observe(this@RecipeFragment,  {file ->
+                        .observe(this@RecipeFragment, { file ->
                             menu.findItem(R.id.pdf).actionView = null
 
                             Snackbar.make(requireView(), R.string.pdf_created, Snackbar.LENGTH_LONG)
@@ -288,10 +307,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
                                         ), "application/pdf"
                                     )
                                     target.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
-                                    target.addFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION )
+                                    target.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
                                     val intent = Intent.createChooser(target, "Open File")
-                                    intent.addFlags( Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION )
+                                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     try {
                                         startActivity(intent)
                                     } catch (e: ActivityNotFoundException) {
@@ -308,7 +327,7 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
                 }
                 it.show(parentFragmentManager, "file_picker")
             }
-        }
+        }*/
     }
 
     override fun onGroupExpand(groupPosition: Int, fromUser: Boolean, payload: Any?) {

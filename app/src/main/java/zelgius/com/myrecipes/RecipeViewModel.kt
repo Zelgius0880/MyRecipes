@@ -1,11 +1,13 @@
 package zelgius.com.myrecipes
 
 import android.app.*
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
+import android.provider.OpenableColumns
 import android.util.Base64
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -20,7 +22,10 @@ import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
@@ -36,6 +41,7 @@ import zelgius.com.myrecipes.utils.unzip
 import zelgius.com.myrecipes.worker.DownloadImageWorker
 import zelgius.com.protobuff.RecipeProto
 import java.io.File
+
 
 val TAG = RecipeViewModel::class.simpleName
 
@@ -206,13 +212,11 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
 
-    fun exportToPdf(recipe: Recipe, file: File): LiveData<File> {
-        val result = MutableLiveData<File>()
+    fun exportToPdf(recipe: Recipe, uri: Uri): LiveData<Uri> {
+        val result = MutableLiveData<Uri>()
         viewModelScope.launch {
-
-            result.value = PdfGenerator(app).createPdf(recipe, file)
+                result.value = PdfGenerator(app).createPdf(recipe, uri)
         }
-
         return result
     }
 
