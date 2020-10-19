@@ -22,10 +22,7 @@ import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.jetbrains.annotations.TestOnly
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
@@ -47,20 +44,18 @@ val TAG = RecipeViewModel::class.simpleName
 
 class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
-    /* var user: FirebaseUser? = null
-         set(value) {
-             field = value
-             connectedUser.value = value
-         }*/
 
     private val recipeRepository = RecipeRepository(app)
     private val ingredientRepository = IngredientRepository(app)
     private val stepRepository = StepRepository(app)
 
-    /*val connectedUser = MutableLiveData<FirebaseUser?>()*/
     val selectedRecipe = MutableLiveData<Recipe>()
     val editMode = MutableLiveData<Boolean>()
     val selectedImageUrl = MutableLiveData<Uri?>()
+
+    private val _pdfProgress = MutableLiveData<Boolean>()
+    val pdfProgress: LiveData<Boolean>
+    get() = _pdfProgress
 
     var currentRecipe: Recipe = Recipe()
 
@@ -213,9 +208,11 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
 
     fun exportToPdf(recipe: Recipe, uri: Uri): LiveData<Uri> {
+        _pdfProgress.value = true
         val result = MutableLiveData<Uri>()
         viewModelScope.launch {
-                result.value = PdfGenerator(app).createPdf(recipe, uri)
+            result.value = PdfGenerator(app).createPdf(recipe, uri)
+            _pdfProgress.value = false
         }
         return result
     }

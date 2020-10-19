@@ -2,11 +2,11 @@ package zelgius.com.myrecipes.fragments
 
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.transition.TransitionInflater
 import android.view.*
+import android.widget.ProgressBar
 import androidx.activity.addCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -98,6 +98,8 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         }
 
         selectDocument = registerForActivityResult(ActivityResultContracts.CreateDocument()) {
+            if (it == null) return@registerForActivityResult
+
             viewModel.exportToPdf(viewModel.currentRecipe, it)
                 .observe(this@RecipeFragment) { uri ->
                     menu.findItem(R.id.pdf).actionView = null
@@ -187,6 +189,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         touchActionGuardManager.attachRecyclerView(list)
         expandableItemManager?.attachRecyclerView(list)
 
+        viewModel.pdfProgress.observe(viewLifecycleOwner) {
+            requireActivity().invalidateOptionsMenu()
+        }
+
 
         adapter.expandableItemManager = expandableItemManager
         list.adapter = itemAdapter
@@ -208,38 +214,29 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
             navController
         )
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        requireActivity().invalidateOptionsMenu()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.menu_recipe, menu)
         this.menu = menu
+        if (viewModel.pdfProgress.value == true) {
+            menu.findItem(R.id.pdf).apply {
+                actionView = ProgressBar(requireContext())
+            }
+        } else {
+            menu.findItem(R.id.pdf).apply {
+                actionView = null
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.pdf -> {
                 selectDocument.launch("${viewModel.currentRecipe.name}.pdf")
-
-                /*Dexter.withContext(activity)
-                    .withPermissions(
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )
-                    .withListener(object : MultiplePermissionsListener {
-                        override fun onPermissionRationaleShouldBeShown(
-                            permissions: MutableList<PermissionRequest>?,
-                            token: PermissionToken?
-                        ) {
-                        }
-
-                        override fun onPermissionsChecked(report: MultiplePermissionsReport) {
-                            if (report.areAllPermissionsGranted()) {
-                                setupFilePicker()
-                            }
-                        }
-                    })
-                    .check()*/
                 true
             }
             R.id.play -> {
@@ -275,59 +272,6 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
     private fun popFragment() {
         navController.popBackStack()
-    }
-
-    fun setupFilePicker() {
-/*
-
-        DialogProperties().apply {
-            selectionMode = DialogConfigs.SINGLE_MODE
-            selectionType = DialogConfigs.DIR_SELECT
-            root = Environment.getExternalStorageDirectory() // TODO change the external storage access
-
-            errorDir = File(DialogConfigs.DEFAULT_DIR)
-            offset = File(DialogConfigs.DEFAULT_DIR)
-            extensions = null
-
-            FilePickerDialog(getString(R.string.choose_directory), this).let {
-                it.setDialogSelectionListener { result ->
-                    menu.findItem(R.id.pdf).actionView = ProgressBar(context)
-                    viewModel.exportToPdf(viewModel.currentRecipe, File(result.first()))
-                        .observe(this@RecipeFragment, { file ->
-                            menu.findItem(R.id.pdf).actionView = null
-
-                            Snackbar.make(requireView(), R.string.pdf_created, Snackbar.LENGTH_LONG)
-                                .setAction(R.string.open) {
-                                    val target = Intent(Intent.ACTION_VIEW)
-                                    target.setDataAndType(
-                                        FileProvider.getUriForFile(
-                                            context,
-                                            context.applicationContext.packageName + ".provider",
-                                            file
-                                        ), "application/pdf"
-                                    )
-                                    target.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
-                                    target.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-                                    val intent = Intent.createChooser(target, "Open File")
-                                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    try {
-                                        startActivity(intent)
-                                    } catch (e: ActivityNotFoundException) {
-                                        Snackbar.make(
-                                            requireView(),
-                                            R.string.no_viewer_found,
-                                            Snackbar.LENGTH_SHORT
-                                        ).show()
-                                    }
-
-                                }.show()
-                        })
-
-                }
-                it.show(parentFragmentManager, "file_picker")
-            }
-        }*/
     }
 
     override fun onGroupExpand(groupPosition: Int, fromUser: Boolean, payload: Any?) {
