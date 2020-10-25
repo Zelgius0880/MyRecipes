@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.paging.PagedListAdapter
@@ -50,14 +51,15 @@ class RecipePagedAdapter :
                 Recipe.Type.OTHER -> itemView.context.getString(R.string.other)
             }
 
-            if (!recipe.imageURL.isNullOrEmpty() &&  recipe.imageURL != "null") {
+            if (!recipe.imageURL.isNullOrEmpty() && recipe.imageURL != "null") {
                 Picasso.get().apply {
-                    //setIndicatorsEnabled(true)
-                    //isLoggingEnabled = true
+                    setIndicatorsEnabled(true)
+                    isLoggingEnabled = true
                 }
-                    .load(recipe.imageURL)
+                    .load(recipe.imageURL!!.toUri())
                     .resize(2048, 2048)
                     .centerCrop()
+                    //.placeholder(R.drawable.ic_dish)
                     .into(itemView.imageView, object : Callback {
                         override fun onSuccess() {
                         }
@@ -85,23 +87,28 @@ class RecipePagedAdapter :
             }
 
             itemView.delete.setOnClickListener {
-                deleteListener?.invoke(recipe)
+                if (holder.swiped)
+                    deleteListener?.invoke(recipe)
+                else itemView.performClick()
             }
 
             itemView.edit.setOnClickListener {
-                itemView.materialCardView.transitionName = "cardView${recipe.id}"
-                itemView.imageView.transitionName = "imageView${recipe.id}"
-                itemView.name.transitionName = "name${recipe.id}"
-                itemView.category.transitionName = "category${recipe.id}"
+                if (holder.swiped) {
+                    itemView.materialCardView.transitionName = "cardView${recipe.id}"
+                    itemView.imageView.transitionName = "imageView${recipe.id}"
+                    itemView.name.transitionName = "name${recipe.id}"
+                    itemView.category.transitionName = "category${recipe.id}"
 
-                editListener?.invoke(
-                    recipe, FragmentNavigatorExtras(
-                        itemView.materialCardView to "cardView${recipe.id}",
-                        itemView.imageView to "imageView${recipe.id}",
-                        itemView.name to "name${recipe.id}",
-                        itemView.category to "category${recipe.id}"
+                    editListener?.invoke(
+                        recipe, FragmentNavigatorExtras(
+                            itemView.materialCardView to "cardView${recipe.id}",
+                            itemView.imageView to "imageView${recipe.id}",
+                            itemView.name to "name${recipe.id}",
+                            itemView.category to "category${recipe.id}"
+                        )
                     )
-                )
+                } else itemView.performClick()
+
 
                 /*itemView.imageView.transitionName = ""
                 itemView.name.transitionName = ""
@@ -152,17 +159,12 @@ class RecipePagedAdapter :
         )
 
     override fun onGetSwipeReactionType(holder: ViewHolder, position: Int, x: Int, y: Int): Int {
-        return /*if (ViewUtils.hitTest(holder.swipeableContainerView, x, y)) {
-            SwipeableItemConstants.REACTION_CAN_SWIPE_BOTH_H
-        } else {
-            SwipeableItemConstants.REACTION_CAN_NOT_SWIPE_BOTH_H
-        }*/            SwipeableItemConstants.REACTION_CAN_SWIPE_BOTH_H
-
+        return SwipeableItemConstants.REACTION_CAN_SWIPE_BOTH_H
     }
 
 
     override fun onSwipeItemStarted(holder: ViewHolder, position: Int) {
-        notifyDataSetChanged()
+        notifyItemChanged(position)
     }
 
     override fun onSetSwipeBackground(holder: ViewHolder, position: Int, type: Int) {
@@ -178,14 +180,19 @@ class RecipePagedAdapter :
 
         return when (result) {
             // swipe left --- pin
-            SwipeableItemConstants.RESULT_SWIPED_LEFT -> SwipeLeftResultAction(position)
+            SwipeableItemConstants.RESULT_SWIPED_LEFT -> {
+                holder.swiped = true
+                SwipeLeftResultAction(position)
+            }
             // other --- do nothing
             SwipeableItemConstants.RESULT_SWIPED_RIGHT, SwipeableItemConstants.RESULT_CANCELED -> if (position != RecyclerView.NO_POSITION) {
+                holder.swiped = false
                 UnpinResultAction(position)
             } else {
                 null
             }
             else -> if (position != RecyclerView.NO_POSITION) {
+                holder.swiped = false
                 UnpinResultAction(position)
             } else {
                 null
@@ -207,7 +214,7 @@ class RecipePagedAdapter :
         }
     }
 
-    inner class ViewHolder(override val containerView: View) :
+    inner class ViewHolder(override val containerView: View, var swiped: Boolean = false) :
         AbstractSwipeableItemViewHolder(containerView), LayoutContainer {
         override fun getSwipeableContainerView(): View = itemView.contentView
     }
