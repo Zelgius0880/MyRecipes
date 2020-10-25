@@ -2,9 +2,6 @@ package zelgius.com.myrecipes.fragments
 
 
 import android.animation.Animator
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.transition.TransitionInflater
@@ -32,7 +29,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_recipe_edit.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
 import kotlinx.android.synthetic.main.layout_header_edit.*
-import net.alhazmy13.mediapicker.Image.ImagePicker
 import zelgius.com.myrecipes.MainActivity
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
@@ -412,19 +408,6 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
     }
 
     override fun onGroupCollapse(groupPosition: Int, fromUser: Boolean, payload: Any?) {
-    }
-
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        //super.onActivityResult(requestCode, resultCode, data)
-
-        if (data != null && requestCode == ImagePicker.IMAGE_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val paths = data.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH)!!
-
-            if (paths.isNotEmpty()) {
-                viewModel.selectedImageUrl.value = Uri.parse("file://${paths.first()}")
-            }
-        }
     }
 
     /*private fun endActivity(resultCode: Int = Activity.RESULT_CANCELED) {

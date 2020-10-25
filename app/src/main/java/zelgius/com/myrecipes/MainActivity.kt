@@ -1,15 +1,12 @@
 package zelgius.com.myrecipes
 
-import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation.findNavController
 import com.facebook.stetho.Stetho
-import net.alhazmy13.mediapicker.Image.ImagePicker
 import zelgius.com.myrecipes.fragments.OnBackPressedListener
 import zelgius.com.myrecipes.utils.observe
 
@@ -83,22 +80,5 @@ class MainActivity : AppCompatActivity() {
         }
 
         super.onBackPressed()
-    }
-
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (resultCode == Activity.RESULT_OK)
-            when (requestCode) {
-                ImagePicker.IMAGE_PICKER_REQUEST_CODE -> {
-                    val paths = data?.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH)
-
-                    if (!paths.isNullOrEmpty()) {
-                        viewModel.selectedImageUrl.value = Uri.parse("file://${paths.first()}")
-                    }
-                }
-
-            }
     }
 }

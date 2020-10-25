@@ -81,7 +81,6 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
         }
 
 
-
         bindListener?.invoke()
     }
 

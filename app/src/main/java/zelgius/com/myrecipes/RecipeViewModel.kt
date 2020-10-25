@@ -1,13 +1,11 @@
 package zelgius.com.myrecipes
 
 import android.app.*
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
-import android.provider.OpenableColumns
 import android.util.Base64
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -22,8 +20,10 @@ import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import kotlinx.coroutines.*
-import org.jetbrains.annotations.TestOnly
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
@@ -38,6 +38,8 @@ import zelgius.com.myrecipes.utils.unzip
 import zelgius.com.myrecipes.worker.DownloadImageWorker
 import zelgius.com.protobuff.RecipeProto
 import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 
 
 val TAG = RecipeViewModel::class.simpleName
@@ -362,115 +364,12 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
-
-    @TestOnly
-    fun createDummySample(): Recipe {
-
-        currentRecipe = Recipe().apply {
-            name = "Recipe For Testing"
-            imageURL =
-                "https://img.huffingtonpost.com/asset/5c92b00222000033001b332d.jpeg?ops=scalefit_630_noupscale"
-            ingredients.add(
-                IngredientForRecipe(
-                    null,
-                    2.0,
-                    Ingredient.Unit.UNIT,
-                    "Eggs",
-                    "drawable://egg",
-                    1,
-                    null,
-                    null
-                )
-            )
-            ingredients.add(
-                IngredientForRecipe(
-                    null,
-                    500.0,
-                    Ingredient.Unit.GRAMME,
-                    "Flour",
-                    "drawable://flour",
-                    2,
-                    null,
-                    null
-                )
-            )
-            ingredients.add(
-                IngredientForRecipe(
-                    null,
-                    200.0,
-                    Ingredient.Unit.MILLILITER,
-                    "Water",
-                    "drawable://water",
-                    3,
-                    null,
-                    null
-                )
-            )
-            ingredients.add(
-                IngredientForRecipe(
-                    null,
-                    2.33,
-                    Ingredient.Unit.CUP,
-                    "Butter",
-                    "drawable://butter",
-                    4,
-                    null,
-                    null
-                )
-            )
-
-            steps.add(Step(null, "Step 1", Int.MAX_VALUE, true, null).apply { order = 1 })
-            steps.add(Step(null, "Step 2", Int.MAX_VALUE, false, null).apply { order = 2 })
-            steps.add(Step(null, "Step 3", Int.MAX_VALUE, false, null).apply {
-                order = 3
-                ingredients.add(
-                    IngredientForRecipe(
-                        null,
-                        1.0,
-                        Ingredient.Unit.TEASPOON,
-                        "Salt",
-                        "drawable://salt",
-                        4,
-                        null,
-                        null
-                    ).also {
-                        it.step = this
-                    }
-                )
-
-                ingredients.add(
-                    IngredientForRecipe(
-                        null,
-                        1000.0,
-                        Ingredient.Unit.TABLESPOON,
-                        "Sugar",
-                        "drawable://sugar",
-                        4,
-                        null,
-                        null
-                    ).also {
-                        it.step = this
-                    }
-                )
-
-                ingredients.add(
-                    IngredientForRecipe(
-                        null,
-                        1000.0,
-                        Ingredient.Unit.LITER,
-                        "Milk",
-                        "drawable://milk",
-                        4,
-                        null,
-                        null
-                    ).also {
-                        it.step = this
-                    }
-                )
-            })
+    fun copy(from: InputStream, to: OutputStream) = liveData {
+        withContext(Dispatchers.IO) {
+            from.copyTo(to)
         }
 
-        return currentRecipe
+        emit(true)
     }
 
 }

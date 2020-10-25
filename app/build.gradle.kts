@@ -12,12 +12,12 @@ val kotlinVersion = rootProject.extra["kotlinVersion"]
 
 android {
     compileSdkVersion(sdkVersion)
-    buildToolsVersion("30.0.1")
+    buildToolsVersion("30.0.2")
 
     defaultConfig {
         applicationId("zelgius.com.myrecipes")
         minSdkVersion(26)
-        targetSdkVersion(29)
+        targetSdkVersion(30)
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner("androidx.test.runner.AndroidJUnitRunner")
@@ -27,6 +27,10 @@ android {
                 arguments(mutableMapOf("room.schemaLocation" to "$projectDir/schemas"))
             }
         }
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 
     sourceSets {
@@ -98,12 +102,11 @@ val mockitoVersion = "2.16.0"
 
 dependencies {
     val pagingVersion = "2.1.2"
-    val firebaseVersion = ("17.5.1")
     val lifecycleVersion = ("2.2.0")
     val roomVersion = "2.2.5"
-    val navigationVersion = "2.3.0"
+    val navigationVersion = "2.3.1"
     val workVersion = "1.0.1"
-    val cameraxVersion = "1.0.0-beta10"
+    val cameraxVersion = "1.0.0-beta11"
     val coroutinesVersion = "1.3.0-M2"
 
 
@@ -118,15 +121,14 @@ dependencies {
     androidTestImplementation("androidx.test:core:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
     androidTestImplementation("androidx.arch.core:core-testing:2.1.0")
-    testImplementation("org.mockito:mockito-core:2.19.0")
+    testImplementation("org.mockito:mockito-core:3.5.13")
     androidTestImplementation("androidx.room:room-testing:$roomVersion")
-    androidTestImplementation("org.mockito:mockito-core:2.19.0")
+    androidTestImplementation("org.mockito:mockito-core:3.5.13")
     androidTestImplementation("androidx.test:rules:1.3.0")
     androidTestImplementation("com.google.code.gson:gson:2.8.6")
 
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("de.hdodenhof:circleimageview:3.1.0")
-    implementation("net.alhazmy13.MediaPicker:libary:2.4.4")
     implementation("gr.escsoft.michaelprimez.searchablespinner:SearchableSpinner:1.0.9")
     //debugImplementation("com.amitshekhar.android:debug-db:1.0.6") //adb forward tcp:8080 tcp:8080
 
@@ -139,6 +141,7 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.lifecycle:lifecycle-extensions:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
     implementation("androidx.legacy:legacy-support-v13:1.0.0")
     implementation("androidx.appcompat:appcompat:1.3.0-alpha02")
     implementation("androidx.room:room-runtime:$roomVersion")
@@ -198,6 +201,6 @@ dependencies {
 
     implementation ("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-camera2:${cameraxVersion}")
-    implementation("androidx.camera:camera-view:1.0.0-alpha17")
+    implementation("androidx.camera:camera-view:1.0.0-alpha18")
 
 }

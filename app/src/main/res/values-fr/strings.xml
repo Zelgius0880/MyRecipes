@@ -32,7 +32,6 @@
     <string name="field_required">Ce champ est obligatoire</string>
     <string name="flour_name">Farine</string>
     <string name="from">"A partir de "</string>
-    <string name="from_device">A partir de l\'appareil</string>
     <string name="gramme">Gramme</string>
     <string name="gramme_abrv">g</string>
     <string name="gramme_select">g (Gramme)</string>
@@ -106,5 +105,7 @@
     <string name="optional">Optionnel</string>
 
     <string name="select_file">Selectionner un app</string>
+    <string name="from_gallery">Gallerie</string>
+    <string name="from_camera">Appareil Photo</string>
 
 </resources>

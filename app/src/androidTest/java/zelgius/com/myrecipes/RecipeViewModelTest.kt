@@ -3,11 +3,13 @@ package zelgius.com.myrecipes
 import android.app.Application
 import android.os.Environment
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.rule.ActivityTestRule
 import androidx.test.rule.GrantPermissionRule
 import com.facebook.stetho.Stetho
+import org.jetbrains.annotations.TestOnly
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -16,7 +18,10 @@ import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.junit.MockitoRule
+import zelgius.com.myrecipes.entities.Ingredient
+import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.repository.observeOnce
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -212,7 +217,8 @@ class RecipeViewModelTest {
 
     @Rule
     @JvmField
-    val mActivityRule: ActivityTestRule<MainActivity> = ActivityTestRule(MainActivity::class.java)
+    val mActivityRule: ActivityScenario<MainActivity> =
+        ActivityScenario.launch(MainActivity::class.java)
 
     @Test
     fun exportToPdf() {
@@ -222,7 +228,10 @@ class RecipeViewModelTest {
             "file:/storage/emulated/0/Android/data/zelgius.com.myrecipes/files/Pictures/23"
         val latch = CountDownLatch(1)
 
-        viewModel.exportToPdf(viewModel.currentRecipe, file).observeOnce {
+        viewModel.exportToPdf(
+            viewModel.currentRecipe,
+            "file:/storage/emulated/0/Android/data/zelgius.com.myrecipes/files/Pictures/23".toUri()
+        ).observeOnce {
             assertTrue(file.exists())
 
             latch.count
@@ -274,6 +283,116 @@ class RecipeViewModelTest {
         latch.await(10, TimeUnit.SECONDS)
         assertTrue(latch.count == 0L)
     }
+}
+
+@TestOnly
+fun RecipeViewModel.createDummySample(): Recipe {
+
+    currentRecipe = Recipe().apply {
+        name = "Recipe For Testing"
+        imageURL =
+            "https://img.huffingtonpost.com/asset/5c92b00222000033001b332d.jpeg?ops=scalefit_630_noupscale"
+        ingredients.add(
+            IngredientForRecipe(
+                null,
+                2.0,
+                Ingredient.Unit.UNIT,
+                "Eggs",
+                "drawable://egg",
+                1,
+                null,
+                null
+            )
+        )
+        ingredients.add(
+            IngredientForRecipe(
+                null,
+                500.0,
+                Ingredient.Unit.GRAMME,
+                "Flour",
+                "drawable://flour",
+                2,
+                null,
+                null
+            )
+        )
+        ingredients.add(
+            IngredientForRecipe(
+                null,
+                200.0,
+                Ingredient.Unit.MILLILITER,
+                "Water",
+                "drawable://water",
+                3,
+                null,
+                null
+            )
+        )
+        ingredients.add(
+            IngredientForRecipe(
+                null,
+                2.33,
+                Ingredient.Unit.CUP,
+                "Butter",
+                "drawable://butter",
+                4,
+                null,
+                null
+            )
+        )
+
+        steps.add(Step(null, "Step 1", Int.MAX_VALUE, true, null).apply { order = 1 })
+        steps.add(Step(null, "Step 2", Int.MAX_VALUE, false, null).apply { order = 2 })
+        steps.add(Step(null, "Step 3", Int.MAX_VALUE, false, null).apply {
+            order = 3
+            ingredients.add(
+                IngredientForRecipe(
+                    null,
+                    1.0,
+                    Ingredient.Unit.TEASPOON,
+                    "Salt",
+                    "drawable://salt",
+                    4,
+                    null,
+                    null
+                ).also {
+                    it.step = this
+                }
+            )
+
+            ingredients.add(
+                IngredientForRecipe(
+                    null,
+                    1000.0,
+                    Ingredient.Unit.TABLESPOON,
+                    "Sugar",
+                    "drawable://sugar",
+                    4,
+                    null,
+                    null
+                ).also {
+                    it.step = this
+                }
+            )
+
+            ingredients.add(
+                IngredientForRecipe(
+                    null,
+                    1000.0,
+                    Ingredient.Unit.LITER,
+                    "Milk",
+                    "drawable://milk",
+                    4,
+                    null,
+                    null
+                ).also {
+                    it.step = this
+                }
+            )
+        })
+    }
+
+    return currentRecipe
 }
 
 const val BASE_64_RECIPE = """

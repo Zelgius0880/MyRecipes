@@ -1,31 +1,86 @@
 package zelgius.com.myrecipes.dialogs
 
 import android.app.Dialog
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
+import android.view.LayoutInflater
 import android.webkit.URLUtil
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.dialog_fragment_image.view.*
-import net.alhazmy13.mediapicker.Image.ImagePicker
+import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-
+import zelgius.com.myrecipes.databinding.DialogFragmentImageBinding
+import java.io.File
 
 class ImageDialogFragment : DialogFragment() {
 
-    private val dialogView by lazy { View.inflate(activity, R.layout.dialog_fragment_image, null) }
     private val viewModel by lazy {
         ViewModelProvider(
             requireActivity(),
             ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
         ).get(RecipeViewModel::class.java)
     }
+
+    private val imageUri: Uri by lazy {
+        FileProvider.getUriForFile(
+            requireContext(),
+            BuildConfig.APPLICATION_ID + ".fileprovider",
+            File(
+                requireContext()
+                    .getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                "temp_image"
+            )
+        )
+    }
+    private val galleryRequest by lazy {
+        registerForActivityResult(ActivityResultContracts.GetContent()) {
+            if (it == null) return@registerForActivityResult
+
+            val from = requireContext().contentResolver.openInputStream(it)
+            val to = requireContext().contentResolver.openOutputStream(imageUri)
+            if (from != null && to != null)
+                viewModel.copy(from, to).observe(this) {
+                    refreshImage()
+                }
+        }
+    }
+
+    private val cameraRequest by lazy {
+        registerForActivityResult(ActivityResultContracts.TakePicture()) {
+            if (!it) return@registerForActivityResult
+            refreshImage()
+        }
+    }
+
+    private fun refreshImage() {
+        Picasso.get()
+            .load(imageUri)
+            .resize(2048, 2048)
+            .centerCrop()
+            .placeholder(R.drawable.ic_image_24dp)
+            .into(binding.imageView)
+    }
+
+    private val cameraPermissionRequest by lazy {
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if (!it) return@registerForActivityResult
+            else cameraRequest.launch(imageUri)
+        }
+    }
+
+    private val binding by lazy {
+        DialogFragmentImageBinding.inflate(LayoutInflater.from(requireContext()))
+    }
+
 
     private val textWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -35,7 +90,7 @@ class ImageDialogFragment : DialogFragment() {
                     .resize(2048, 2048)
                     .centerCrop()
                     .placeholder(R.drawable.ic_image_24dp)
-                    .into(dialogView.imageView)
+                    .into(binding.imageView)
             }
         }
 
@@ -47,30 +102,33 @@ class ImageDialogFragment : DialogFragment() {
 
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        galleryRequest
+        cameraPermissionRequest
+        cameraRequest
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             // Use the Builder class for convenient dialog construction
-            dialogView.button.setOnClickListener {
-                ImagePicker.Builder(activity)
-                    .mode(ImagePicker.Mode.CAMERA_AND_GALLERY)
-                    .compressLevel(ImagePicker.ComperesLevel.HARD)
-                    .directory(ImagePicker.Directory.DEFAULT)
-                    .extension(ImagePicker.Extension.PNG)
-                    .scale(600, 600)
-                    .allowMultipleImages(false)
-                    .enableDebuggingMode(true)
-                    .build()
+            binding.camera.setOnClickListener {
+                cameraPermissionRequest.launch(android.Manifest.permission.CAMERA)
+            }
 
-                dismiss()
+            binding.gallery.setOnClickListener {
+                galleryRequest.launch("image/*")
             }
 
             return AlertDialog.Builder(it)
-                .setView(dialogView)
+                .setView(binding.root)
                 .setTitle(R.string.select_image)
                 .setPositiveButton(R.string.save) { _, _ ->
-                    if (dialogView.imageUrl.editText?.text?.isNotEmpty() == true) {
+                    if (binding.imageUrl.editText?.text?.isNotEmpty() == true) {
                         viewModel.selectedImageUrl.value =
-                            Uri.parse(dialogView.imageUrl.editText!!.text.toString())
+                            Uri.parse(binding.imageUrl.editText!!.text.toString())
+                    } else {
+                        viewModel.selectedImageUrl.value = imageUri
                     }
                 }
                 .setNegativeButton(R.string.cancel) { _, _ -> }
@@ -81,12 +139,12 @@ class ImageDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
 
-        dialogView.imageUrl.editText?.addTextChangedListener(textWatcher)
+        binding.imageUrl.editText?.addTextChangedListener(textWatcher)
     }
 
     override fun onStop() {
         super.onStop()
 
-        dialogView.imageUrl.editText?.removeTextChangedListener(textWatcher)
+        binding.imageUrl.editText?.removeTextChangedListener(textWatcher)
     }
 }
