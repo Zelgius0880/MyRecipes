@@ -73,8 +73,8 @@
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingEnd">8dp</item>
         <item name="android:paddingStart">8dp</item>
-        <item name="android:layout_width">48dp</item>
-        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
         <item name="tint">@color/md_white_1000</item>
         <item name="rippleColor">@color/md_white_1000</item>
         <item name="elevation">0dp</item>

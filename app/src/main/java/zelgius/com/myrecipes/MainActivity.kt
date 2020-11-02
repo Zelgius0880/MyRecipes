@@ -2,26 +2,20 @@ package zelgius.com.myrecipes
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation.findNavController
 import com.facebook.stetho.Stetho
 import zelgius.com.myrecipes.fragments.OnBackPressedListener
-import zelgius.com.myrecipes.utils.observe
-
 
 class MainActivity : AppCompatActivity() {
 
 
-    private val navController by lazy { findNavController(this, R.id.nav_host_fragment) }
+    private val navController
+        get() = findNavController(this, R.id.nav_host_fragment)
 
-    private val viewModel by lazy {
-        ViewModelProvider(
-            this,
-            ViewModelProvider.NewInstanceFactory()
-        ).get(RecipeViewModel::class.java)
-    }
+    private val viewModel: RecipeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

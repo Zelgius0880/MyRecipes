@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -13,11 +14,11 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener
-import kotlinx.android.synthetic.main.dialog_fragment_ingredient.view.*
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.IngredientAutoCompleteAdapter
+import zelgius.com.myrecipes.databinding.DialogFragmentIngredientBinding
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.utils.UiUtils
@@ -36,12 +37,8 @@ import java.text.DecimalFormat
  */
 class IngredientDialogFragment : DialogFragment() {
 
-    private val dialogView by lazy {
-        View.inflate(
-            activity,
-            R.layout.dialog_fragment_ingredient,
-            null
-        )
+    private val binding by lazy {
+        DialogFragmentIngredientBinding.inflate(LayoutInflater.from(requireContext()))
     }
     private val viewModel by lazy {
         ViewModelProvider(
@@ -50,13 +47,13 @@ class IngredientDialogFragment : DialogFragment() {
         ).get(RecipeViewModel::class.java)
     }
 
-    private val context by lazy { activity!! }
+    private val ctx by lazy { requireContext() }
     var ingredient: IngredientForRecipe =
         IngredientForRecipe(null, -1.0, Ingredient.Unit.UNIT, "", null, 0, null, null)
             .apply { new = true }
     private var new = false
     var listener: NoticeDialogListener? = null
-    private val units by lazy { context.resources.getStringArray(R.array.select_unit_array) }
+    private val units by lazy { ctx.resources.getStringArray(R.array.select_unit_array) }
 
     companion object {
         fun newInstance(listener: NoticeDialogListener? = null) = IngredientDialogFragment().apply {
@@ -75,14 +72,14 @@ class IngredientDialogFragment : DialogFragment() {
 
     private val addAnimation by lazy {
         AnimatedVectorDrawableCompat.create(
-            context,
+            ctx,
             R.drawable.avd_add_to_close
         )!!
     }
 
     private val closeAnimation by lazy {
         AnimatedVectorDrawableCompat.create(
-            context,
+            ctx,
             R.drawable.avd_close_to_add
         )!!
     }
@@ -91,24 +88,27 @@ class IngredientDialogFragment : DialogFragment() {
         return activity?.let {
             // Use the Builder class for convenient dialog construction
             viewModel.ingredients.observe(this, { list ->
-                dialogView.ingredients.setAdapter(IngredientAutoCompleteAdapter(context, list))
-                dialogView.ingredients.setOnItemSelectedListener(object : OnItemSelectedListener {
+                binding.ingredients.setOnFocusChangeListener { _, hasFocus ->
+                    if (!hasFocus) binding.ingredients.hideEdit()
+                }
+                binding.ingredients.setAdapter(IngredientAutoCompleteAdapter(ctx, list))
+                binding.ingredients.setOnItemSelectedListener(object : OnItemSelectedListener {
                     override fun onNothingSelected() {
 
                     }
 
                     override fun onItemSelected(view: View?, position: Int, id: Long) {
-                        dialogView.ingredients.selectedItem.let { i ->
-                            if(i is Ingredient) {
+                        binding.ingredients.selectedItem.let { i ->
+                            if (i is Ingredient) {
                                 ingredient.id = i.id
                                 ingredient.name = i.name
                                 ingredient.imageUrl = i.imageURL
 
-                                dialogView.spinner.setSelection(units.indexOfFirst { s ->
-                                    s == context.getSharedPreferences(
+                                binding.spinner.setSelection(units.indexOfFirst { s ->
+                                    s == ctx.getSharedPreferences(
                                         "UNITS",
                                         Context.MODE_PRIVATE
-                                    ).getString(i.name, null)?: lastSelectedUnit
+                                    ).getString(i.name, null) ?: lastSelectedUnit
                                 })
                             }
                         }
@@ -118,32 +118,45 @@ class IngredientDialogFragment : DialogFragment() {
             })
 
 
-            dialogView.quantity.hint = getString(R.string.quantity)
+            binding.quantity.hint = getString(R.string.quantity)
 
-            dialogView.button.setOnClickListener {
-                dialogView.error.visibility = View.GONE
+            binding.button.setOnClickListener {
+                binding.error.visibility = View.GONE
                 removeErrors()
                 if (!new) {
                     setNewIngredient(View.VISIBLE)
-                    dialogView.ingredients.visibility = View.GONE
-                    dialogView.button.setImageResource(R.drawable.ic_close_black_24dp)
-                    dialogView.button.setImageDrawable(addAnimation)
-                    UiUtils.getCircleDrawable(dialogView.image, R.drawable.ic_carrot_solid, R.color.md_blue_grey_700, 8f)
+                    binding.ingredients.visibility = View.GONE
+                    binding.button.setIconResource(R.drawable.ic_close_black_24dp)
+                    binding.button.icon = addAnimation
+                    UiUtils.getCircleDrawable(
+                        binding.image,
+                        R.drawable.ic_carrot_solid,
+                        R.color.md_blue_grey_700,
+                        8f
+                    )
                     addAnimation.start()
                     ingredient.name = ""
                     new = true
                 } else {
                     setNewIngredient(View.GONE)
-                    dialogView.ingredients.visibility = View.VISIBLE
-                    dialogView.button.setImageDrawable(closeAnimation)
+                    binding.ingredients.visibility = View.VISIBLE
+                    binding.button.icon = closeAnimation
 
-                    (dialogView.ingredients.selectedItem as Ingredient?)?.let { i ->
+                    (binding.ingredients.selectedItem as Ingredient?)?.let { i ->
                         ingredient.id = i.id
                         ingredient.name = i.name
                         ingredient.imageUrl = i.imageURL
                     }
-                    if(ingredient.name.isNotEmpty())UiUtils.getIngredientDrawable(dialogView.image, ingredient)
-                    else UiUtils.getCircleDrawable(dialogView.image, R.drawable.ic_carrot_solid, R.color.md_blue_grey_700, 8f)
+                    if (ingredient.name.isNotEmpty()) UiUtils.getIngredientDrawable(
+                        binding.image,
+                        ingredient
+                    )
+                    else UiUtils.getCircleDrawable(
+                        binding.image,
+                        R.drawable.ic_carrot_solid,
+                        R.color.md_blue_grey_700,
+                        8f
+                    )
 
 
                     closeAnimation.start()
@@ -161,8 +174,8 @@ class IngredientDialogFragment : DialogFragment() {
                 android.R.layout
                     .simple_spinner_dropdown_item
             )
-            dialogView.spinner.adapter = spinnerArrayAdapter
-            dialogView.spinner.onItemSelectedListener =
+            binding.spinner.adapter = spinnerArrayAdapter
+            binding.spinner.onItemSelectedListener =
                 object : AdapterView.OnItemSelectedListener {
                     override fun onNothingSelected(adapterView: AdapterView<*>?) {}
 
@@ -172,7 +185,7 @@ class IngredientDialogFragment : DialogFragment() {
                         position: Int,
                         id: Long
                     ) {
-                        when (dialogView.spinner.selectedItem.toString()) {
+                        when (binding.spinner.selectedItem.toString()) {
                             getString(R.string.gramme_select) -> ingredient.unit =
                                 Ingredient.Unit.GRAMME
                             getString(R.string.kilogramme_select) -> ingredient.unit =
@@ -197,13 +210,13 @@ class IngredientDialogFragment : DialogFragment() {
                 }
 
             if (!ingredient.new) {
-                dialogView.quantity.editText?.setText(DecimalFormat("#0.##").format(ingredient.quantity))
-                dialogView.ingredientName.apply {
+                binding.quantity.editText?.setText(DecimalFormat("#0.##").format(ingredient.quantity))
+                binding.ingredientName.apply {
                     text = ingredient.name
                     visibility = View.VISIBLE
                 }
 
-                dialogView.image.apply {
+                binding.image.apply {
                     visibility = View.VISIBLE
                     UiUtils.getIngredientDrawable(this, ingredient)
                 }
@@ -217,9 +230,9 @@ class IngredientDialogFragment : DialogFragment() {
                 ingredient.unit = lastSelectedUnit
             }
 
-            dialogView.optional.isChecked = ingredient.optional?:false
+            binding.optional.isChecked = ingredient.optional ?: false
 
-            dialogView.spinner.setSelection(units.indexOfFirst { s ->
+            binding.spinner.setSelection(units.indexOfFirst { s ->
                 when (s) {
                     getString(R.string.gramme_select) -> ingredient.unit == Ingredient.Unit.GRAMME
                     getString(R.string.kilogramme_select) -> ingredient.unit == Ingredient.Unit.KILOGRAMME
@@ -235,7 +248,7 @@ class IngredientDialogFragment : DialogFragment() {
             })
 
             return AlertDialog.Builder(it)
-                .setView(dialogView)
+                .setView(binding.root)
                 .setTitle(R.string.select_an_ingredient)
                 .setPositiveButton(R.string.save, null)
                 .setNegativeButton(R.string.cancel) { _, _ ->
@@ -249,34 +262,37 @@ class IngredientDialogFragment : DialogFragment() {
                         getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener { _ ->
                             removeErrors()
 
-                            if (dialogView.quantity.editText!!.text.isBlank()) {
-                                dialogView.quantity.error = getString(R.string.field_required)
+                            if (binding.quantity.editText!!.text.isBlank()) {
+                                binding.quantity.error = getString(R.string.field_required)
                             } else {
 
                                 try {
-                                    ingredient.quantity = dialogView.quantity.toDouble()
+                                    ingredient.quantity = binding.quantity.toDouble()
                                 } catch (e: NumberFormatException) {
                                     e.printStackTrace()
-                                    dialogView.quantity.error =
+                                    binding.quantity.error =
                                         getString(R.string.error_not_a_number)
                                 }
 
                                 if (new) {
-                                    if (dialogView.name.editText?.text?.isEmpty() != false) {
-                                        dialogView.name.error = getString(R.string.field_required)
+                                    if (binding.name.editText?.text?.isEmpty() != false) {
+                                        binding.name.error = getString(R.string.field_required)
                                     } else {
                                         //ingredient = IngredientForRecipe(null, dialogView.quantity.toDouble(), Ingredient.Unit.valueOf() dialogView.name.editText!!.text.toString(), "")
 
-                                        ingredient.name = dialogView.name.editText!!.text.toString()
+                                        ingredient.name = binding.name.editText!!.text.toString()
                                         ingredient.imageUrl = null
-                                        ingredient.optional = dialogView.optional.isChecked
+                                        ingredient.optional = binding.optional.isChecked
                                         dismiss()
 
                                         context.getSharedPreferences(
                                             "UNITS",
                                             Context.MODE_PRIVATE
                                         ).edit{
-                                            putString(ingredient.name, dialogView.spinner.selectedItem as String)
+                                            putString(
+                                                ingredient.name,
+                                                binding.spinner.selectedItem as String
+                                            )
                                         }
                                         if (it is NoticeDialogListener) it.onDialogPositiveClick(
                                             this@IngredientDialogFragment
@@ -286,8 +302,8 @@ class IngredientDialogFragment : DialogFragment() {
                                     }
                                 } else {
                                     if (ingredient.id == null && ingredient.name.isBlank()) {
-                                        dialogView.error.visibility = View.VISIBLE
-                                        dialogView.error.text =
+                                        binding.error.visibility = View.VISIBLE
+                                        binding.error.text =
                                             getString(R.string.select_an_ingredient)
                                     } else if (ingredient.id == null && (viewModel.ingredients.value
                                             ?: listOf())
@@ -298,18 +314,21 @@ class IngredientDialogFragment : DialogFragment() {
                                                 )
                                             } != null
                                     ) {
-                                        dialogView.error.visibility = View.VISIBLE
-                                        dialogView.error.text =
+                                        binding.error.visibility = View.VISIBLE
+                                        binding.error.text =
                                             getString(R.string.select_an_ingredient)
                                     } else {
-                                        ingredient.optional = dialogView.optional.isChecked
+                                        ingredient.optional = binding.optional.isChecked
                                         dismiss()
 
                                         context.getSharedPreferences(
                                             "UNITS",
                                             Context.MODE_PRIVATE
                                         ).edit{
-                                            putString(ingredient.name, dialogView.spinner.selectedItem as String)
+                                            putString(
+                                                ingredient.name,
+                                                binding.spinner.selectedItem as String
+                                            )
                                         }
                                         if (it is NoticeDialogListener) it.onDialogPositiveClick(
                                             this@IngredientDialogFragment
@@ -325,21 +344,21 @@ class IngredientDialogFragment : DialogFragment() {
     }
 
     private fun setNewIngredient(visibility: Int) {
-        dialogView.name.visibility = visibility
-        dialogView.image.visibility = visibility
-        dialogView.error.visibility = View.GONE
+        binding.name.visibility = visibility
+        binding.image.visibility = visibility
+        binding.error.visibility = View.GONE
     }
 
     private fun setEditIngredient(visibility: Int) {
-        dialogView.name.visibility = visibility
-        dialogView.ingredients.visibility = visibility
-        dialogView.button.visibility = visibility
-        dialogView.error.visibility = View.GONE
+        binding.name.visibility = visibility
+        binding.ingredients.visibility = visibility
+        binding.button.visibility = visibility
+        binding.error.visibility = View.GONE
     }
 
     private fun removeErrors() {
-        dialogView.name.isErrorEnabled = false
-        dialogView.quantity.isErrorEnabled = false
-        dialogView.error.visibility = View.GONE
+        binding.name.isErrorEnabled = false
+        binding.quantity.isErrorEnabled = false
+        binding.error.visibility = View.GONE
     }
 }

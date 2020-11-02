@@ -74,7 +74,6 @@ android {
             keyPassword("keystore")
         }
     }
-    buildToolsVersion = "30.0.1"
 
     packagingOptions {
         exclude("META-INF/DEPENDENCIES")

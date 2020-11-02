@@ -4,29 +4,26 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
-import androidx.lifecycle.Observer
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_tab.*
+import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.android.synthetic.main.fragment_tab.view.*
-import zelgius.com.myrecipes.MainActivity
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.VisionBarcodeReaderActivity
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.AnimationUtils
-import zelgius.com.myrecipes.utils.observe
 import kotlin.math.roundToInt
 
 
@@ -44,28 +41,45 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         recyclerView = it.findViewById(R.id.searchList)
     }
 
-    private val pagerAdapter by lazy { SectionsPagerAdapter(childFragmentManager) }
+    private val pagerAdapter by lazy { SectionsPagerAdapter(requireActivity()) }
 
     private var vectorAnimation: AnimatedVectorDrawableCompat? = null
+
+    private val readQrRequest by lazy {
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK)
+                manageQr(it.data)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        readQrRequest
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
 
-        //add.setImageResource(R.drawable.ic_add_24dp)
+        view.container.adapter = pagerAdapter
 
-        container.adapter = pagerAdapter
-        tabs.setupWithViewPager(container)
-        //container.isSaveFromParentEnabled = true
+        TabLayoutMediator(view.tabs, view.container) { tab, position ->
+            tab.text = when (position) {
+                0 -> getString(R.string.meal)
+                1 -> getString(R.string.dessert)
+                2 -> getString(R.string.other)
+                else -> throw IllegalStateException("Should not be there")
+            }
+        }
 
-        container.visibility = View.VISIBLE
-        tabs.visibility = View.VISIBLE
-        searchList.visibility = View.GONE
+        view.container.visibility = View.VISIBLE
+        view.tabs.visibility = View.VISIBLE
+        view.searchList.visibility = View.GONE
 
         vectorAnimation = AnimatedVectorDrawableCompat.create(ctx, R.drawable.av_add_to_add_list)
 
-        add.setOnClickListener {
-            add.setImageDrawable(vectorAnimation)
+        view.add.setOnClickListener {
+            view.add.setImageDrawable(vectorAnimation)
             vectorAnimation?.start()
             viewModel.selectedImageUrl.value = null
 
@@ -74,8 +88,8 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
                     "ADD" to true,
                     AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS to
                             AnimationUtils.RevealAnimationSetting(
-                                (add.x + add.width / 2).roundToInt(),
-                                (add.y + add.height / 2).roundToInt(),
+                                (view.add.x + view.add.width / 2).roundToInt(),
+                                (view.add.y + view.add.height / 2).roundToInt(),
                                 view.width,
                                 view.height
                             )
@@ -83,7 +97,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
             )
         }
 
-        viewModel.searchResult.observe(this, Observer {
+        viewModel.searchResult.observe(viewLifecycleOwner, {
             adapter.submitList(it)
         })
     }
@@ -91,8 +105,11 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     override fun onResume() {
         super.onResume()
 
-        (activity as AppCompatActivity).setSupportActionBar(view!!.toolbar)
-        NavigationUI.setupActionBarWithNavController(activity!! as AppCompatActivity, navController)
+        (activity as AppCompatActivity).setSupportActionBar(requireView().toolbar)
+        NavigationUI.setupActionBarWithNavController(
+            requireActivity() as AppCompatActivity,
+            navController
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -127,11 +144,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
             }
 
             R.id.scan -> {
-
-                startActivityForResult(
-                    Intent(context, VisionBarcodeReaderActivity::class.java),
-                    888
-                )
+                readQrRequest.launch(Intent(context, VisionBarcodeReaderActivity::class.java))
             }
         }
 
@@ -151,61 +164,52 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     }
 
     override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
-        container.visibility = View.GONE
-        tabs.visibility = View.GONE
-        searchList.visibility = View.VISIBLE
+        requireView().container.visibility = View.GONE
+        requireView().tabs.visibility = View.GONE
+        requireView().searchList.visibility = View.VISIBLE
         return true
     }
 
 
     override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
-        container.visibility = View.VISIBLE
-        tabs.visibility = View.VISIBLE
-        searchList.visibility = View.GONE
+        requireView().container.visibility = View.VISIBLE
+        requireView().tabs.visibility = View.VISIBLE
+        requireView().searchList.visibility = View.GONE
         return true
     }
 
+    private fun manageQr(data: Intent?) {
+        if (data?.hasExtra("BASE64") == true) {
+            viewModel.saveFromQrCode(data.getStringExtra("BASE64")!!)
+                .observe(this) {
+                    if (it == null) {
+                        Snackbar.make(
+                            requireView(),
+                            R.string.import_failed,
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Snackbar.make(
+                            requireView(),
+                            R.string.recipe_saved,
+                            Snackbar.LENGTH_SHORT
+                        ).setAction(R.string.open) { _ ->
+                            Navigation.findNavController(requireView()).navigate(
+                                R.id.action_tabFragment_to_recipeFragment,
+                                bundleOf("RECIPE" to it),
+                                null,
+                                null
+                            )
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            888 -> {
-                if (resultCode == RESULT_OK && data?.hasExtra("BASE64") == true) {
-                    viewModel.saveFromQrCode(data.getStringExtra("BASE64")!!)
-                        .observe(this) {
-                            if (it == null) {
-                                Snackbar.make(
-                                    (activity as MainActivity).coordinator,
-                                    R.string.import_failed,
-                                    Snackbar.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                Snackbar.make(
-                                    (activity as MainActivity).coordinator,
-                                    R.string.recipe_saved,
-                                    Snackbar.LENGTH_SHORT
-                                ).setAction(R.string.open) { _ ->
-                                    Navigation.findNavController(requireView()).navigate(
-                                        R.id.action_tabFragment_to_recipeFragment
-                                        , bundleOf("RECIPE" to it), null, null
-                                    )
-
-                                    viewModel.loadRecipe(it.id!!)
-                                }.show()
-
-                            }
-                        }
+                            viewModel.loadRecipe(it.id!!)
+                        }.show()
+                    }
                 }
-            }
         }
     }
 
-    /**
-     * A [FragmentPagerAdapter] that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    inner class SectionsPagerAdapter(fm: FragmentManager) :
-        FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    inner class SectionsPagerAdapter(activity: FragmentActivity) :
+        FragmentStateAdapter(activity) {
 
         private val fragments = listOf(
             ListFragment.newInstance(Recipe.Type.MEAL),
@@ -213,24 +217,9 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
             ListFragment.newInstance(Recipe.Type.OTHER)
         )
 
-        override fun getItem(position: Int): Fragment {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return fragments[position]
-        }
+        override fun getItemCount(): Int = fragments.size
 
-        override fun getPageTitle(position: Int): CharSequence? =
-            when (position) {
-                0 -> getString(R.string.meal)
-                1 -> getString(R.string.dessert)
-                2 -> getString(R.string.other)
-                else -> throw IllegalStateException("Should not be there")
-            }
-
-        override fun getCount(): Int {
-            // Show 3 total pages.
-            return fragments.size
-        }
+        override fun createFragment(position: Int): Fragment = fragments[position]
     }
 
 }

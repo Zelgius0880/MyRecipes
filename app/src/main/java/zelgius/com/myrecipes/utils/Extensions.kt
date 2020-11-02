@@ -5,9 +5,6 @@ import android.graphics.Color
 import android.util.TypedValue
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import com.google.android.material.textfield.TextInputLayout
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -66,10 +63,4 @@ fun ByteArray.unzip(): ByteArray {
     zis.closeEntry()
 
     return result
-}
-
-fun <T>LiveData<T>.observe(lifecycleOwner: LifecycleOwner, work: (T) -> Unit) {
-    observe(lifecycleOwner, Observer {
-        work(it)
-    })
 }

@@ -19,7 +19,6 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.RecipePagedAdapter
 import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.utils.observe
 import java.io.File
 
 abstract class AbstractRecipeListFragment : Fragment() {

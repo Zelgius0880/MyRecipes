@@ -53,8 +53,8 @@ class RecipePagedAdapter :
 
             if (!recipe.imageURL.isNullOrEmpty() && recipe.imageURL != "null") {
                 Picasso.get().apply {
-                    setIndicatorsEnabled(true)
-                    isLoggingEnabled = true
+                    /*setIndicatorsEnabled(true)
+                    isLoggingEnabled = true*/
                 }
                     .load(recipe.imageURL!!.toUri())
                     .resize(2048, 2048)

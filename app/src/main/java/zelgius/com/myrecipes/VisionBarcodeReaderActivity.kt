@@ -11,7 +11,10 @@ import android.util.Log
 import android.view.Surface
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -45,10 +48,6 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
 
     val listener: (List<Barcode>) -> Unit = {
         for (barcode in it) {
-            val bounds = barcode.boundingBox
-            val corners = barcode.cornerPoints
-
-            val rawValue = barcode.rawValue
 
             // See API reference for complete list of supported types
             when (barcode.valueType) {
@@ -56,10 +55,6 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
                     barcode.rawValue
                     setResult(Activity.RESULT_OK, Intent().putExtra("BASE64", barcode.rawValue))
                     finish()
-                }
-                Barcode.TYPE_URL -> {
-                    val title = barcode.url!!.title
-                    val url = barcode.url!!.url
                 }
             }
         }
@@ -114,12 +109,6 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
                 .also {
                     it.setAnalyzer(Executors.newSingleThreadExecutor(), QRImageAnalyzer())
                 }
-
-            // Build the image capture use case and attach button click listener
-            val imageCapture = ImageCapture.Builder()
-                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-                .build()
 
             try {
                 // Unbind use cases before rebinding

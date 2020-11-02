@@ -1,0 +1,51 @@
+
+
+plugins {
+    id("com.android.library")
+    id("com.google.protobuf")
+}
+
+def generatedFilesBaseDir = "$projectDir/src"
+def sdkVersion = rootProject.ext.compileSdkVersion
+
+
+/*val generatedFilesBaseDir = "$projectDir/src"
+val sdkVersion = rootProject.extra["compileSdkVersion"] as Int
+val kotlinVersion = rootProject.extra["kotlinVersion"]*/
+
+android {
+    compileSdkVersion(sdkVersion)
+    buildToolsVersion("30.0.2")
+
+    sourceSets {
+        getByName("main").java.srcDirs("$generatedFilesBaseDir/main/javalite")
+    }
+
+    dependencies {
+        //implementation (fileTree("libs", include: ["*.jar"]))
+        api("com.google.protobuf:protobuf-lite:3.0.1")
+    }
+
+}
+
+// Please don't move it to Kotlin DSL -> the plugin does not work will with it
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.0.0'
+    }
+    plugins {
+        javalite {
+            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                remove java
+            }
+            task.plugins {
+                javalite { }
+            }
+        }
+    }
+}
