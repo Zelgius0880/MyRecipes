@@ -1,25 +1,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        tools:context="zelgius.com.myrecipes.fragments.Main2Activity">
-    <item
-            android:id="@+id/share"
-            android:icon="@drawable/ic_baseline_share_24"
-            android:orderInCategory="100"
-            android:title="@string/share"
-            app:showAsAction="ifRoom" />
+        tools:context="zelgius.com.myrecipes.MainActivity">
 
     <item
-            android:id="@+id/pdf"
+            android:id="@+id/export"
             android:icon="@drawable/ic_picture_as_pdf_white_24dp"
+            android:iconTint="@color/md_white_1000"
             android:orderInCategory="100"
             android:title="@string/export_to_pdf"
             app:showAsAction="ifRoom" />
 
     <item
-            android:id="@+id/play"
-            android:icon="@drawable/ic_play_arrow_white_24dp"
+            android:id="@+id/cancel"
+            android:icon="@drawable/ic_close_white_24dp"
+            android:iconTint="@color/md_white_1000"
             android:orderInCategory="100"
-            android:title="@string/play"
+            android:title="@string/cancel"
             app:showAsAction="ifRoom" />
+
+
 </menu>

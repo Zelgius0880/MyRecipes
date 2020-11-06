@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import android.os.Parcelable
 import android.transition.TransitionInflater
 import android.view.*
@@ -12,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -26,6 +28,7 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
 import kotlinx.android.synthetic.main.fragment_recipe.*
 import kotlinx.android.synthetic.main.fragment_tab.view.*
 import kotlinx.android.synthetic.main.layout_header.*
+import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.GroupDividerDecoration
@@ -33,23 +36,20 @@ import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.UiUtils
+import java.io.File
 
 
 /**
  * A simple [Fragment] subclass.
  *
  */
-class RecipeFragment : Fragment(), OnBackPressedListener,
+class RecipeFragment : Fragment(),
     RecyclerViewExpandableItemManager.OnGroupExpandListener,
     RecyclerViewExpandableItemManager.OnGroupCollapseListener {
 
     companion object {
         const val SAVED_STATE_EXPANDABLE_ITEM_MANAGER = "RecyclerViewExpandableItemManager"
 
-    }
-
-    override fun onBackPressed() {
-        //endActivity()
     }
 
     override fun onDestroy() {
@@ -61,20 +61,9 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
     private var itemAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
 
-    private val context by lazy { activity as AppCompatActivity }
-    private val viewModel by lazy {
-        ViewModelProvider(
-            requireActivity(),
-            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
-        ).get(RecipeViewModel::class.java)
-    }
-    private val adapter by lazy { RecipeExpandableAdapter(context, viewModel) }
-    private val headerWrapper by lazy {
-        HeaderAdapterWrapper(
-            context,
-            viewModel
-        ) { /*startPostponedEnterTransition()*/ header.visibility = View.INVISIBLE }
-    }
+    private lateinit var viewModel: RecipeViewModel
+    private lateinit var adapter: RecipeExpandableAdapter
+    private lateinit var headerWrapper: HeaderAdapterWrapper
 
     private var expandableItemManager: RecyclerViewExpandableItemManager? = null
     private lateinit var touchActionGuardManager: RecyclerViewTouchActionGuardManager
@@ -86,6 +75,18 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        viewModel = ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        ).get(RecipeViewModel::class.java)
+
+        headerWrapper = HeaderAdapterWrapper(
+            requireContext(),
+            viewModel
+        ) { /*startPostponedEnterTransition()*/ header.visibility = View.INVISIBLE }
+
+        adapter = RecipeExpandableAdapter(requireContext(), viewModel)
+
         sharedElementEnterTransition =
             TransitionInflater.from(context).inflateTransition(android.R.transition.move)
         sharedElementReturnTransition =
@@ -93,14 +94,16 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
 
         /*postponeEnterTransition()*/
 
-        requireActivity().onBackPressedDispatcher.addCallback(this) {
+        requireActivity().onBackPressedDispatcher.addCallback(this)
+        {
             popFragment()
         }
 
-        selectDocument = registerForActivityResult(ActivityResultContracts.CreateDocument()) {
+        selectDocument = registerForActivityResult(ActivityResultContracts.CreateDocument())
+        {
             if (it == null) return@registerForActivityResult
 
-            viewModel.exportToPdf(viewModel.currentRecipe, it)
+            viewModel.exportToPdf(recipe = viewModel.currentRecipe, it)
                 .observe(this@RecipeFragment) { uri ->
                     menu.findItem(R.id.pdf).actionView = null
 
@@ -135,8 +138,10 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
 
-        val recipe = arguments?.getParcelable("RECIPE") ?: Recipe(Recipe.Type.MEAL)
-        viewModel.selectedRecipe.value = recipe
+        val recipe = arguments?.getParcelable<Recipe>("RECIPE")?.apply {
+            viewModel.loadRecipe(id!!)
+        } ?: Recipe(Recipe.Type.MEAL)
+        //viewModel.selectedRecipe.value = recipe
 
         if (arguments != null)
             UiUtils.bindHeader(recipe, UiUtils.HeaderViewHolder(view, imageView, name, category))
@@ -198,8 +203,8 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         list.adapter = itemAdapter
         list.addItemDecoration(
             GroupDividerDecoration(
-                context,
-                ContextCompat.getColor(context, android.R.color.transparent),
+                requireContext(),
+                ContextCompat.getColor(requireContext(), android.R.color.transparent),
                 8f
             )
         )
@@ -218,16 +223,17 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
         requireActivity().invalidateOptionsMenu()
     }
 
+    var progressMenuId: Int = 0
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.menu_recipe, menu)
         this.menu = menu
         if (viewModel.pdfProgress.value == true) {
-            menu.findItem(R.id.pdf).apply {
+            menu.findItem(progressMenuId)?.apply {
                 actionView = ProgressBar(requireContext())
             }
         } else {
-            menu.findItem(R.id.pdf).apply {
+            menu.findItem(progressMenuId)?.apply {
                 actionView = null
             }
         }
@@ -236,11 +242,45 @@ class RecipeFragment : Fragment(), OnBackPressedListener,
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.pdf -> {
+                progressMenuId = R.id.pdf
                 selectDocument.launch("${viewModel.currentRecipe.name}.pdf")
                 true
             }
             R.id.play -> {
                 viewModel.buildNotification(viewModel.currentRecipe)
+                true
+            }
+
+            R.id.share -> {
+                progressMenuId = R.id.share
+                val recipe = viewModel.currentRecipe
+                val uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    BuildConfig.APPLICATION_ID + ".fileprovider",
+                    File(
+                        requireContext()
+                            .getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
+                        "${recipe.name.replace(File.separator, " _ ")}.pdf"
+                    )
+                )
+                menu.findItem(R.id.share).apply {
+                    actionView = ProgressBar(requireContext())
+                }
+                viewModel.exportToPdf(recipe, uri).observe(viewLifecycleOwner) {
+                    menu.findItem(R.id.share).apply {
+                        actionView = null
+                    }
+
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_STREAM, it)
+                        type = "application/pdf"
+                    }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    startActivity(shareIntent)
+                }
+
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -55,20 +55,25 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     val editMode = MutableLiveData<Boolean>()
     val selectedImageUrl = MutableLiveData<Uri?>()
 
-    private val _pdfProgress = MutableLiveData<Boolean>()
+    private val _pdfProgress = MutableLiveData<Boolean>(false)
     val pdfProgress: LiveData<Boolean>
-    get() = _pdfProgress
+        get() = _pdfProgress
+
+    val selectRecipe = MutableLiveData<Boolean>()
+
+    var selectedType: Recipe.Type = Recipe.Type.MEAL
 
     var currentRecipe: Recipe = Recipe()
+
+    private val _selection = mutableListOf<Recipe>()
+    val selection: List<Recipe>
+        get() = _selection
 
     val mealList = LivePagedListBuilder(recipeRepository.pagedMeal(), /* page size  */ 20).build()
     val dessertList =
         LivePagedListBuilder(recipeRepository.pagedDessert(), /* page size  */ 20).build()
     val otherList = LivePagedListBuilder(recipeRepository.pagedOther(), /* page size  */ 20).build()
 
-    //val searchResult: MutableLiveData<>
-
-    //val storageRef by lazy { FirebaseStorage.getInstance().reference }
     val ingredients: LiveData<List<Ingredient>>
 
     private val searchQuery = MutableLiveData<String>()
@@ -80,26 +85,6 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         ingredients = ingredientRepository.get()
     }
 
-    /*fun uploadFile(recipe: Recipe, file: File, callback: (Boolean) -> Unit = {}) {
-        val ref = storageRef.child("images/${recipe.name}.png")
-
-        val uploadTask = ref.putFile(file.toUri())
-
-        uploadTask.continueWithTask {
-            if (!it.isSuccessful) {
-                throw it.exception!!
-            }
-
-            // Continue with the task to get the download URL
-            ref.downloadUrl
-        }.addOnCompleteListener {
-            if (it.isSuccessful) {
-                recipe.imageURL = it.result!!.path
-            }
-            callback(it.isSuccessful)
-        }
-    }*/
-
     fun search(query: String): LiveData<PagedList<Recipe>> {
         searchQuery.value = query
 
@@ -108,6 +93,16 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
     fun saveCurrentRecipe(): LiveData<Recipe> =
         saveRecipe(currentRecipe)
+
+    fun toggleSelectedItem(item: Recipe) {
+        if (!_selection.remove(item))
+            _selection.add(item)
+    }
+
+    fun clearSelection() {
+        _selection.clear()
+    }
+
 
     fun saveRecipe(recipe: Recipe): LiveData<Recipe> {
         val done = MutableLiveData<Recipe>()
@@ -179,21 +174,15 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
 
-    fun delete(recipe: Recipe): LiveData<Boolean> {
-        val result = MutableLiveData<Boolean>()
+    fun delete(recipe: Recipe) = liveData {
+        ingredientRepository.delete(recipe)
 
-        viewModelScope.launch {
-            ingredientRepository.delete(recipe)
+        stepRepository.delete(recipe)
 
-            stepRepository.delete(recipe)
+        recipeRepository.delete(recipe)
 
-            recipeRepository.delete(recipe)
+        emit(true)
 
-            result.value = true
-
-        }
-
-        return result
     }
 
     fun removeImage(recipe: Recipe) {
@@ -208,15 +197,24 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
-
-    fun exportToPdf(recipe: Recipe, uri: Uri): LiveData<Uri> {
+    fun exportSelectionToPdf(uri: Uri) = liveData {
         _pdfProgress.value = true
-        val result = MutableLiveData<Uri>()
-        viewModelScope.launch {
-            result.value = PdfGenerator(app).createPdf(recipe, uri)
-            _pdfProgress.value = false
+
+        with(PdfGenerator(app).createPdf(_selection.map {
+            recipeRepository.getFull(it.id!!)!!
+        }, uri)) {
+            emit(this)
         }
-        return result
+        _pdfProgress.value = false
+    }
+
+    fun exportToPdf(recipe: Recipe, uri: Uri) = liveData {
+        _pdfProgress.value = true
+
+        with(PdfGenerator(app).createPdf(recipe, uri)) {
+            _pdfProgress.value = false
+            emit(this)
+        }
     }
 
     fun saveFromQrCode(scannedBase64: String): LiveData<Recipe?> {
@@ -333,7 +331,12 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
             }
 
             val pIntent =
-                PendingIntent.getBroadcast(app, 1, intentAction, PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.getBroadcast(
+                    app,
+                    1,
+                    intentAction,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
 
             val builder = NotificationCompat.Builder(app, "recipe")
                 .setSmallIcon(R.drawable.ic_restaurant_menu_black_24dp)

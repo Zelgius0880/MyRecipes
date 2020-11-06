@@ -1,12 +1,13 @@
 package zelgius.com.myrecipes.utils
 
 import android.app.Application
+import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertTrue
 import org.junit.Test
-
-import org.junit.Assert.*
 import zelgius.com.myrecipes.RecipeViewModel
+import zelgius.com.myrecipes.createDummySample
 import zelgius.com.myrecipes.entities.Step
 import java.io.File
 
@@ -26,18 +27,18 @@ class PdfGeneratorTest {
             PdfGenerator(context).createPdf(viewModel.createDummySample().apply {
                 name = "Default $name"
                 //imageURL = "file:/storage/emulated/0/Android/data/zelgius.com.myrecipes/files/Pictures/23"
-            }, file)
+            }, file.toUri())
 
             // Test with storage image
             PdfGenerator(context).createPdf(viewModel.createDummySample().apply {
                 name = "Storage $name"
                 imageURL =
                     "file:/storage/emulated/0/Android/data/zelgius.com.myrecipes/files/Pictures/23"
-            }, file)
+            }, file.toUri())
 
 
             // Test with storage image
-            PdfGenerator(context).createPdf(viewModel.createDummySample().apply {
+            PdfGenerator(context).createPdf(recipe = viewModel.createDummySample().apply {
                 name = "Long Step $name"
                 steps.add(
                     Step(
@@ -47,7 +48,7 @@ class PdfGeneratorTest {
                         refRecipe = null
                     )
                 )
-            }, file)
+            }, file.toUri())
 
 
             //Thread.sleep(300000)

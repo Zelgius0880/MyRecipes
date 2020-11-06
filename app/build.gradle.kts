@@ -5,6 +5,7 @@ plugins {
     id("kotlin-android-extensions")
     id("androidx.navigation.safeargs")
     id("com.google.gms.google-services")
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
 val sdkVersion = rootProject.extra["compileSdkVersion"] as Int
@@ -128,14 +129,13 @@ dependencies {
 
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("de.hdodenhof:circleimageview:3.1.0")
-    implementation("gr.escsoft.michaelprimez.searchablespinner:SearchableSpinner:1.0.9")
     //debugImplementation("com.amitshekhar.android:debug-db:1.0.6") //adb forward tcp:8080 tcp:8080
 
     //Android X
     implementation("androidx.fragment:fragment:1.3.0-beta01")
     implementation("androidx.fragment:fragment-ktx:1.3.0-beta01")
     implementation("androidx.core:core-ktx:1.5.0-alpha04")
-    implementation("androidx.constraintlayout:constraintlayout:2.0.2")
+    implementation("androidx.constraintlayout:constraintlayout:2.0.4")
     implementation("androidx.recyclerview:recyclerview:1.2.0-alpha06")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.lifecycle:lifecycle-extensions:$lifecycleVersion")
@@ -165,36 +165,18 @@ dependencies {
     implementation("androidx.paging:paging-runtime:$pagingVersion") // use -ktx for Kotlin)
     implementation("androidx.paging:paging-runtime-ktx:$pagingVersion")
 
-
-    //FireBase
-/*   implementation ("com.google.firebase:firebase-core:$firebaseVersion")
-
-   implementation("com.google.firebase:firebase-auth:19.4.0")
-   //implementation "com.google.firebase:firebase-firestore:18.2.0"
-   //implementation("com.firebaseui:firebase-ui-firestore:4.2.1")
-   implementation("com.google.firebase:firebase-storage:19.2.0")
-*/
-
-    //implementation "com.google.firebase:firebase-database:$firebase_version"
-
     //Other
     implementation("com.amulyakhare:com.amulyakhare.textdrawable:1.0.1")
     implementation("com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:1.0.0")
-    implementation("com.karumi:dexter:6.2.1")
     implementation("com.github.kenglxn.QRGen:android:2.6.0")
+    implementation("com.google.android.gms:play-services-oss-licenses:17.0.0")
 
     //Worker
     implementation("android.arch.work:work-runtime-ktx:$workVersion")
     implementation(project(path = (":protobuff")))
-    //implementation project(path:(":barcodereader"))
-    //implementation project(path:(":barcodereader"))
-
-    //implementation ("com.google.android.gms:play-services-vision:20.1.2")
 
 
     implementation("com.google.mlkit:barcode-scanning:16.0.3")
-/*    implementation ("com.google.firebase:firebase-ml-vision:24.1.0")
-    implementation ("com.google.firebase:firebase-ml-vision-barcode-model:16.1.1")*/
 
 
 

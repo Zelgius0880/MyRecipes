@@ -6,8 +6,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.navigation.Navigation.findNavController
-import com.facebook.stetho.Stetho
-import zelgius.com.myrecipes.fragments.OnBackPressedListener
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,7 +18,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Stetho.initializeWithDefaults(this)
         if (intent != null) processIntent(intent)
     }
 
@@ -52,27 +49,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
-            ?.childFragmentManager
-            ?.fragments?.last()
-
-        if (fragment is OnBackPressedListener) {
-            fragment.onBackPressed()
-        }
 
         return navController.navigateUp()
-    }
-
-
-    override fun onBackPressed() {
-        val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
-            ?.childFragmentManager
-            ?.fragments?.last()
-
-        if (fragment is OnBackPressedListener) {
-            fragment.onBackPressed()
-        }
-
-        super.onBackPressed()
     }
 }

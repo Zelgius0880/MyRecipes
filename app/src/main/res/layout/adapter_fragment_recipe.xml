@@ -11,10 +11,13 @@
         android:clickable="true"
         app:cardCornerRadius="0dp"
         app:cardElevation="2dp"
+        android:checkable="true"
         app:rippleColor="@color/md_blue_500"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/material_card_selector"
+        app:strokeWidth="2dp"
         tools:layout_height="150dp">
 
 

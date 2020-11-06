@@ -24,7 +24,10 @@ import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.utils.Utils.drawText
 import zelgius.com.myrecipes.utils.Utils.scaleCenterCrop
 import zelgius.com.myrecipes.utils.Utils.zipBytes
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.io.OutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.math.ceil
@@ -39,12 +42,12 @@ class PdfGenerator(val context: Context) {
         const val A4_HEIGHT = 4 * 842
     }
 
-    private var pageNumber = 1
-    private var pageInfo = PdfDocument.PageInfo.Builder(A4_WIDTH, A4_HEIGHT, pageNumber).create()
-    private val document = PdfDocument()
-    private var page = document.startPage(pageInfo)
+    private var pageNumber: Int = 0
+    private lateinit var pageInfo: PdfDocument.PageInfo
+    private lateinit var document: PdfDocument
+    private lateinit var page: PdfDocument.Page
 
-    private var canvas: Canvas = page.canvas
+    private lateinit var canvas: Canvas
     private var linePosition: Int = 0
 
     private val textPaint = TextPaint()
@@ -53,59 +56,7 @@ class PdfGenerator(val context: Context) {
     private val alpha = 0.6f
     suspend fun createPdf(recipe: Recipe, uri: Uri) =
         withContext(Dispatchers.IO) {
-            linePosition = 200
-            // create a new document
-            linePosition = drawTitle(recipe)
-
-            linePosition += 100
-
-            linePosition = drawSeparator()
-
-            //Title All Ingredients
-            linePosition += 100
-
-            textPaint.apply {
-                reset()
-                color = context.getColor(R.color.md_black_1000)
-                textSize = 48f
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            }
-
-            drawText(
-                canvas,
-                linePosition,
-                textPaint,
-                context.getString(R.string.all_ingredients),
-                200
-            )
-            val ingredients =
-                recipe.ingredients.sortedWith { o1, o2 ->
-                    when {
-                        o1.step == null && o2.step != null -> -1
-                        o2.step == null && o1.step != null -> 1
-                        else -> o1.sortOrder - o2.sortOrder
-                    }
-                }
-
-            linePosition += 100
-            ingredients.forEach {
-                linePosition += 24
-                drawIngredient(it)
-            }
-
-            recipe.steps.forEach {
-                linePosition += 100
-                //drawSeparator(margin = 700f)
-                //linePosition += 100
-
-                drawStep(
-                    it,
-                    recipe.ingredients.filter { i -> i.step == it }.sortedBy { i -> i.sortOrder })
-            }
-
-            drawQrCode(recipe)
-
-            document.finishPage(page)
+            drawRecipe(recipe)
             // write the document content
             val output = context.contentResolver.openOutputStream(uri)!!
             createFile(document, output)
@@ -114,6 +65,84 @@ class PdfGenerator(val context: Context) {
             uri
         }
 
+    private fun drawRecipe(recipe: Recipe) {
+        pageNumber = 1
+        pageInfo = PdfDocument.PageInfo.Builder(A4_WIDTH, A4_HEIGHT, pageNumber).create()
+        document = PdfDocument()
+        page = document.startPage(pageInfo)
+        canvas = page.canvas
+        linePosition = 0
+
+        linePosition = 200
+        // create a new document
+        linePosition = drawTitle(recipe)
+
+        linePosition += 100
+
+        linePosition = drawSeparator()
+
+        //Title All Ingredients
+        linePosition += 100
+
+        textPaint.apply {
+            reset()
+            color = context.getColor(R.color.md_black_1000)
+            textSize = 48f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+
+        drawText(
+            canvas,
+            linePosition,
+            textPaint,
+            context.getString(R.string.all_ingredients),
+            200
+        )
+        val ingredients =
+            recipe.ingredients.sortedWith { o1, o2 ->
+                when {
+                    o1.step == null && o2.step != null -> -1
+                    o2.step == null && o1.step != null -> 1
+                    else -> o1.sortOrder - o2.sortOrder
+                }
+            }
+
+        linePosition += 100
+        ingredients.forEach {
+            linePosition += 24
+            drawIngredient(it)
+        }
+
+        recipe.steps.forEach {
+            linePosition += 100
+            //drawSeparator(margin = 700f)
+            //linePosition += 100
+
+            drawStep(
+                it,
+                recipe.ingredients.filter { i -> i.step == it }.sortedBy { i -> i.sortOrder })
+        }
+
+        drawQrCode(recipe)
+
+        document.finishPage(page)
+    }
+
+    suspend fun createPdf(recipes: List<Recipe>, uri: Uri) =
+        withContext(Dispatchers.IO) {
+            val zipOut = ZipOutputStream(context.contentResolver.openOutputStream(uri)!!)
+            recipes.forEach {
+                drawRecipe(it)
+
+                val entry = ZipEntry("${it.name.replace(File.separator, "_")}.pdf")
+                zipOut.putNextEntry(entry)
+                document.writeTo(zipOut)
+                document.close()
+            }
+
+            zipOut.close()
+            uri
+        }
 
     /**
      * Draw the title of the document which is the name of the recipe and the image of the recipe
@@ -123,7 +152,11 @@ class PdfGenerator(val context: Context) {
     private fun drawTitle(recipe: Recipe): Int {
 
         val bmp = scaleCenterCrop(
-            BitmapFactory.decodeFile(recipe.imageURL?.toUri()?.path)
+            recipe.imageURL?.toUri()?.let {
+                if (it.scheme == "content")
+                    BitmapFactory.decodeStream(context.contentResolver.openInputStream(it))
+                else null
+            }
                 ?: ContextCompat.getDrawable(context, R.drawable.ic_dish)!!.toBitmap(400, 400),
             400, 400
         )
@@ -154,7 +187,10 @@ class PdfGenerator(val context: Context) {
      * @param color Int     the color of the line (by default #B0BBC5 -> blue grey 200)
      * @return Int          linePosition + separator width (8px)
      */
-    private fun drawSeparator(margin: Float = 300f, @ColorInt color: Int = Color.parseColor("#B0BBC5")): Int {
+    private fun drawSeparator(
+        margin: Float = 300f,
+        @ColorInt color: Int = Color.parseColor("#B0BBC5")
+    ): Int {
         val width = 8f
         paint.apply {
             reset()

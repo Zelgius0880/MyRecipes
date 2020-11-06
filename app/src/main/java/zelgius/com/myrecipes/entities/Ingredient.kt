@@ -86,6 +86,10 @@ data class Ingredient(
             return arrayOfNulls(size)
         }
     }
+
+    override fun toString(): String {
+        return name
+    }
 }
 
 
@@ -100,7 +104,7 @@ enum class DefaultIngredients(@StringRes val string: Int, val url: String, @Draw
     APPLE(R.string.apple_name, "drawable://apple", R.drawable.ic_apple),
     AVOCADO(R.string.avocado_name, "drawable://avocado", R.drawable.ic_avocado),
     BROWN_SUGAR(R.string.brown_sugar_name, "drawable://brown_sugar", R.drawable.ic_brown_suggar),
-    CHEESE(R.string.cheese_name, "drawable://salt", R.drawable.ic_cheese),
+    CHEESE(R.string.cheese_name, "drawable://cheese", R.drawable.ic_cheese),
     CHOCOLATE(R.string.chocolate_name, "drawable://chocolate", R.drawable.ic_chocolate),
     COCONUT(R.string.coconut_name, "drawable://coconut", R.drawable.ic_coconut),
     COFFEE(R.string.coffee_name, "drawable://coffee", R.drawable.ic_coffee),

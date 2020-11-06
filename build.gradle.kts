@@ -25,7 +25,7 @@ buildscript {
         classpath("com.google.gms:google-services:4.3.4")
         classpath("com.google.protobuf:protobuf-gradle-plugin:$protobufVersion")
         //classpath "androidx.navigation:safe-args-gradle-plugin:1.0.0-alpha01"
-
+        classpath("com.google.android.gms:oss-licenses-plugin:0.10.2")
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle.kts files
     }

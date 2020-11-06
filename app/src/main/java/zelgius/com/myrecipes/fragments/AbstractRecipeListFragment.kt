@@ -30,10 +30,12 @@ abstract class AbstractRecipeListFragment : Fragment() {
     private var wrappedAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
     protected lateinit var recyclerViewTouchActionGuardManager: RecyclerViewTouchActionGuardManager
 
-    val viewModel by lazy {  ViewModelProvider(
+    val viewModel by lazy {
+        ViewModelProvider(
             requireActivity(),
             ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
-        ).get(RecipeViewModel::class.java) }
+        ).get(RecipeViewModel::class.java)
+    }
 
     override fun onDestroyView() {
         if (wrappedAdapter != null)
@@ -58,7 +60,18 @@ abstract class AbstractRecipeListFragment : Fragment() {
         // Disable the change animation in order to make turning back animation of swiped item works properly.
         animator.supportsChangeAnimations = false
 
-        adapter = RecipePagedAdapter()
+        adapter = RecipePagedAdapter {
+            viewModel.selectRecipe.value = it
+        }
+
+        viewModel.selectRecipe.observe(viewLifecycleOwner) {
+            adapter.isSelectionEnabled = it
+
+            if (!it) {
+                adapter.clearSelection()
+                viewModel.clearSelection()
+            }
+        }
 
         wrappedAdapter =
             recyclerViewSwipeManager.createWrappedAdapter(adapter)      // wrap for swiping
@@ -78,20 +91,25 @@ abstract class AbstractRecipeListFragment : Fragment() {
 
         adapter.editListener = { r, extras ->
             Navigation.findNavController(view).navigate(
-                R.id.action_tabFragment_to_editRecipeFragment
-                , bundleOf("RECIPE" to r), null, extras // ID is used to bind the transition name
+                R.id.action_tabFragment_to_editRecipeFragment,
+                bundleOf("RECIPE" to r),
+                null,
+                extras // ID is used to bind the transition name
             )
 
             viewModel.loadRecipe(r.id!!)
         }
 
         adapter.clickListener = { r, extras ->
-            Navigation.findNavController(view).navigate(
-                R.id.action_tabFragment_to_recipeFragment
-                , bundleOf("RECIPE" to r), null, extras
-            )
 
-            viewModel.loadRecipe(r.id!!)
+            if (extras != null) {
+                viewModel.loadRecipe(r.id!!)
+                Navigation.findNavController(view).navigate(
+                    R.id.action_tabFragment_to_recipeFragment, bundleOf("RECIPE" to r), null, extras
+                )
+            } else {
+                viewModel.toggleSelectedItem(r)
+            }
         }
 
         recyclerView.adapter = wrappedAdapter  // requires *wrapped* adapter

@@ -65,6 +65,7 @@
     <string name="open">Ouvrir</string>
     <string name="other">Autre</string>
     <string name="pdf_created">Le PDF a été créé</string>
+    <string name="zip_created">Une archive a été créée</string>
     <string name="peanut_name">Cacaouète(s)</string>
     <string name="pear_name">Poire(s)</string>
     <string name="pepper_name">Poivre</string>
@@ -81,7 +82,7 @@
     <string name="recipe_saved">Recette enregistrée</string>
     <string name="salt_name">Sel</string>
     <string name="save">Enregistrer</string>
-    <string name="scan_recipe">Scanner un recette</string>
+    <string name="scan_recipe">Scanner une recette</string>
     <string name="search">Rechercher</string>
     <string name="search_hint">Chercher un recette</string>
     <string name="select_an_ingredient">Choisir un ingrédient</string>
@@ -107,5 +108,10 @@
     <string name="select_file">Selectionner un app</string>
     <string name="from_gallery">Gallerie</string>
     <string name="from_camera">Appareil Photo</string>
+    <string name="share">Share</string>
 
+    <plurals name="selected_recipes">
+        <item quantity="other">%d recettes</item>
+        <item quantity="one">%d recette</item>
+    </plurals>
 </resources>

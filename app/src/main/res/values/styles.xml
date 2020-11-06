@@ -60,12 +60,11 @@
         <item name="android:background">@color/tabColor</item>
     </style>
 
-    <style name="Widget.MyRecipes.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
-    </style>
+    <style name="Widget.MyRecipes.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"></style>
 
-    <style name="Widget.MyRecipes.TextInputLayout.Outline" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
-    </style>
+    <style name="Widget.MyRecipes.TextInputLayout.ExposedDropdownMenu" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"></style>
 
+    <style name="Widget.MyRecipes.TextInputLayout.Outline" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"></style>
 
     <style name="Widget.MyRecipes.ImageButton" parent="Widget.MaterialComponents.Button">
         <!--<item name="backgroundTint">@color/primaryDarkColor</item>-->

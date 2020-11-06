@@ -4,14 +4,15 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import gr.escsoft.michaelprimez.searchablespinner.interfaces.ISpinnerSelectedView
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.utils.UiUtils
 
 class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingredient>) :
-    ArrayAdapter<Ingredient>(context, R.layout.adapter_autocomplete_ingredient), Filterable, ISpinnerSelectedView {
-    private var resultList: List<Ingredient> = ingredients.subList(0,
+    ArrayAdapter<Ingredient>(context, R.layout.adapter_autocomplete_ingredient), Filterable {
+
+    private var resultList: List<Ingredient> = ingredients.subList(
+        0,
         5.coerceAtMost(ingredients.size)
     )
 
@@ -20,7 +21,7 @@ class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingr
     }
 
     override fun getItem(index: Int): Ingredient? {
-        return resultList[index]
+        return resultList.getOrNull(index)
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
@@ -31,15 +32,21 @@ class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingr
                 image = it.findViewById(R.id.image)
             }
         }).apply {
-            val viewHolder = tag as ViewHolder?
-            if (viewHolder != null) {
-                viewHolder.name.text = resultList[position].name
-                UiUtils.getIngredientDrawable(viewHolder.image, resultList[position])
+            (tag as ViewHolder).let {
+
+                if (position >= 0) {
+                    it.name.text = resultList[position].name
+                    UiUtils.getIngredientDrawable(it.image, resultList[position])
+                    it.image.visibility = View.VISIBLE
+                } else {
+                    it.name.text = context.getText(R.string.no_selection)
+                    it.image.visibility = View.GONE
+                }
             }
         }
 
 
-    override fun getSelectedView(position: Int): View =
+/*    override fun getSelectedView(position: Int): View =
         View.inflate(context, R.layout.adapter_autocomplete_ingredient, null).apply {
             UiUtils.getIngredientDrawable(findViewById(R.id.image), resultList[position])
             findViewById<TextView>(android.R.id.text1).text = resultList[position].name
@@ -48,16 +55,17 @@ class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingr
 
     override fun getNoSelectionView(): View {
         return View.inflate(context, R.layout.adapter_autocomplete_ingredient, null).also { view ->
-            view.findViewById<TextView>(android.R.id.text1).text = context.getText(R.string.no_selection)
+            view.findViewById<TextView>(android.R.id.text1).text =
+                context.getText(R.string.no_selection)
             view.findViewById<ImageView>(R.id.image).visibility = View.GONE
         }
-    }
+    }*/
 
     override fun getFilter(): Filter {
         return object : Filter() {
-            override fun performFiltering(constraint: CharSequence): FilterResults {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
                 val filterResults = FilterResults()
-                if (constraint.isEmpty())
+                if (constraint.isNullOrBlank())
                     resultList = ingredients.subList(0, 5.coerceAtMost(ingredients.size))
                 else {
                     // Retrieve the autocomplete results.
@@ -73,7 +81,7 @@ class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingr
                 return filterResults
             }
 
-            override fun publishResults(constraint: CharSequence, results: FilterResults) {
+            override fun publishResults(constraint: CharSequence?, results: FilterResults) {
                 if (results.count > 0) {
                     notifyDataSetChanged()
                 } else {

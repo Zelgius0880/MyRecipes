@@ -8,12 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
-import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
@@ -22,6 +22,8 @@ import zelgius.com.myrecipes.databinding.DialogFragmentIngredientBinding
 import zelgius.com.myrecipes.entities.Ingredient
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.utils.UiUtils
+import zelgius.com.myrecipes.utils.enterReveal
+import zelgius.com.myrecipes.utils.hideKeyboard
 import zelgius.com.myrecipes.utils.toDouble
 import java.text.DecimalFormat
 
@@ -54,6 +56,7 @@ class IngredientDialogFragment : DialogFragment() {
     private var new = false
     var listener: NoticeDialogListener? = null
     private val units by lazy { ctx.resources.getStringArray(R.array.select_unit_array) }
+
 
     companion object {
         fun newInstance(listener: NoticeDialogListener? = null) = IngredientDialogFragment().apply {
@@ -88,33 +91,46 @@ class IngredientDialogFragment : DialogFragment() {
         return activity?.let {
             // Use the Builder class for convenient dialog construction
             viewModel.ingredients.observe(this, { list ->
-                binding.ingredients.setOnFocusChangeListener { _, hasFocus ->
-                    if (!hasFocus) binding.ingredients.hideEdit()
-                }
-                binding.ingredients.setAdapter(IngredientAutoCompleteAdapter(ctx, list))
-                binding.ingredients.setOnItemSelectedListener(object : OnItemSelectedListener {
-                    override fun onNothingSelected() {
 
+                if (new) binding.ingredients.visibility = View.GONE
+                else binding.holder.visibility = View.GONE
+
+                (binding.ingredients.editText as? AutoCompleteTextView)?.let { textView ->
+                    binding.holder.setOnClickListener {
+                        binding.ingredients.enterReveal()
+                        textView.setText("")
+                        textView.requestFocus()
+
+                        binding.holder.visibility = View.GONE
                     }
 
-                    override fun onItemSelected(view: View?, position: Int, id: Long) {
-                        binding.ingredients.selectedItem.let { i ->
-                            if (i is Ingredient) {
-                                ingredient.id = i.id
-                                ingredient.name = i.name
-                                ingredient.imageUrl = i.imageURL
+                    val adapter = IngredientAutoCompleteAdapter(ctx, list)
+                    textView.setAdapter(adapter)
+                    textView.setOnItemClickListener { _, _, position, _ ->
+                        adapter.getItem(position)?.let { i ->
+                            //binding.ingredients.exitReveal(View.GONE)
+                            binding.ingredients.visibility = View.GONE
+                            binding.holder.enterReveal()
+                            binding.error.visibility = View.GONE
 
-                                binding.spinner.setSelection(units.indexOfFirst { s ->
-                                    s == ctx.getSharedPreferences(
-                                        "UNITS",
-                                        Context.MODE_PRIVATE
-                                    ).getString(i.name, null) ?: lastSelectedUnit
-                                })
-                            }
+                            UiUtils.getIngredientDrawable(binding.imageHolder, i)
+                            binding.ingredientNameHolder.text = i.name
+
+                            ingredient.id = i.id
+                            ingredient.name = i.name
+                            ingredient.imageUrl = i.imageURL
+
+                            binding.spinner.setSelection(units.indexOfFirst { s ->
+                                s == ctx.getSharedPreferences(
+                                    "UNITS",
+                                    Context.MODE_PRIVATE
+                                ).getString(i.name, null) ?: lastSelectedUnit
+                            })
+
+                            hideKeyboard()
                         }
                     }
-
-                })
+                }
             })
 
 
@@ -142,11 +158,6 @@ class IngredientDialogFragment : DialogFragment() {
                     binding.ingredients.visibility = View.VISIBLE
                     binding.button.icon = closeAnimation
 
-                    (binding.ingredients.selectedItem as Ingredient?)?.let { i ->
-                        ingredient.id = i.id
-                        ingredient.name = i.name
-                        ingredient.imageUrl = i.imageURL
-                    }
                     if (ingredient.name.isNotEmpty()) UiUtils.getIngredientDrawable(
                         binding.image,
                         ingredient
@@ -201,7 +212,8 @@ class IngredientDialogFragment : DialogFragment() {
                             getString(R.string.teaspoon_select) -> ingredient.unit =
                                 Ingredient.Unit.TEASPOON
                             getString(R.string.cup_select) -> ingredient.unit = Ingredient.Unit.CUP
-                            getString(R.string.pinch_select) -> ingredient.unit = Ingredient.Unit.PINCH
+                            getString(R.string.pinch_select) -> ingredient.unit =
+                                Ingredient.Unit.PINCH
                         }
 
                         lastSelectedUnit = ingredient.unit
@@ -288,7 +300,7 @@ class IngredientDialogFragment : DialogFragment() {
                                         context.getSharedPreferences(
                                             "UNITS",
                                             Context.MODE_PRIVATE
-                                        ).edit{
+                                        ).edit {
                                             putString(
                                                 ingredient.name,
                                                 binding.spinner.selectedItem as String
@@ -324,7 +336,7 @@ class IngredientDialogFragment : DialogFragment() {
                                         context.getSharedPreferences(
                                             "UNITS",
                                             Context.MODE_PRIVATE
-                                        ).edit{
+                                        ).edit {
                                             putString(
                                                 ingredient.name,
                                                 binding.spinner.selectedItem as String
@@ -341,6 +353,11 @@ class IngredientDialogFragment : DialogFragment() {
                     }
                 }
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        hideKeyboard()
     }
 
     private fun setNewIngredient(visibility: Int) {

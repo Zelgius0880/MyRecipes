@@ -20,7 +20,11 @@ import zelgius.com.myrecipes.dialogs.ImageDialogFragment
 import zelgius.com.myrecipes.entities.Recipe
 
 
-class EditHeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel, private val bindListener: (()-> Unit)? = null) :
+class EditHeaderAdapterWrapper(
+    val context: Context,
+    val viewModel: RecipeViewModel,
+    private val bindListener: (() -> Unit)? = null
+) :
     AbstractHeaderFooterWrapperAdapter<EditHeaderAdapterWrapper.HeaderViewHolder, RecyclerView.ViewHolder>() {
 
     var recipe: Recipe = viewModel.currentRecipe
@@ -29,6 +33,7 @@ class EditHeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewMo
     }
 
     var viewHolder: HeaderViewHolder? = null
+
 
     override fun onCreateHeaderItemViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder =
         HeaderViewHolder(
@@ -97,7 +102,7 @@ class EditHeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewMo
 
         if (context is LifecycleOwner) {
             viewModel.selectedImageUrl.observe(context, {
-                if(it != null && it.toString().isNotEmpty() && it.toString() != "null") {
+                if (it != null && it.toString().isNotEmpty() && it.toString() != "null") {
                     itemView.imageView.setPadding(0, 0, 0, 0)
                     Picasso.get().apply {
                         //setIndicatorsEnabled(true)
@@ -132,8 +137,8 @@ class EditHeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewMo
     override fun getFooterItemCount(): Int = 0
 
     fun complete(recipe: Recipe) {
-        recipe.name = viewHolder?.itemView?.editName?.editText?.text?.toString()?:""
-        recipe.type = when(viewHolder?.itemView?.editCategory?.selectedItem as String) {
+        recipe.name = viewHolder?.itemView?.editName?.editText?.text?.toString() ?: ""
+        recipe.type = when (viewHolder?.itemView?.editCategory?.selectedItem as String) {
             context.getString(R.string.meal) -> Recipe.Type.MEAL
             context.getString(R.string.dessert) -> Recipe.Type.DESSERT
             else -> Recipe.Type.OTHER

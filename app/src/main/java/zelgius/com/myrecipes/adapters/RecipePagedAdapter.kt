@@ -10,6 +10,7 @@ import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemAdapter
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultAction
@@ -25,13 +26,18 @@ import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.dpToPx
 
 
-class RecipePagedAdapter :
+class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit) :
     PagedListAdapter<Recipe, RecipePagedAdapter.ViewHolder>(DIFF_CALLBACK),
     SwipeableItemAdapter<RecipePagedAdapter.ViewHolder> {
 
     var deleteListener: ((Recipe) -> Unit)? = null
     var editListener: ((Recipe, FragmentNavigator.Extras) -> Unit)? = null
-    var clickListener: ((Recipe, FragmentNavigator.Extras) -> Unit)? = null
+    var clickListener: ((Recipe, FragmentNavigator.Extras?) -> Unit)? = null
+
+    var isSelectionEnabled = false
+    private val _selection = mutableListOf<Recipe>()
+    val selection: List<Recipe>
+        get() = _selection
 
     init {
         setHasStableIds(true)
@@ -43,6 +49,15 @@ class RecipePagedAdapter :
 
         if (recipe != null) {
             val itemView = holder.itemView
+
+            itemView.setOnLongClickListener {
+                isSelectionEnabled = true
+                _selection.add(recipe)
+                (itemView as? MaterialCardView)?.isChecked = true
+                selectionChangeListener(true)
+                clickListener?.invoke(recipe, null)
+                true
+            }
 
             itemView.name.text = recipe.name
             itemView.category.text = when (recipe.type) {
@@ -116,25 +131,42 @@ class RecipePagedAdapter :
             }
 
             itemView.setOnClickListener {
-                itemView.materialCardView.transitionName = "cardView${recipe.id}"
-                itemView.imageView.transitionName = "imageView${recipe.id}"
-                itemView.name.transitionName = "name${recipe.id}"
-                itemView.category.transitionName = "category${recipe.id}"
+                val extra = if (!isSelectionEnabled) {
+                    itemView.materialCardView.transitionName = "cardView${recipe.id}"
+                    itemView.imageView.transitionName = "imageView${recipe.id}"
+                    itemView.name.transitionName = "name${recipe.id}"
+                    itemView.category.transitionName = "category${recipe.id}"
 
-                clickListener?.invoke(
-                    recipe, FragmentNavigatorExtras(
+                    FragmentNavigatorExtras(
                         itemView.materialCardView to "cardView${recipe.id}",
                         itemView.imageView to "imageView${recipe.id}",
                         itemView.name to "name${recipe.id}",
                         itemView.category to "category${recipe.id}"
                     )
-                )
+                } else {
+                    (itemView as? MaterialCardView)?.isChecked = if (selection.contains(recipe)) {
+                        _selection.remove(recipe)
+                        false
+                    } else {
+                        _selection.add(recipe)
+                        true
+                    }
 
+                    if (selection.isEmpty())
+                        selectionChangeListener(false)
+
+                    null
+                }
+
+                clickListener?.invoke(
+                    recipe, extra
+                )
                 /*itemView.imageView.transitionName = ""
                 itemView.name.transitionName = ""
                 itemView.category.transitionName = ""*/
             }
 
+            (itemView as? MaterialCardView)?.isChecked = selection.contains(recipe)
 
             // set swiping properties
             holder.isProportionalSwipeAmountModeEnabled = false
@@ -143,6 +175,11 @@ class RecipePagedAdapter :
             holder.swipeItemHorizontalSlideAmount =
                 if (recipe.isPinned) -itemView.context.dpToPx(160f) else 0f
         }
+    }
+
+    fun clearSelection() {
+        _selection.clear()
+        notifyDataSetChanged()
     }
 
     override fun getItemId(position: Int): Long {

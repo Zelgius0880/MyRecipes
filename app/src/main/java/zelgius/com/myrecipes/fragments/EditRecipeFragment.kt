@@ -48,17 +48,13 @@ import kotlin.math.sqrt
  * A simple [Fragment] subclass.
  *
  */
-class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListener,
+class EditRecipeFragment : Fragment(), NoticeDialogListener,
     RecyclerViewExpandableItemManager.OnGroupExpandListener,
     RecyclerViewExpandableItemManager.OnGroupCollapseListener {
 
     companion object {
         const val SAVED_STATE_EXPANDABLE_ITEM_MANAGER = "RecyclerViewExpandableItemManager"
 
-    }
-
-    override fun onBackPressed() {
-        //endActivity()
     }
 
     override fun onDestroy() {
@@ -77,30 +73,31 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
     private var itemAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
     private var vectorAnimation: AnimatedVectorDrawableCompat? = null
 
-    private val context by lazy { activity as AppCompatActivity }
-    private val viewModel by lazy {
-         ViewModelProvider(
-            requireActivity(),
-            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
-        ).get(RecipeViewModel::class.java)
-    }
-    private val adapter by lazy { EditRecipeExpandableAdapter(context, viewModel) }
-    private val headerWrapper by lazy {
-        EditHeaderAdapterWrapper(
-            context,
-            viewModel
-        ) { /*startPostponedEnterTransition()*/ header.visibility = View.INVISIBLE }
-    }
+    private lateinit var viewModel: RecipeViewModel
+    private lateinit var adapter: EditRecipeExpandableAdapter
+    private lateinit var headerWrapper: EditHeaderAdapterWrapper
 
     private var expandableItemManager: RecyclerViewExpandableItemManager? = null
     private lateinit var dragDropManager: RecyclerViewDragDropManager
     private lateinit var touchActionGuardManager: RecyclerViewTouchActionGuardManager
-    private lateinit var  swipeManager: RecyclerViewSwipeManager
+    private lateinit var swipeManager: RecyclerViewSwipeManager
 
     private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        viewModel = ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        ).get(RecipeViewModel::class.java)
+
+        adapter = EditRecipeExpandableAdapter(requireContext(), viewModel)
+
+        headerWrapper = EditHeaderAdapterWrapper(
+            requireContext(),
+            viewModel
+        ) { /*startPostponedEnterTransition()*/ header.visibility = View.INVISIBLE }
 
         if (arguments?.getBoolean("ADD") != true) {
             sharedElementEnterTransition =
@@ -129,7 +126,7 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
 
-        val recipe =  arguments?.getParcelable("RECIPE") ?: Recipe(Recipe.Type.MEAL)
+        val recipe = arguments?.getParcelable("RECIPE") ?: Recipe(viewModel.selectedType)
         viewModel.selectedRecipe.value = recipe
 
         if(arguments != null)
@@ -157,14 +154,17 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
 
         fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
         fab.animation =
-            AnimatedVectorDrawableCompat.create(context, R.drawable.av_add_list_to_close)!! to
+            AnimatedVectorDrawableCompat.create(
+                requireContext(),
+                R.drawable.av_add_list_to_close
+            )!! to
                     AnimatedVectorDrawableCompat.create(
-                        context,
+                        requireContext(),
                         R.drawable.av_close_to_add_list
                     )!!
 
         vectorAnimation =
-            AnimatedVectorDrawableCompat.create(context, R.drawable.av_add_list_to_add)
+            AnimatedVectorDrawableCompat.create(requireContext(), R.drawable.av_add_list_to_add)
 
         viewModel.editMode.value = true
 
@@ -190,7 +190,6 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
             }
         })
 
-        //region RecyclerView Config
         val eimSavedState =
             savedInstanceState?.getParcelable<Parcelable>(SAVED_STATE_EXPANDABLE_ITEM_MANAGER)
 
@@ -235,12 +234,11 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
         list.adapter = itemAdapter
         list.addItemDecoration(
             GroupDividerDecoration(
-                context,
-                ContextCompat.getColor(context, android.R.color.transparent),
+                requireContext(),
+                ContextCompat.getColor(requireContext(), android.R.color.transparent),
                 8f
             )
         )
-        //endregion
 
         list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -271,9 +269,12 @@ class EditRecipeFragment : Fragment(), OnBackPressedListener, NoticeDialogListen
 
         fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
         fab.animation =
-            AnimatedVectorDrawableCompat.create(context, R.drawable.av_add_list_to_close)!! to
+            AnimatedVectorDrawableCompat.create(
+                requireContext(),
+                R.drawable.av_add_list_to_close
+            )!! to
                     AnimatedVectorDrawableCompat.create(
-                        context,
+                        requireContext(),
                         R.drawable.av_close_to_add_list
                     )!!
 

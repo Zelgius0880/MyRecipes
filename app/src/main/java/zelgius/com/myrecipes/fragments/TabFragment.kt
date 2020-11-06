@@ -4,6 +4,9 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import android.widget.ProgressBar
+import androidx.activity.addCallback
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -11,13 +14,14 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.android.synthetic.main.fragment_tab.view.*
 import zelgius.com.myrecipes.R
@@ -41,9 +45,13 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         recyclerView = it.findViewById(R.id.searchList)
     }
 
-    private val pagerAdapter by lazy { SectionsPagerAdapter(requireActivity()) }
+    private lateinit var pagerAdapter: SectionsPagerAdapter
 
     private var vectorAnimation: AnimatedVectorDrawableCompat? = null
+    private var selectRecipe = false
+    private lateinit var menu: Menu
+    private lateinit var selectPathToExport: ActivityResultLauncher<String>
+
 
     private val readQrRequest by lazy {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -55,10 +63,44 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         readQrRequest
+
+        selectPathToExport = registerForActivityResult(ActivityResultContracts.CreateDocument())
+        {
+            if (it == null) return@registerForActivityResult
+
+            viewModel.exportSelectionToPdf(it)
+                .observe(viewLifecycleOwner) { uri ->
+                    menu.findItem(R.id.export).actionView = null
+                    viewModel.selectRecipe.value = false
+
+                    Snackbar.make(requireView(), R.string.zip_created, Snackbar.LENGTH_LONG)
+                        .setAction(R.string.open) {
+                            requireContext().startActivity(
+                                Intent.createChooser(
+                                    Intent(Intent.ACTION_VIEW)
+                                        .setDataAndType(uri, "application/zip")
+                                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY),
+                                    getString(R.string.select_file)
+                                )
+                            )
+                        }
+                        .show()
+                }
+
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            if (viewModel.selectRecipe.value == true) {
+                viewModel.selectRecipe.value = false
+            } else
+                requireActivity().onBackPressed()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        pagerAdapter = SectionsPagerAdapter(requireActivity())
         navController = findNavController()
 
         view.container.adapter = pagerAdapter
@@ -70,7 +112,24 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
                 2 -> getString(R.string.other)
                 else -> throw IllegalStateException("Should not be there")
             }
-        }
+
+        }.attach()
+
+        view.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                viewModel.selectedType = when (tab?.text) {
+                    getString(R.string.meal) -> Recipe.Type.MEAL
+                    getString(R.string.dessert) -> Recipe.Type.DESSERT
+                    getString(R.string.other) -> Recipe.Type.OTHER
+                    else -> throw IllegalStateException("Should not be there")
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+
+        })
 
         view.container.visibility = View.VISIBLE
         view.tabs.visibility = View.VISIBLE
@@ -100,6 +159,17 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         viewModel.searchResult.observe(viewLifecycleOwner, {
             adapter.submitList(it)
         })
+
+        viewModel.selectRecipe.observe(viewLifecycleOwner) {
+            selectRecipe = it
+            requireActivity().invalidateOptionsMenu()
+
+            if (it) {
+                view.add.hide()
+            } else {
+                view.add.show()
+            }
+        }
     }
 
     override fun onResume() {
@@ -113,15 +183,26 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        this.menu = menu
         // Inflate the menu; this adds items to the action bar if it is present.
-        inflater.inflate(R.menu.menu_main, menu)
+        inflater.inflate(if (selectRecipe) R.menu.menu_main_selected else R.menu.menu_main, menu)
 
         // Associate searchable configuration with the SearchView
-        (menu.findItem(R.id.search).actionView as SearchView).apply {
+        (menu.findItem(R.id.search)?.actionView as? SearchView)?.apply {
             setOnQueryTextListener(this@TabFragment)
         }
 
-        menu.findItem(R.id.search).setOnActionExpandListener(this)
+        if (viewModel.pdfProgress.value == true && viewModel.selectRecipe.value == true) {
+            menu.findItem(R.id.export)?.apply {
+                actionView = ProgressBar(requireContext())
+            }
+        } else {
+            menu.findItem(R.id.export)?.apply {
+                actionView = null
+            }
+        }
+
+        menu.findItem(R.id.search)?.setOnActionExpandListener(this)
 
     }
 
@@ -132,7 +213,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
 
         when (item.itemId) {
             R.id.action_license -> {
-                navController.navigate(
+                /*navController.navigate(
                     R.id.licenseFragment, bundleOf(), NavOptions.Builder()
                         .setEnterAnim(R.anim.nav_default_enter_anim)
                         .setExitAnim(R.anim.nav_default_exit_anim)
@@ -140,11 +221,31 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
                         .setPopExitAnim(R.anim.nav_default_pop_exit_anim)
                         .build()
                 )
-                return true
+                return true*/
+
+                startActivity(Intent(requireContext(), OssLicensesMenuActivity::class.java))
             }
 
             R.id.scan -> {
                 readQrRequest.launch(Intent(context, VisionBarcodeReaderActivity::class.java))
+            }
+
+            R.id.cancel -> viewModel.selectRecipe.value = false
+
+            R.id.export -> {
+                menu.findItem(R.id.export).apply {
+                    actionView = ProgressBar(requireContext())
+                }
+
+                selectPathToExport.launch(
+                    "${
+                        resources.getQuantityString(
+                            R.plurals.selected_recipes,
+                            viewModel.selection.size,
+                            viewModel.selection.size
+                        )
+                    }.zip"
+                )
             }
         }
 
