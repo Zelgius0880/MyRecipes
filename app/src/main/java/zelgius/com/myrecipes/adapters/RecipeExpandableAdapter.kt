@@ -14,15 +14,15 @@ import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableItemViewHo
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemAdapter
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemViewHolder
-import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.main.adapter_ingredient.view.*
-import kotlinx.android.synthetic.main.adapter_step.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
+import zelgius.com.myrecipes.databinding.AdapterIngredientBinding
+import zelgius.com.myrecipes.databinding.AdapterStepBinding
 import zelgius.com.myrecipes.entities.IngredientForRecipe
 import zelgius.com.myrecipes.entities.Step
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.ViewUtils
+import zelgius.com.myrecipes.utils.context
 import zelgius.com.myrecipes.utils.dpToPx
 
 
@@ -105,9 +105,9 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
     }
 
     //region ViewHolder
-    inner class IngredientViewHolder(override val containerView: View) :
-        AbstractExpandableItemViewHolder(containerView),
-        ExpandableItemViewHolder, LayoutContainer {
+    inner class IngredientViewHolder(val binding: AdapterIngredientBinding) :
+        AbstractExpandableItemViewHolder(binding.root),
+        ExpandableItemViewHolder {
 
         private val mExpandState = ExpandableItemState()
         override fun getExpandState(): ExpandableItemState = mExpandState
@@ -121,20 +121,20 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         fun bind(parentPosition: Int, childPosition: Int) {
             val item = (provider.getChildItem(parentPosition, childPosition) as IngredientItem).item
 
-            itemView.ingredientName.text = IngredientForRecipe.text(context, item)
+            binding.ingredientName.text = IngredientForRecipe.text(context, item)
 
-            UiUtils.getIngredientDrawable(itemView.image, item)
+            UiUtils.getIngredientDrawable(binding.image, item)
 
-            if(item.optional == true || item.step?.optional == true) {
-                itemView.image.alpha = alpha
-                itemView.ingredientName.alpha = alpha
+            if (item.optional == true || item.step?.optional == true) {
+                binding.image.alpha = alpha
+                binding.ingredientName.alpha = alpha
             }
         }
     }
 
-    inner class StepSectionViewHolder(override val containerView: View) :
-        AbstractExpandableItemViewHolder(containerView),
-        ExpandableItemViewHolder, LayoutContainer {
+    inner class StepSectionViewHolder(val binding: AdapterStepBinding) :
+        AbstractExpandableItemViewHolder(binding.root),
+        ExpandableItemViewHolder {
 
         private val mExpandState = ExpandableItemState()
         override fun getExpandState(): ExpandableItemState = mExpandState
@@ -153,33 +153,33 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         fun bind(position: Int) {
 
             val item = provider.getGroupItem(position).item
-            itemView.foreground = null
-            itemView.expand.visibility = View.VISIBLE
+            binding.root.foreground = null
+            binding.expand.visibility = View.VISIBLE
 
-            itemView.step.text = item?.text ?: context.getString(R.string.all_ingredients)
+            binding.step.text = item?.text ?: context.getString(R.string.all_ingredients)
 
             if (item != null) {
-                itemView.stepImage.setImageDrawable(
+                binding.stepImage.setImageDrawable(
                     TextDrawable.builder()
                         .beginConfig()
-                        .fontSize(itemView.context.dpToPx(20f).toInt())
-                        .width(itemView.context.dpToPx(36f).toInt())
-                        .height(itemView.context.dpToPx(36f).toInt())
+                        .fontSize(binding.context.dpToPx(20f).toInt())
+                        .width(binding.context.dpToPx(36f).toInt())
+                        .height(binding.context.dpToPx(36f).toInt())
                         .bold()
                         .endConfig()
                         .buildRound(
                             "${item.order}",
-                            ContextCompat.getColor(itemView.context, R.color.md_cyan_A700)
+                            ContextCompat.getColor(binding.context, R.color.md_cyan_A700)
                         )
                 )
             }
 
             with(if (expandState.isExpanded || item == null) View.GONE else View.VISIBLE) {
-                itemView.stepImage.visibility = this
-                if(item != null) itemView.step.visibility = this
-                else itemView.step.visibility = View.VISIBLE
+                binding.stepImage.visibility = this
+                if (item != null) binding.step.visibility = this
+                else binding.step.visibility = View.VISIBLE
             }
-            itemView.expand.visibility = View.VISIBLE
+            binding.expand.visibility = View.VISIBLE
 
             if (expandState.isUpdated) {
 
@@ -189,21 +189,21 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
                     downToUp
                 }
 
-                itemView.expand.setImageDrawable(animation)
+                binding.expand.setImageDrawable(animation)
                 animation?.start()
 
             }
 
-            if(item?.optional == true) {
-                itemView.stepImage.alpha = alpha
-                itemView.step.alpha = alpha
+            if (item?.optional == true) {
+                binding.stepImage.alpha = alpha
+                binding.step.alpha = alpha
             }
         }
     }
 
-    open inner class StepViewHolder(override val containerView: View) :
-        AbstractExpandableItemViewHolder(containerView),
-        ExpandableItemViewHolder, LayoutContainer {
+    open inner class StepViewHolder(val binding: AdapterStepBinding) :
+        AbstractExpandableItemViewHolder(binding.root),
+        ExpandableItemViewHolder {
         private val mExpandState = ExpandableItemState()
         override fun getExpandState(): ExpandableItemState = mExpandState
 
@@ -218,38 +218,38 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
             val item = (provider.getChildItem(groupPosition, childPosition) as StepItem).item
 
             if (item == null) {
-                itemView.step.setText(R.string.ingredients)
+                binding.step.setText(R.string.ingredients)
                 return
             }
 
-            itemView.step.text = item.text
+            binding.step.text = item.text
 
 
-            itemView.stepImage.setImageDrawable(
+            binding.stepImage.setImageDrawable(
                 TextDrawable.builder()
                     .beginConfig()
-                    .fontSize(itemView.context.dpToPx(20f).toInt())
-                    .width(itemView.context.dpToPx(36f).toInt())
-                    .height(itemView.context.dpToPx(36f).toInt())
+                    .fontSize(binding.context.dpToPx(20f).toInt())
+                    .width(binding.context.dpToPx(36f).toInt())
+                    .height(binding.context.dpToPx(36f).toInt())
                     .bold()
                     .endConfig()
                     .buildRound(
                         "${item.order}",
-                        ContextCompat.getColor(itemView.context, R.color.md_cyan_A700)
+                        ContextCompat.getColor(binding.context, R.color.md_cyan_A700)
                     )
             )
 
-            if(item.optional) {
-                itemView.stepImage.alpha = alpha
-                itemView.step.alpha = alpha
+            if (item.optional) {
+                binding.stepImage.alpha = alpha
+                binding.step.alpha = alpha
             }
         }
     }
 
     override fun onCreateGroupViewHolder(parent: ViewGroup, viewType: Int): StepSectionViewHolder =
         StepSectionViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.adapter_step,
+            AdapterStepBinding.inflate(
+                LayoutInflater.from(parent.context),
                 parent,
                 false
             )
@@ -266,16 +266,16 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
     ): AbstractExpandableItemViewHolder =
         if (viewType == R.layout.adapter_ingredient)
             IngredientViewHolder(
-                LayoutInflater.from(parent.context).inflate(
-                    R.layout.adapter_ingredient,
+                AdapterIngredientBinding.inflate(
+                    LayoutInflater.from(parent.context),
                     parent,
                     false
                 )
             )
         else
             StepViewHolder(
-                LayoutInflater.from(parent.context).inflate(
-                    R.layout.adapter_step,
+                AdapterStepBinding.inflate(
+                    LayoutInflater.from(parent.context),
                     parent,
                     false
                 )
@@ -333,12 +333,12 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
 
 
         // check is enabled
-        if (!(holder.itemView.isEnabled && holder.itemView.isClickable)) {
+        if (!(holder.binding.root.isEnabled && holder.binding.root.isClickable)) {
             return false
         }
 
         val containerView = holder.itemView
-        val dragHandleView = holder.itemView.stepImage
+        val dragHandleView = holder.binding.stepImage
 
         val offsetX = containerView.left + (containerView.translationX + 0.5f).toInt()
         val offsetY = containerView.top + (containerView.translationY + 0.5f).toInt()

@@ -10,7 +10,6 @@ import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.card.MaterialCardView
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemAdapter
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultAction
@@ -19,10 +18,10 @@ import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultAct
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractSwipeableItemViewHolder
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
-import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.main.adapter_fragment_recipe.view.*
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.databinding.AdapterFragmentRecipeBinding
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.utils.context
 import zelgius.com.myrecipes.utils.dpToPx
 
 
@@ -35,9 +34,7 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
     var clickListener: ((Recipe, FragmentNavigator.Extras?) -> Unit)? = null
 
     var isSelectionEnabled = false
-    private val _selection = mutableListOf<Recipe>()
-    val selection: List<Recipe>
-        get() = _selection
+    private val selection = mutableListOf<Recipe>()
 
     init {
         setHasStableIds(true)
@@ -48,22 +45,22 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
 
         if (recipe != null) {
-            val itemView = holder.itemView
+            val binding = holder.binding
 
-            itemView.setOnLongClickListener {
+            binding.root.setOnLongClickListener {
                 isSelectionEnabled = true
-                _selection.add(recipe)
-                (itemView as? MaterialCardView)?.isChecked = true
+                selection.add(recipe)
+                binding.root.isChecked = true
                 selectionChangeListener(true)
                 clickListener?.invoke(recipe, null)
                 true
             }
 
-            itemView.name.text = recipe.name
-            itemView.category.text = when (recipe.type) {
-                Recipe.Type.MEAL -> itemView.context.getString(R.string.meal)
-                Recipe.Type.DESSERT -> itemView.context.getString(R.string.dessert)
-                Recipe.Type.OTHER -> itemView.context.getString(R.string.other)
+            binding.name.text = recipe.name
+            binding.category.text = when (recipe.type) {
+                Recipe.Type.MEAL -> binding.context.getString(R.string.meal)
+                Recipe.Type.DESSERT -> binding.context.getString(R.string.dessert)
+                Recipe.Type.OTHER -> binding.context.getString(R.string.other)
             }
 
             if (!recipe.imageURL.isNullOrEmpty() && recipe.imageURL != "null") {
@@ -75,7 +72,7 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
                     .resize(2048, 2048)
                     .centerCrop()
                     //.placeholder(R.drawable.ic_dish)
-                    .into(itemView.imageView, object : Callback {
+                    .into(binding.imageView, object : Callback {
                         override fun onSuccess() {
                         }
 
@@ -85,12 +82,12 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
                     })
 
-                itemView.imageView.setPadding(0, 0, 0, 0)
+                binding.imageView.setPadding(0, 0, 0, 0)
             } else {
-                itemView.imageView.setImageResource(R.drawable.ic_dish)
+                binding.imageView.setImageResource(R.drawable.ic_dish)
 
-                itemView.context.let {
-                    itemView.imageView.setPadding(
+                binding.context.let {
+                    binding.imageView.setPadding(
                         it.dpToPx(8f).toInt(),
                         it.dpToPx(8f).toInt(),
                         it.dpToPx(8f).toInt(),
@@ -101,54 +98,54 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
             }
 
-            itemView.delete.setOnClickListener {
+            binding.delete.setOnClickListener {
                 if (holder.swiped)
                     deleteListener?.invoke(recipe)
-                else itemView.performClick()
+                else binding.root.performClick()
             }
 
-            itemView.edit.setOnClickListener {
+            binding.edit.setOnClickListener {
                 if (holder.swiped) {
-                    itemView.materialCardView.transitionName = "cardView${recipe.id}"
-                    itemView.imageView.transitionName = "imageView${recipe.id}"
-                    itemView.name.transitionName = "name${recipe.id}"
-                    itemView.category.transitionName = "category${recipe.id}"
+                    binding.materialCardView.transitionName = "cardView${recipe.id}"
+                    binding.imageView.transitionName = "imageView${recipe.id}"
+                    binding.name.transitionName = "name${recipe.id}"
+                    binding.category.transitionName = "category${recipe.id}"
 
                     editListener?.invoke(
                         recipe, FragmentNavigatorExtras(
-                            itemView.materialCardView to "cardView${recipe.id}",
-                            itemView.imageView to "imageView${recipe.id}",
-                            itemView.name to "name${recipe.id}",
-                            itemView.category to "category${recipe.id}"
+                            binding.materialCardView to "cardView${recipe.id}",
+                            binding.imageView to "imageView${recipe.id}",
+                            binding.name to "name${recipe.id}",
+                            binding.category to "category${recipe.id}"
                         )
                     )
-                } else itemView.performClick()
+                } else binding.root.performClick()
 
 
-                /*itemView.imageView.transitionName = ""
-                itemView.name.transitionName = ""
-                itemView.category.transitionName = ""*/
+                /*binding.imageView.transitionName = ""
+                binding.name.transitionName = ""
+                binding.category.transitionName = ""*/
             }
 
-            itemView.setOnClickListener {
+            binding.root.setOnClickListener {
                 val extra = if (!isSelectionEnabled) {
-                    itemView.materialCardView.transitionName = "cardView${recipe.id}"
-                    itemView.imageView.transitionName = "imageView${recipe.id}"
-                    itemView.name.transitionName = "name${recipe.id}"
-                    itemView.category.transitionName = "category${recipe.id}"
+                    binding.materialCardView.transitionName = "cardView${recipe.id}"
+                    binding.imageView.transitionName = "imageView${recipe.id}"
+                    binding.name.transitionName = "name${recipe.id}"
+                    binding.category.transitionName = "category${recipe.id}"
 
                     FragmentNavigatorExtras(
-                        itemView.materialCardView to "cardView${recipe.id}",
-                        itemView.imageView to "imageView${recipe.id}",
-                        itemView.name to "name${recipe.id}",
-                        itemView.category to "category${recipe.id}"
+                        binding.materialCardView to "cardView${recipe.id}",
+                        binding.imageView to "imageView${recipe.id}",
+                        binding.name to "name${recipe.id}",
+                        binding.category to "category${recipe.id}"
                     )
                 } else {
-                    (itemView as? MaterialCardView)?.isChecked = if (selection.contains(recipe)) {
-                        _selection.remove(recipe)
+                    binding.root.isChecked = if (selection.contains(recipe)) {
+                        selection.remove(recipe)
                         false
                     } else {
-                        _selection.add(recipe)
+                        selection.add(recipe)
                         true
                     }
 
@@ -161,24 +158,24 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
                 clickListener?.invoke(
                     recipe, extra
                 )
-                /*itemView.imageView.transitionName = ""
-                itemView.name.transitionName = ""
-                itemView.category.transitionName = ""*/
+                /*binding.imageView.transitionName = ""
+                binding.name.transitionName = ""
+                binding.category.transitionName = ""*/
             }
 
-            (itemView as? MaterialCardView)?.isChecked = selection.contains(recipe)
+            binding.root.isChecked = selection.contains(recipe)
 
             // set swiping properties
             holder.isProportionalSwipeAmountModeEnabled = false
-            holder.maxLeftSwipeAmount = -itemView.context.dpToPx(160f)
+            holder.maxLeftSwipeAmount = -binding.context.dpToPx(160f)
             holder.maxRightSwipeAmount = 0f
             holder.swipeItemHorizontalSlideAmount =
-                if (recipe.isPinned) -itemView.context.dpToPx(160f) else 0f
+                if (recipe.isPinned) -binding.context.dpToPx(160f) else 0f
         }
     }
 
     fun clearSelection() {
-        _selection.clear()
+        selection.clear()
         notifyDataSetChanged()
     }
 
@@ -188,8 +185,8 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         ViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.adapter_fragment_recipe,
+            AdapterFragmentRecipeBinding.inflate(
+                LayoutInflater.from(parent.context),
                 parent,
                 false
             )
@@ -206,9 +203,9 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
     override fun onSetSwipeBackground(holder: ViewHolder, position: Int, type: Int) {
         if (type == SwipeableItemConstants.DRAWABLE_SWIPE_NEUTRAL_BACKGROUND) {
-            holder.itemView.behindView.visibility = View.GONE
+            holder.binding.behindView.visibility = View.GONE
         } else {
-            holder.itemView.behindView.visibility = View.VISIBLE
+            holder.binding.behindView.visibility = View.VISIBLE
         }
     }
 
@@ -251,9 +248,9 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
         }
     }
 
-    inner class ViewHolder(override val containerView: View, var swiped: Boolean = false) :
-        AbstractSwipeableItemViewHolder(containerView), LayoutContainer {
-        override fun getSwipeableContainerView(): View = itemView.contentView
+    inner class ViewHolder(val binding: AdapterFragmentRecipeBinding, var swiped: Boolean = false) :
+        AbstractSwipeableItemViewHolder(binding.root) {
+        override fun getSwipeableContainerView(): View = binding.contentView
     }
 
     inner class SwipeLeftResultAction internal constructor(

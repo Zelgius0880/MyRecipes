@@ -25,17 +25,13 @@ import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandab
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
 import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_recipe_edit.*
-import kotlinx.android.synthetic.main.fragment_tab.view.*
-import kotlinx.android.synthetic.main.layout_header_edit.*
-import zelgius.com.myrecipes.MainActivity
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.EditHeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.EditRecipeExpandableAdapter
 import zelgius.com.myrecipes.adapters.GroupDividerDecoration
+import zelgius.com.myrecipes.databinding.FragmentRecipeEditBinding
 import zelgius.com.myrecipes.dialogs.IngredientDialogFragment
 import zelgius.com.myrecipes.dialogs.StepDialogFragment
 import zelgius.com.myrecipes.entities.Recipe
@@ -63,12 +59,17 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
         expandableItemManager?.release()
         dragDropManager.release()
         touchActionGuardManager.release()
+
+        _binding = null
     }
 
     /*override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.do_not_move, R.anim.do_not_move)
     }*/
+    private var _binding: FragmentRecipeEditBinding? = null
+    private val binding: FragmentRecipeEditBinding
+        get() = _binding!!
 
     private var itemAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
     private var vectorAnimation: AnimatedVectorDrawableCompat? = null
@@ -97,7 +98,7 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
         headerWrapper = EditHeaderAdapterWrapper(
             requireContext(),
             viewModel
-        ) { /*startPostponedEnterTransition()*/ header.visibility = View.INVISIBLE }
+        ) { /*startPostponedEnterTransition()*/ binding.header.root.visibility = View.INVISIBLE }
 
         if (arguments?.getBoolean("ADD") != true) {
             sharedElementEnterTransition =
@@ -119,189 +120,205 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
         savedInstanceState: Bundle?
     ): View? {
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_recipe_edit, container, false)
+        _binding = FragmentRecipeEditBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
+        binding.apply {
 
-        val recipe = arguments?.getParcelable("RECIPE") ?: Recipe(viewModel.selectedType)
-        viewModel.selectedRecipe.value = recipe
+            val recipe = arguments?.getParcelable("RECIPE") ?: Recipe(viewModel.selectedType)
+            viewModel.selectedRecipe.value = recipe
 
-        if(arguments != null)
-            UiUtils.bindHeader(recipe, UiUtils.HeaderViewHolder(view, imageView, editName, editCategory))
-
-        if (arguments?.getBoolean("ADD") == true && ViewCompat.isAttachedToWindow(view)) {
-            view.doOnPreDraw {
-                val (width, height) = arrayOf(
-                    rootLayout.width.toFloat(),
-                    rootLayout.width.toFloat()
+            if (arguments != null)
+                UiUtils.bindHeader(
+                    recipe,
+                    UiUtils.HeaderViewHolder(
+                        view,
+                        header.imageView,
+                        header.editName,
+                        header.editCategory
+                    )
                 )
-                val finalRadius = sqrt((width * width + height * height).toDouble()).toFloat()
 
-                ViewAnimationUtils.createCircularReveal(
-                    rootLayout, (fab.x + fab.width / 2).roundToInt(),
-                    (fab.y + fab.height / 2).roundToInt(),
-                    0f,
-                    finalRadius
-                ).apply {
-                    duration = 200L
-                    start()
+            if (arguments?.getBoolean("ADD") == true && ViewCompat.isAttachedToWindow(view)) {
+                view.doOnPreDraw {
+                    val (width, height) = arrayOf(
+                        rootLayout.width.toFloat(),
+                        rootLayout.width.toFloat()
+                    )
+                    val finalRadius = sqrt((width * width + height * height).toDouble()).toFloat()
+
+                    ViewAnimationUtils.createCircularReveal(
+                        rootLayout, (fab.x + fab.width / 2).roundToInt(),
+                        (fab.y + fab.height / 2).roundToInt(),
+                        0f,
+                        finalRadius
+                    ).apply {
+                        duration = 200L
+                        start()
+                    }
                 }
             }
-        }
 
-        fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
-        fab.animation =
-            AnimatedVectorDrawableCompat.create(
-                requireContext(),
-                R.drawable.av_add_list_to_close
-            )!! to
-                    AnimatedVectorDrawableCompat.create(
-                        requireContext(),
-                        R.drawable.av_close_to_add_list
-                    )!!
+            fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
+            fab.animation =
+                AnimatedVectorDrawableCompat.create(
+                    requireContext(),
+                    R.drawable.av_add_list_to_close
+                )!! to
+                        AnimatedVectorDrawableCompat.create(
+                            requireContext(),
+                            R.drawable.av_close_to_add_list
+                        )!!
 
-        vectorAnimation =
-            AnimatedVectorDrawableCompat.create(requireContext(), R.drawable.av_add_list_to_add)
+            vectorAnimation =
+                AnimatedVectorDrawableCompat.create(requireContext(), R.drawable.av_add_list_to_add)
 
-        viewModel.editMode.value = true
+            viewModel.editMode.value = true
 
-        fab.setImageResource(R.drawable.ic_playlist_plus)
+            fab.setImageResource(R.drawable.ic_playlist_plus)
 
-        viewModel.editMode.observe(viewLifecycleOwner, {
-            adapter.notifyDataSetChanged()
-        })
+            viewModel.editMode.observe(viewLifecycleOwner, {
+                adapter.notifyDataSetChanged()
+            })
 
-        viewModel.selectedRecipe.observe(viewLifecycleOwner, {
-            viewModel.currentRecipe = it
-            adapter.recipe = it
-            adapter.notifyDataSetChanged()
+            viewModel.selectedRecipe.observe(viewLifecycleOwner, {
+                viewModel.currentRecipe = it
+                adapter.recipe = it
+                adapter.notifyDataSetChanged()
 
-            headerWrapper.recipe = it
-            headerWrapper.notifyDataSetChanged()
-        })
+                headerWrapper.recipe = it
+                headerWrapper.notifyDataSetChanged()
+            })
 
-        viewModel.selectedImageUrl.observe(viewLifecycleOwner, {
-            if(it != null && it.toString().isNotEmpty()) {
-                imageView.setPadding(0, 0, 0, 0)
-                imageView.setImageURI(it)
-            }
-        })
+            viewModel.selectedImageUrl.observe(viewLifecycleOwner, {
+                if (it != null && it.toString().isNotEmpty()) {
+                    header.imageView.setPadding(0, 0, 0, 0)
+                    header.imageView.setImageURI(it)
+                }
+            })
 
-        val eimSavedState =
-            savedInstanceState?.getParcelable<Parcelable>(SAVED_STATE_EXPANDABLE_ITEM_MANAGER)
+            val eimSavedState =
+                savedInstanceState?.getParcelable<Parcelable>(SAVED_STATE_EXPANDABLE_ITEM_MANAGER)
 
-        expandableItemManager = RecyclerViewExpandableItemManager(eimSavedState)
-        expandableItemManager?.setOnGroupExpandListener(this)
-        expandableItemManager?.setOnGroupCollapseListener(this)
-        expandableItemManager?.defaultGroupsExpandedState = true
+            expandableItemManager = RecyclerViewExpandableItemManager(eimSavedState)
+            expandableItemManager?.setOnGroupExpandListener(this@EditRecipeFragment)
+            expandableItemManager?.setOnGroupCollapseListener(this@EditRecipeFragment)
+            expandableItemManager?.defaultGroupsExpandedState = true
 
-        // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
-        touchActionGuardManager = RecyclerViewTouchActionGuardManager()
-        touchActionGuardManager.setInterceptVerticalScrollingWhileAnimationRunning(true)
-        touchActionGuardManager.isEnabled = true
+            // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
+            touchActionGuardManager = RecyclerViewTouchActionGuardManager()
+            touchActionGuardManager.setInterceptVerticalScrollingWhileAnimationRunning(true)
+            touchActionGuardManager.isEnabled = true
 
-        // drag & drop manager
-        dragDropManager = RecyclerViewDragDropManager()
-        dragDropManager.isCheckCanDropEnabled = true
-        dragDropManager.setInitiateOnLongPress(true)
-        dragDropManager.setInitiateOnMove(false)
-        /*dragDropManager.setDraggingItemShadowDrawable(
-            ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.material_shadow_z3
-            ) as NinePatchDrawable?
-        )*/
+            // drag & drop manager
+            dragDropManager = RecyclerViewDragDropManager()
+            dragDropManager.isCheckCanDropEnabled = true
+            dragDropManager.setInitiateOnLongPress(true)
+            dragDropManager.setInitiateOnMove(false)
+            /*dragDropManager.setDraggingItemShadowDrawable(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.material_shadow_z3
+                ) as NinePatchDrawable?
+            )*/
 
-        swipeManager = RecyclerViewSwipeManager()
+            swipeManager = RecyclerViewSwipeManager()
 
-        //The order here is important
-        itemAdapter = expandableItemManager?.createWrappedAdapter(adapter)
-        itemAdapter = swipeManager.createWrappedAdapter(itemAdapter!!)
-        itemAdapter = dragDropManager.createWrappedAdapter(itemAdapter!!)
-        itemAdapter = headerWrapper.setAdapter(itemAdapter!!)
+            //The order here is important
+            itemAdapter = expandableItemManager?.createWrappedAdapter(adapter)
+            itemAdapter = swipeManager.createWrappedAdapter(itemAdapter!!)
+            itemAdapter = dragDropManager.createWrappedAdapter(itemAdapter!!)
+            itemAdapter = headerWrapper.setAdapter(itemAdapter!!)
 
-        touchActionGuardManager.attachRecyclerView(list)
-        swipeManager.attachRecyclerView(list)
-        dragDropManager.attachRecyclerView(list)
-        expandableItemManager?.attachRecyclerView(list)
+            touchActionGuardManager.attachRecyclerView(list)
+            swipeManager.attachRecyclerView(list)
+            dragDropManager.attachRecyclerView(list)
+            expandableItemManager?.attachRecyclerView(list)
 
 
-        adapter.expandableItemManager = expandableItemManager
-        adapter.dragDropManager = dragDropManager
-        list.adapter = itemAdapter
-        list.addItemDecoration(
-            GroupDividerDecoration(
-                requireContext(),
-                ContextCompat.getColor(requireContext(), android.R.color.transparent),
-                8f
+            adapter.expandableItemManager = expandableItemManager
+            adapter.dragDropManager = dragDropManager
+            list.adapter = itemAdapter
+            list.addItemDecoration(
+                GroupDividerDecoration(
+                    requireContext(),
+                    ContextCompat.getColor(requireContext(), android.R.color.transparent),
+                    8f
+                )
             )
-        )
 
-        list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (dy > 0 || dy < 0 && fab.isShown) {
-                    fab.hide()
-                }
-            }
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    fab.show()
+            list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (dy > 0 || dy < 0 && fab.isShown) {
+                        fab.hide()
+                    }
                 }
 
-                super.onScrollStateChanged(recyclerView, newState)
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        fab.show()
+                    }
+
+                    super.onScrollStateChanged(recyclerView, newState)
+                }
+            })
+
+            adapter.editIngredientListener = {
+                IngredientDialogFragment.newInstance(it, this@EditRecipeFragment)
+                    .show(parentFragmentManager, "dialog_ingredient")
             }
-        })
 
-        adapter.editIngredientListener = {
-            IngredientDialogFragment.newInstance(it, this)
-                .show(parentFragmentManager, "dialog_ingredient")
-        }
+            adapter.editStepListener = {
+                it.new = false
+                StepDialogFragment.newInstance(it, this@EditRecipeFragment)
+                    .show(parentFragmentManager, "dialog_step")
+            }
 
-        adapter.editStepListener = {
-            it.new = false
-            StepDialogFragment.newInstance(it, this)
-                .show(parentFragmentManager, "dialog_step")
-        }
+            fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
+            fab.animation =
+                AnimatedVectorDrawableCompat.create(
+                    requireContext(),
+                    R.drawable.av_add_list_to_close
+                )!! to
+                        AnimatedVectorDrawableCompat.create(
+                            requireContext(),
+                            R.drawable.av_close_to_add_list
+                        )!!
 
-        fab.menuLayouts = arrayOf(addStepLayout, addIngredientLayout)
-        fab.animation =
-            AnimatedVectorDrawableCompat.create(
-                requireContext(),
-                R.drawable.av_add_list_to_close
-            )!! to
-                    AnimatedVectorDrawableCompat.create(
-                        requireContext(),
-                        R.drawable.av_close_to_add_list
-                    )!!
+            addIngredient.setOnClickListener {
+                IngredientDialogFragment.newInstance(this@EditRecipeFragment)
+                    .show(parentFragmentManager, "dialog_ingredient")
+            }
 
-        addIngredient.setOnClickListener {
-            IngredientDialogFragment.newInstance(this).show(parentFragmentManager, "dialog_ingredient")
-        }
-
-        addStep.setOnClickListener {
-            StepDialogFragment.newInstance(this).show(parentFragmentManager, "dialog_step")
+            addStep.setOnClickListener {
+                StepDialogFragment.newInstance(this@EditRecipeFragment)
+                    .show(parentFragmentManager, "dialog_step")
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
 
-        (activity as AppCompatActivity).setSupportActionBar(requireView().toolbar)
-        NavigationUI.setupActionBarWithNavController(requireActivity() as AppCompatActivity, navController)
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
+        NavigationUI.setupActionBarWithNavController(
+            requireActivity() as AppCompatActivity,
+            navController
+        )
         (activity as AppCompatActivity).supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
-            setTitle(if(arguments?.getBoolean("ADD") == true) R.string.new_recipe else R.string.edit_recipe)
+            setTitle(if (arguments?.getBoolean("ADD") == true) R.string.new_recipe else R.string.edit_recipe)
         }
 
 
     }
 
 
-     override fun onSaveInstanceState(outState: Bundle) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
         // save current state to support screen rotation, etc...
@@ -320,13 +337,13 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
     }
 
     override fun onDestroyView() {
-        list.adapter = null
+        binding.list.adapter = null
         expandableItemManager?.release()
         swipeManager.release()
         touchActionGuardManager.release()
         dragDropManager.release()
 
-        if(itemAdapter != null)
+        if (itemAdapter != null)
             WrapperAdapterUtils.releaseAll(itemAdapter)
 
         super.onDestroyView()
@@ -350,7 +367,7 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
                 viewModel.currentRecipe = recipe // not really useful, just there in case
                 viewModel.saveCurrentRecipe().observe(this, {
                     Snackbar.make(
-                        (activity as MainActivity).coordinator,
+                        requireActivity().findViewById(R.id.coordinator),
                         R.string.recipe_saved,
                         Snackbar.LENGTH_SHORT
                     ).show()
@@ -365,42 +382,46 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
     }
 
     private fun popFragment() {
+        binding.apply {
+            if (arguments?.getBoolean("ADD") == true) {
+                val (width, height) = arrayOf(
+                    rootLayout.width.toFloat(),
+                    rootLayout.width.toFloat()
+                )
+                val initialRadius = sqrt((width * width + height * height).toDouble()).toFloat()
+                ViewAnimationUtils.createCircularReveal(
+                    rootLayout,
+                    (fab.x + fab.width / 2).roundToInt(),
+                    (fab.y + fab.height / 2).roundToInt(),
+                    initialRadius,
+                    0f
 
-        if(arguments?.getBoolean("ADD") == true) {
-            val (width, height) = arrayOf(rootLayout.width.toFloat(), rootLayout.width.toFloat())
-            val initialRadius = sqrt((width * width + height * height).toDouble()).toFloat()
-            ViewAnimationUtils.createCircularReveal(
-                rootLayout,
-                (fab.x + fab.width / 2).roundToInt(),
-                (fab.y + fab.height / 2).roundToInt(),
-                initialRadius,
-                0f
+                ).apply {
+                    duration = 100L
+                    start()
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(p0: Animator?) {
 
-            ).apply {
-                duration = 100L
-                start()
-                addListener(object : Animator.AnimatorListener {
-                    override fun onAnimationRepeat(p0: Animator?) {
+                        }
 
-                    }
+                        override fun onAnimationEnd(p0: Animator?) {
+                            rootLayout.visibility = View.INVISIBLE
+                            navController.popBackStack()
+                        }
 
-                    override fun onAnimationEnd(p0: Animator?) {
-                        rootLayout.visibility = View.INVISIBLE
-                        navController.popBackStack()
-                    }
+                        override fun onAnimationCancel(p0: Animator?) {
+                        }
 
-                    override fun onAnimationCancel(p0: Animator?) {
-                    }
+                        override fun onAnimationStart(p0: Animator?) {
+                        }
 
-                    override fun onAnimationStart(p0: Animator?) {
-                    }
+                    })
 
-                })
+                }
+            } else {
+                navController.popBackStack()
 
             }
-        } else {
-            navController.popBackStack()
-
         }
     }
 

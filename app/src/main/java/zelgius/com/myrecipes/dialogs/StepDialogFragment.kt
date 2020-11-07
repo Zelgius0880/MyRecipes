@@ -4,12 +4,12 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.InputType
-import android.view.View
+import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import kotlinx.android.synthetic.main.dialog_fragment_step.view.*
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.databinding.DialogFragmentStepBinding
 import zelgius.com.myrecipes.entities.Step
 
 
@@ -22,10 +22,11 @@ import zelgius.com.myrecipes.entities.Step
  * If the Activity implements [NoticeDialogListener], the listener is not used and the method of the Activity will be called instead. Can be null
  */
 class StepDialogFragment : DialogFragment() {
+    private var _binding: DialogFragmentStepBinding? = null
+    private val binding: DialogFragmentStepBinding
+        get() = _binding!!
 
-    private val dialogView by lazy { View.inflate(activity, R.layout.dialog_fragment_step, null) }
-
-    var step = Step(null, "", Int.MAX_VALUE,false, null)
+    var step = Step(null, "", Int.MAX_VALUE, false, null)
         .apply { new = true }
     var listener: NoticeDialogListener? = null
 
@@ -43,14 +44,15 @@ class StepDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = DialogFragmentStepBinding.inflate(LayoutInflater.from(requireContext()))
         return activity?.let {
-            if(!step.new){
-                dialogView.text.editText?.setText(step.text)
-                dialogView.optional.isChecked = step.optional
+            if(!step.new) {
+                binding.text.editText?.setText(step.text)
+                binding.optional.isChecked = step.optional
             }
 
             return AlertDialog.Builder(it)
-                .setView(dialogView)
+                .setView(binding.root)
                 .setTitle(R.string.enter_a_step)
                 .setPositiveButton(R.string.save, null)
                 .setNegativeButton(R.string.cancel) { _, _ ->
@@ -60,17 +62,18 @@ class StepDialogFragment : DialogFragment() {
                     }
                 }
                 .create().apply {
-                    dialogView.text.editText?.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_AUTO_CORRECT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                    binding.text.editText?.inputType =
+                        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_AUTO_CORRECT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
                     setOnShowListener {
                         getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
 
-                            if (dialogView.text.editText?.text?.isEmpty() != false) {
-                                dialogView.text.error = getString(R.string.field_required)
+                            if (binding.text.editText?.text?.isEmpty() != false) {
+                                binding.text.error = getString(R.string.field_required)
                             } else {
-                                //ingredient = IngredientForRecipe(null, dialogView.quantity.toDouble(), Ingredient.Unit.valueOf() dialogView.name.editText!!.text.toString(), "")
+                                //ingredient = IngredientForRecipe(null, binding.quantity.toDouble(), Ingredient.Unit.valueOf() binding.name.editText!!.text.toString(), "")
 
-                                step.text = dialogView.text.editText!!.text.toString()
-                                step.optional = dialogView.optional.isChecked
+                                step.text = binding.text.editText!!.text.toString()
+                                step.optional = binding.optional.isChecked
                                 dismiss()
                                 activity.let { d ->
                                     if (d is NoticeDialogListener) d.onDialogPositiveClick(this@StepDialogFragment)
@@ -82,5 +85,11 @@ class StepDialogFragment : DialogFragment() {
                     }
                 }
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        _binding = null
     }
 }

@@ -25,15 +25,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
 import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
-import kotlinx.android.synthetic.main.fragment_recipe.*
-import kotlinx.android.synthetic.main.fragment_tab.view.*
-import kotlinx.android.synthetic.main.layout_header.*
 import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
+import zelgius.com.myrecipes.databinding.FragmentRecipeBinding
 import zelgius.com.myrecipes.entities.Recipe
 import zelgius.com.myrecipes.utils.UiUtils
 import java.io.File
@@ -52,9 +50,14 @@ class RecipeFragment : Fragment(),
 
     }
 
+    private var _binding: FragmentRecipeBinding? = null
+    private val binding: FragmentRecipeBinding
+        get() = _binding!!
+
     override fun onDestroy() {
         super.onDestroy()
 
+        _binding = null
         expandableItemManager?.release()
         touchActionGuardManager.release()
     }
@@ -83,7 +86,7 @@ class RecipeFragment : Fragment(),
         headerWrapper = HeaderAdapterWrapper(
             requireContext(),
             viewModel
-        ) { /*startPostponedEnterTransition()*/ header.visibility = View.INVISIBLE }
+        ) { /*startPostponedEnterTransition()*/ binding.header.root.visibility = View.INVISIBLE }
 
         adapter = RecipeExpandableAdapter(requireContext(), viewModel)
 
@@ -131,89 +134,95 @@ class RecipeFragment : Fragment(),
         savedInstanceState: Bundle?
     ): View? {
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_recipe, container, false)
+        _binding = FragmentRecipeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
 
-        val recipe = arguments?.getParcelable<Recipe>("RECIPE")?.apply {
-            viewModel.loadRecipe(id!!)
-        } ?: Recipe(Recipe.Type.MEAL)
-        //viewModel.selectedRecipe.value = recipe
+        binding.apply {
+            val recipe = arguments?.getParcelable<Recipe>("RECIPE")?.apply {
+                viewModel.loadRecipe(id!!)
+            } ?: Recipe(Recipe.Type.MEAL)
+            //viewModel.selectedRecipe.value = recipe
 
-        if (arguments != null)
-            UiUtils.bindHeader(recipe, UiUtils.HeaderViewHolder(view, imageView, name, category))
+            if (arguments != null)
+                UiUtils.bindHeader(
+                    recipe,
+                    UiUtils.HeaderViewHolder(view, header.imageView, header.name, header.category)
+                )
 
-        viewModel.selectedImageUrl.value = viewModel.selectedRecipe.value?.imageURL?.toUri()
+            viewModel.selectedImageUrl.value = viewModel.selectedRecipe.value?.imageURL?.toUri()
 
-        viewModel.editMode.value = true
+            viewModel.editMode.value = true
 
-        viewModel.editMode.observe(viewLifecycleOwner, {
-            adapter.notifyDataSetChanged()
-        })
+            viewModel.editMode.observe(viewLifecycleOwner, {
+                adapter.notifyDataSetChanged()
+            })
 
-        viewModel.selectedRecipe.observe(viewLifecycleOwner, {
-            viewModel.currentRecipe = it
-            adapter.recipe = it
-            adapter.notifyDataSetChanged()
+            viewModel.selectedRecipe.observe(viewLifecycleOwner, {
+                viewModel.currentRecipe = it
+                adapter.recipe = it
+                adapter.notifyDataSetChanged()
 
-            headerWrapper.recipe = it
-            headerWrapper.notifyDataSetChanged()
+                headerWrapper.recipe = it
+                headerWrapper.notifyDataSetChanged()
 
-            activity?.actionBar?.title = it.name
-        })
+                activity?.actionBar?.title = it.name
+            })
 
-        viewModel.selectedImageUrl.observe(viewLifecycleOwner, {
-            if (it != null && it.toString().isNotEmpty()) {
-                imageView.setPadding(0, 0, 0, 0)
-                imageView.setImageURI(it)
+            viewModel.selectedImageUrl.observe(viewLifecycleOwner, {
+                if (it != null && it.toString().isNotEmpty()) {
+                    header.imageView.setPadding(0, 0, 0, 0)
+                    header.imageView.setImageURI(it)
+                }
+            })
+
+            val eimSavedState =
+                savedInstanceState?.getParcelable<Parcelable>(SAVED_STATE_EXPANDABLE_ITEM_MANAGER)
+
+            expandableItemManager = RecyclerViewExpandableItemManager(eimSavedState)
+            expandableItemManager?.setOnGroupExpandListener(this@RecipeFragment)
+            expandableItemManager?.setOnGroupCollapseListener(this@RecipeFragment)
+            adapter.expandableItemManager = expandableItemManager
+            //expandableItemManager?.defaultGroupsExpandedState = true
+
+            // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
+            touchActionGuardManager = RecyclerViewTouchActionGuardManager()
+            touchActionGuardManager.setInterceptVerticalScrollingWhileAnimationRunning(true)
+            touchActionGuardManager.isEnabled = true
+
+
+            //The order here is important
+            itemAdapter = expandableItemManager?.createWrappedAdapter(adapter)
+            itemAdapter = headerWrapper.setAdapter(itemAdapter!!)
+
+            touchActionGuardManager.attachRecyclerView(list)
+            expandableItemManager?.attachRecyclerView(list)
+
+            viewModel.pdfProgress.observe(viewLifecycleOwner) {
+                requireActivity().invalidateOptionsMenu()
             }
-        })
-
-        val eimSavedState =
-            savedInstanceState?.getParcelable<Parcelable>(SAVED_STATE_EXPANDABLE_ITEM_MANAGER)
-
-        expandableItemManager = RecyclerViewExpandableItemManager(eimSavedState)
-        expandableItemManager?.setOnGroupExpandListener(this)
-        expandableItemManager?.setOnGroupCollapseListener(this)
-        adapter.expandableItemManager = expandableItemManager
-        //expandableItemManager?.defaultGroupsExpandedState = true
-
-        // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
-        touchActionGuardManager = RecyclerViewTouchActionGuardManager()
-        touchActionGuardManager.setInterceptVerticalScrollingWhileAnimationRunning(true)
-        touchActionGuardManager.isEnabled = true
 
 
-        //The order here is important
-        itemAdapter = expandableItemManager?.createWrappedAdapter(adapter)
-        itemAdapter = headerWrapper.setAdapter(itemAdapter!!)
-
-        touchActionGuardManager.attachRecyclerView(list)
-        expandableItemManager?.attachRecyclerView(list)
-
-        viewModel.pdfProgress.observe(viewLifecycleOwner) {
-            requireActivity().invalidateOptionsMenu()
-        }
-
-
-        adapter.expandableItemManager = expandableItemManager
-        list.adapter = itemAdapter
-        list.addItemDecoration(
-            GroupDividerDecoration(
-                requireContext(),
-                ContextCompat.getColor(requireContext(), android.R.color.transparent),
-                8f
+            adapter.expandableItemManager = expandableItemManager
+            list.adapter = itemAdapter
+            list.addItemDecoration(
+                GroupDividerDecoration(
+                    requireContext(),
+                    ContextCompat.getColor(requireContext(), android.R.color.transparent),
+                    8f
+                )
             )
-        )
+        }
     }
 
     override fun onResume() {
         super.onResume()
 
-        (activity as AppCompatActivity).setSupportActionBar(requireView().toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         NavigationUI.setupActionBarWithNavController(
             requireActivity() as AppCompatActivity,
             navController
@@ -223,7 +232,7 @@ class RecipeFragment : Fragment(),
         requireActivity().invalidateOptionsMenu()
     }
 
-    var progressMenuId: Int = 0
+    private var progressMenuId: Int = 0
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.menu_recipe, menu)
@@ -300,7 +309,7 @@ class RecipeFragment : Fragment(),
     }
 
     override fun onDestroyView() {
-        list.adapter = null
+        binding.list.adapter = null
         expandableItemManager?.release()
         touchActionGuardManager.release()
 

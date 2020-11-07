@@ -22,7 +22,7 @@ import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import kotlinx.android.synthetic.main.activity_vison_barcode_reader.*
+import zelgius.com.myrecipes.databinding.ActivityVisonBarcodeReaderBinding
 import java.util.concurrent.Executors
 
 // This is an arbitrary number we are using to keep tab of the permission
@@ -32,6 +32,10 @@ private const val REQUEST_CODE_PERMISSIONS = 10
 
 // This is an array of all the permission specified in the manifest
 private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+
+private var _binding: ActivityVisonBarcodeReaderBinding? = null
+private val binding: ActivityVisonBarcodeReaderBinding
+    get() = _binding!!
 
 class VisionBarcodeReaderActivity : AppCompatActivity() {
 
@@ -63,7 +67,8 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_vison_barcode_reader)
+        _binding = ActivityVisonBarcodeReaderBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Request camera permissions
         if (ActivityCompat.checkSelfPermission(
@@ -71,7 +76,7 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            viewFinder.post { startCamera() }
+            binding.viewFinder.post { startCamera() }
         } else {
             ActivityCompat.requestPermissions(
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
@@ -79,17 +84,22 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
         }
 
         // Every time the provided texture view changes, recompute layout
-        viewFinder.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+        binding.viewFinder.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             updateTransform()
         }
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     //region Camera setup
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        cameraProviderFuture.addListener( {
+        cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
@@ -97,7 +107,7 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(viewFinder.surfaceProvider)
+                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
 
             // Select back camera as a default
@@ -130,11 +140,11 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
         val matrix = Matrix()
 
         // Compute the center of the view finder
-        val centerX = viewFinder.width / 2f
-        val centerY = viewFinder.height / 2f
+        val centerX = binding.viewFinder.width / 2f
+        val centerY = binding.viewFinder.height / 2f
 
         // Correct preview output to account for display rotation
-        val rotationDegrees = when (viewFinder.display.rotation) {
+        val rotationDegrees = when (binding.viewFinder.display.rotation) {
             Surface.ROTATION_0 -> 0
             Surface.ROTATION_90 -> 90
             Surface.ROTATION_180 -> 180
@@ -193,7 +203,7 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
     ) {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
-                viewFinder.post { startCamera() }
+                binding.viewFinder.post { startCamera() }
             } else {
                 Toast.makeText(
                     this,

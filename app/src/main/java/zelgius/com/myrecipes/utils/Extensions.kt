@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.util.TypedValue
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
+import androidx.viewbinding.ViewBinding
 import com.google.android.material.textfield.TextInputLayout
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -13,8 +14,10 @@ import java.util.zip.ZipInputStream
 import kotlin.math.round
 import kotlin.math.roundToInt
 
-fun TextInputLayout.toDouble()
-        = editText!!.text.toString().replace(',', '.').toDouble()
+val ViewBinding.context: Context
+    get() = root.context
+
+fun TextInputLayout.toDouble() = editText!!.text.toString().replace(',', '.').toDouble()
 
 fun Double.round(decimals: Int): Double {
     var multiplier = 1.0

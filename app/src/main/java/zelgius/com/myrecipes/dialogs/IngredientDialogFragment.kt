@@ -39,9 +39,10 @@ import java.text.DecimalFormat
  */
 class IngredientDialogFragment : DialogFragment() {
 
-    private val binding by lazy {
-        DialogFragmentIngredientBinding.inflate(LayoutInflater.from(requireContext()))
-    }
+    private var _binding: DialogFragmentIngredientBinding? = null
+    private val binding: DialogFragmentIngredientBinding
+        get() = _binding!!
+
     private val viewModel by lazy {
         ViewModelProvider(
             requireActivity(),
@@ -88,6 +89,7 @@ class IngredientDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = DialogFragmentIngredientBinding.inflate(LayoutInflater.from(requireContext()))
         return activity?.let {
             // Use the Builder class for convenient dialog construction
             viewModel.ingredients.observe(this, { list ->
@@ -358,6 +360,11 @@ class IngredientDialogFragment : DialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         hideKeyboard()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     private fun setNewIngredient(visibility: Int) {

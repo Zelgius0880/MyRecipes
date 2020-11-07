@@ -2,21 +2,24 @@ package zelgius.com.myrecipes.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.h6ah4i.android.widget.advrecyclerview.headerfooter.AbstractHeaderFooterWrapperAdapter
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
-import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.main.layout_header.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
+import zelgius.com.myrecipes.databinding.LayoutHeaderBinding
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.utils.context
 
 
-class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel, private val bindListener: (()-> Unit)? = null) :
+class HeaderAdapterWrapper(
+    val context: Context,
+    val viewModel: RecipeViewModel,
+    private val bindListener: (() -> Unit)? = null
+) :
     AbstractHeaderFooterWrapperAdapter<HeaderAdapterWrapper.HeaderViewHolder, RecyclerView.ViewHolder>() {
 
     var recipe: Recipe = viewModel.currentRecipe
@@ -24,8 +27,8 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
 
     override fun onCreateHeaderItemViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder =
         HeaderViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.layout_header,
+            LayoutHeaderBinding.inflate(
+                LayoutInflater.from(parent.context),
                 parent,
                 false
             )
@@ -38,28 +41,28 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
 
     override fun onBindHeaderItemViewHolder(viewHolder: HeaderViewHolder, localPosition: Int) {
 /*
-        viewHolder.itemView.imageView.transitionName = "imageView${recipe.id?:""}"
-        viewHolder.itemView.editName.transitionName = "name${recipe.id?:""}"
-        viewHolder.itemView.editCategory.transitionName = "category${recipe.id?:""}"
+        viewHolder.binding.imageView.transitionName = "imageView${recipe.id?:""}"
+        viewHolder.binding.editName.transitionName = "name${recipe.id?:""}"
+        viewHolder.binding.editCategory.transitionName = "category${recipe.id?:""}"
 */
 
         this.viewHolder = viewHolder
-        val itemView = viewHolder.itemView
+        val binding = viewHolder.binding
         val category = when (recipe.type) {
-            Recipe.Type.MEAL -> itemView.context.getString(R.string.meal)
-            Recipe.Type.DESSERT -> itemView.context.getString(R.string.dessert)
-            Recipe.Type.OTHER -> itemView.context.getString(R.string.other)
+            Recipe.Type.MEAL -> binding.context.getString(R.string.meal)
+            Recipe.Type.DESSERT -> binding.context.getString(R.string.dessert)
+            Recipe.Type.OTHER -> binding.context.getString(R.string.other)
         }
 
 
 
-        itemView.name.text = recipe.name
-        itemView.category.text = category
+        binding.name.text = recipe.name
+        binding.category.text = category
 
         if (context is LifecycleOwner) {
             viewModel.selectedImageUrl.observe(context, {
-                if(it != null && it.toString().isNotEmpty() && it.toString() != "null") {
-                    itemView.imageView.setPadding(0, 0, 0, 0)
+                if (it != null && it.toString().isNotEmpty() && it.toString() != "null") {
+                    binding.imageView.setPadding(0, 0, 0, 0)
                     Picasso.get().apply {
                         //setIndicatorsEnabled(true)
                         //isLoggingEnabled = true
@@ -67,7 +70,7 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
                         .load(it)
                         .resize(2048, 2048)
                         .centerCrop()
-                        .into(itemView.imageView, object : Callback {
+                        .into(binding.imageView, object : Callback {
                             override fun onSuccess() {
                             }
 
@@ -91,6 +94,6 @@ class HeaderAdapterWrapper(val context: Context, val viewModel: RecipeViewModel,
 
     override fun getFooterItemCount(): Int = 0
 
-    inner class HeaderViewHolder(override val containerView: View) :
-        RecyclerView.ViewHolder(containerView), LayoutContainer
+    inner class HeaderViewHolder(val binding: LayoutHeaderBinding) :
+        RecyclerView.ViewHolder(binding.root)
 }

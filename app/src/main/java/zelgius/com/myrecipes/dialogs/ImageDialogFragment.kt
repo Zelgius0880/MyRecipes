@@ -77,9 +77,9 @@ class ImageDialogFragment : DialogFragment() {
         }
     }
 
-    private val binding by lazy {
-        DialogFragmentImageBinding.inflate(LayoutInflater.from(requireContext()))
-    }
+    private var _binding: DialogFragmentImageBinding? = null
+    private val binding: DialogFragmentImageBinding
+        get() = _binding!!
 
 
     private val textWatcher = object : TextWatcher {
@@ -120,6 +120,8 @@ class ImageDialogFragment : DialogFragment() {
                 galleryRequest.launch("image/*")
             }
 
+            _binding = DialogFragmentImageBinding.inflate(LayoutInflater.from(requireContext()))
+
             return AlertDialog.Builder(it)
                 .setView(binding.root)
                 .setTitle(R.string.select_image)
@@ -134,6 +136,11 @@ class ImageDialogFragment : DialogFragment() {
                 .setNegativeButton(R.string.cancel) { _, _ -> }
                 .create()
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     override fun onStart() {

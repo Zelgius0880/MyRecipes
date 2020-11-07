@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.h6ah4i.android.widget.advrecyclerview.headerfooter.AbstractHeaderFooterWrapperAdapter
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
-import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.main.layout_header_edit.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
+import zelgius.com.myrecipes.databinding.LayoutHeaderEditBinding
 import zelgius.com.myrecipes.dialogs.ImageDialogFragment
 import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.utils.context
 
 
 class EditHeaderAdapterWrapper(
@@ -37,11 +37,7 @@ class EditHeaderAdapterWrapper(
 
     override fun onCreateHeaderItemViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder =
         HeaderViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.layout_header_edit,
-                parent,
-                false
-            )
+            LayoutHeaderEditBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
 
     override fun onCreateFooterItemViewHolder(
@@ -51,20 +47,20 @@ class EditHeaderAdapterWrapper(
 
     override fun onBindHeaderItemViewHolder(viewHolder: HeaderViewHolder, localPosition: Int) {
 /*
-        viewHolder.itemView.imageView.transitionName = "imageView${recipe.id?:""}"
-        viewHolder.itemView.editName.transitionName = "name${recipe.id?:""}"
-        viewHolder.itemView.editCategory.transitionName = "category${recipe.id?:""}"
+        viewHolder.binding.imageView.transitionName = "imageView${recipe.id?:""}"
+        viewHolder.binding.editName.transitionName = "name${recipe.id?:""}"
+        viewHolder.binding.editCategory.transitionName = "category${recipe.id?:""}"
 */
 
         this.viewHolder = viewHolder
-        val itemView = viewHolder.itemView
+        val binding = viewHolder.binding
         val category = when (recipe.type) {
-            Recipe.Type.MEAL -> itemView.context.getString(R.string.meal)
-            Recipe.Type.DESSERT -> itemView.context.getString(R.string.dessert)
-            Recipe.Type.OTHER -> itemView.context.getString(R.string.other)
+            Recipe.Type.MEAL -> binding.context.getString(R.string.meal)
+            Recipe.Type.DESSERT -> binding.context.getString(R.string.dessert)
+            Recipe.Type.OTHER -> binding.context.getString(R.string.other)
         }
 
-        itemView.editName.editText?.setText(recipe.name)
+        binding.editName.editText?.setText(recipe.name)
 
         val spinnerArrayAdapter = ArrayAdapter(
             context, R.layout.adapter_text_category,
@@ -74,8 +70,8 @@ class EditHeaderAdapterWrapper(
             android.R.layout
                 .simple_spinner_dropdown_item
         )
-        itemView.editCategory.adapter = spinnerArrayAdapter
-        itemView.editCategory.onItemSelectedListener =
+        binding.editCategory.adapter = spinnerArrayAdapter
+        binding.editCategory.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) {
 
@@ -90,9 +86,9 @@ class EditHeaderAdapterWrapper(
 
                 }
             }
-        itemView.editCategory.setSelection(typeStringArray.indexOf(category))
+        binding.editCategory.setSelection(typeStringArray.indexOf(category))
 
-        itemView.editImage.setOnClickListener { _ ->
+        binding.editImage.setOnClickListener { _ ->
             ImageDialogFragment().let {
                 if (context is AppCompatActivity)
                     it.show(context.supportFragmentManager, "image_dialog")
@@ -103,7 +99,7 @@ class EditHeaderAdapterWrapper(
         if (context is LifecycleOwner) {
             viewModel.selectedImageUrl.observe(context, {
                 if (it != null && it.toString().isNotEmpty() && it.toString() != "null") {
-                    itemView.imageView.setPadding(0, 0, 0, 0)
+                    binding.imageView.setPadding(0, 0, 0, 0)
                     Picasso.get().apply {
                         //setIndicatorsEnabled(true)
                         //isLoggingEnabled = true
@@ -111,7 +107,7 @@ class EditHeaderAdapterWrapper(
                         .load(it)
                         .resize(2048, 2048)
                         .centerCrop()
-                        .into(itemView.imageView, object : Callback {
+                        .into(binding.imageView, object : Callback {
                             override fun onSuccess() {
                             }
 
@@ -137,14 +133,14 @@ class EditHeaderAdapterWrapper(
     override fun getFooterItemCount(): Int = 0
 
     fun complete(recipe: Recipe) {
-        recipe.name = viewHolder?.itemView?.editName?.editText?.text?.toString() ?: ""
-        recipe.type = when (viewHolder?.itemView?.editCategory?.selectedItem as String) {
+        recipe.name = viewHolder?.binding?.editName?.editText?.text?.toString() ?: ""
+        recipe.type = when (viewHolder?.binding?.editCategory?.selectedItem as String) {
             context.getString(R.string.meal) -> Recipe.Type.MEAL
             context.getString(R.string.dessert) -> Recipe.Type.DESSERT
             else -> Recipe.Type.OTHER
         }
     }
 
-    inner class HeaderViewHolder(override val containerView: View) :
-        RecyclerView.ViewHolder(containerView), LayoutContainer
+    inner class HeaderViewHolder(val binding: LayoutHeaderEditBinding) :
+        RecyclerView.ViewHolder(binding.root)
 }

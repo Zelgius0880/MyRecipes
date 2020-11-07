@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -17,13 +18,15 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
+import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import kotlinx.android.synthetic.main.fragment_tab.view.*
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.VisionBarcodeReaderActivity
 import zelgius.com.myrecipes.entities.Recipe
@@ -51,6 +54,12 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     private var selectRecipe = false
     private lateinit var menu: Menu
     private lateinit var selectPathToExport: ActivityResultLauncher<String>
+
+    private lateinit var container: ViewPager2
+    private lateinit var tabs: TabLayout
+    private lateinit var searchList: RecyclerView
+    private lateinit var add: FloatingActionButton
+    private lateinit var toolbar: Toolbar
 
 
     private val readQrRequest by lazy {
@@ -102,10 +111,14 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         super.onViewCreated(view, savedInstanceState)
         pagerAdapter = SectionsPagerAdapter(requireActivity())
         navController = findNavController()
+        toolbar = view.findViewById(R.id.toolbar)
 
-        view.container.adapter = pagerAdapter
+        container = view.findViewById(R.id.container)
+        container.adapter = pagerAdapter
 
-        TabLayoutMediator(view.tabs, view.container) { tab, position ->
+        tabs = view.findViewById(R.id.tabs)
+
+        TabLayoutMediator(tabs, container) { tab, position ->
             tab.text = when (position) {
                 0 -> getString(R.string.meal)
                 1 -> getString(R.string.dessert)
@@ -115,7 +128,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
 
         }.attach()
 
-        view.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 viewModel.selectedType = when (tab?.text) {
                     getString(R.string.meal) -> Recipe.Type.MEAL
@@ -131,14 +144,17 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
 
         })
 
-        view.container.visibility = View.VISIBLE
-        view.tabs.visibility = View.VISIBLE
-        view.searchList.visibility = View.GONE
+        container.visibility = View.VISIBLE
+        tabs.visibility = View.VISIBLE
+
+        searchList = view.findViewById(R.id.searchList)
+        searchList.visibility = View.GONE
 
         vectorAnimation = AnimatedVectorDrawableCompat.create(ctx, R.drawable.av_add_to_add_list)
 
-        view.add.setOnClickListener {
-            view.add.setImageDrawable(vectorAnimation)
+        add = view.findViewById(R.id.add)
+        add.setOnClickListener {
+            add.setImageDrawable(vectorAnimation)
             vectorAnimation?.start()
             viewModel.selectedImageUrl.value = null
 
@@ -147,8 +163,8 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
                     "ADD" to true,
                     AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS to
                             AnimationUtils.RevealAnimationSetting(
-                                (view.add.x + view.add.width / 2).roundToInt(),
-                                (view.add.y + view.add.height / 2).roundToInt(),
+                                (add.x + add.width / 2).roundToInt(),
+                                (add.y + add.height / 2).roundToInt(),
                                 view.width,
                                 view.height
                             )
@@ -165,9 +181,9 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
             requireActivity().invalidateOptionsMenu()
 
             if (it) {
-                view.add.hide()
+                add.hide()
             } else {
-                view.add.show()
+                add.show()
             }
         }
     }
@@ -175,7 +191,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     override fun onResume() {
         super.onResume()
 
-        (activity as AppCompatActivity).setSupportActionBar(requireView().toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
         NavigationUI.setupActionBarWithNavController(
             requireActivity() as AppCompatActivity,
             navController
@@ -265,17 +281,17 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     }
 
     override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
-        requireView().container.visibility = View.GONE
-        requireView().tabs.visibility = View.GONE
-        requireView().searchList.visibility = View.VISIBLE
+        container.visibility = View.GONE
+        tabs.visibility = View.GONE
+        searchList.visibility = View.VISIBLE
         return true
     }
 
 
     override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
-        requireView().container.visibility = View.VISIBLE
-        requireView().tabs.visibility = View.VISIBLE
-        requireView().searchList.visibility = View.GONE
+        container.visibility = View.VISIBLE
+        tabs.visibility = View.VISIBLE
+        searchList.visibility = View.GONE
         return true
     }
 

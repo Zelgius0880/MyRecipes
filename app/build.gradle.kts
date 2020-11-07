@@ -32,6 +32,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        compose = true
     }
 
     sourceSets {
@@ -94,11 +95,19 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
+        useIR = true
     }
+
+    composeOptions {
+        kotlinCompilerVersion = "1.4.0"
+        kotlinCompilerExtensionVersion = "1.0.0-alpha05"
+    }
+
 }
 
 
 val mockitoVersion = "2.16.0"
+val composeVersion = "1.0.0-alpha06"
 
 dependencies {
     val pagingVersion = "2.1.2"
@@ -178,10 +187,20 @@ dependencies {
 
     implementation("com.google.mlkit:barcode-scanning:16.0.3")
 
-
-
-    implementation ("androidx.camera:camera-lifecycle:$cameraxVersion")
+    //CameraX
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-camera2:${cameraxVersion}")
     implementation("androidx.camera:camera-view:1.0.0-alpha18")
+
+    //Compose
+    val composeVersion = "1.0.0-alpha06"
+    implementation("androidx.compose.ui:ui:$composeVersion")
+    implementation("androidx.ui:ui-tooling:$composeVersion")
+    implementation("androidx.compose.foundation:foundation:$composeVersion")
+    implementation("androidx.compose.material:material:$composeVersion")
+    implementation("androidx.compose.material:material-icons-core:$composeVersion")
+    implementation("androidx.compose.material:material-icons-extended:$composeVersion")
+    implementation("androidx.compose.runtime:runtime-livedata:$composeVersion")
+    implementation("androidx.compose.runtime:runtime-rxjava2:$composeVersion")
 
 }
