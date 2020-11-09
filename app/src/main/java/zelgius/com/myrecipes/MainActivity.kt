@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.navigation.Navigation.findNavController
+import zelgius.com.myrecipes.dialogs.IntroDialog
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,5 +52,14 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
 
         return navController.navigateUp()
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+
+        if (getSharedPreferences("DEFAULT", MODE_PRIVATE).getBoolean("SHOW_POP", true)) {
+            IntroDialog().show(supportFragmentManager, "intro")
+        }
     }
 }

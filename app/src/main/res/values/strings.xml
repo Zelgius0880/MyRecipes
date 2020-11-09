@@ -1,9 +1,4 @@
 <resources>
-
-    <string name="creative_license" translatable="false">are under Creative Commons Attribution 4.0 International license</string>
-    <string name="from">From</string>
-    <string name="link_to_fontawsome" translatable="false">https://fontawesome.com</string>
-    <string name="link_to_fontawsome_license" translatable="false">https://fontawesome.com/license</string>
     <string name="title_activity_recipe" translatable="false">RecipeActivity</string>
 
     <string name="app_name">MyRecipes</string>
@@ -24,7 +19,7 @@
     <string name="add_ingredient">Add an ingredient</string>
     <string name="new_ingredient">New ingredient</string>
     <string name="add_step">Add a step</string>
-    <string name="license" translatable="false">License</string>
+    <string name="license">Licenses</string>
     <string name="save">Save</string>
     <string name="name">Name</string>
     <string name="cancel">Cancel</string>
@@ -97,7 +92,7 @@
     <string name="next">Next</string>
     <string name="edit_recipe">Edit Recipe</string>
     <string name="recipe_details">Recipe Details</string>
-    <string name="qrcode_explanation">If you scan the QRCode with the application, you will be able to import the recipe in your application</string>
+    <string name="qrcode_explanation">If you scan the QRCode with the application, you will be able to import the recipe in your application of the app.</string>
     <string name="pdf_created">The PDF has been created</string>
     <string name="zip_created">An archive has been created</string>
     <string name="open">Open</string>
@@ -135,6 +130,13 @@
         <item quantity="other">%d recipes</item>
         <item quantity="one">%d recipe</item>
     </plurals>
+
+    <string name="intro_text">Hi,\nI hope you\'ll enjoy this app.\nAs you can see, there is a couple of recipes that already are created. It\'ll let you to discover all functionalities.\nIf you don\'t like them, you can remove them by swiping on the left.\nIf you have an awesome feature you want to see on the app, or if you juste want to give me a feedback, you can contact me on </string>
+    <string name="opensource_licenses">OpenSource Licenses</string>
+    <string name="intro_text_license">Hi,\nI hope you enjoy this app.\nYou can remove the recipes by swiping on the left.\nIf you have an awesome feature you want to see on the app, or if you juste want to give me a feedback, you can contact me on </string>
+    <string name="intro_text_got_to_license">You can see this message again by clicking on the "Licenses" menu</string>
+    <string name="send_email">Send Email</string>
+    <string name="welcome">Welcome</string>
 </resources>
 
 

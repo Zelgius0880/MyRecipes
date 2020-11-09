@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.*
 import androidx.test.core.app.ApplicationProvider
-import com.facebook.stetho.Stetho
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -23,7 +22,6 @@ abstract class AbstractDatabaseTest {
         @JvmStatic
         fun createDb() {
             db = AppDatabase.getInstance(context, true)
-            Stetho.initializeWithDefaults(context)
 
         }
 

@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.*
+
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -10,6 +13,17 @@ plugins {
 
 val sdkVersion = rootProject.extra["compileSdkVersion"] as Int
 val kotlinVersion = rootProject.extra["kotlinVersion"]
+
+val getProps: (propName: String) -> String = {
+    val propsFile = rootProject.file("local.properties")
+    if (propsFile.exists()) {
+        val props = Properties()
+        props.load(FileInputStream(propsFile))
+        props[it] as String
+    } else {
+        ""
+    }
+}
 
 android {
     compileSdkVersion(sdkVersion)
@@ -49,6 +63,17 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField(type = "String", name = "EMAIL", value = getProps("app.email"))
+        }
+
+        getByName("debug") {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            buildConfigField(type = "String", name = "EMAIL", value = getProps("app.email"))
             //buildConfigField "Boolean", "DB_IN_MEMORY", false
         }
 

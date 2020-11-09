@@ -15,6 +15,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -22,7 +23,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
@@ -229,7 +229,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
 
         when (item.itemId) {
             R.id.action_license -> {
-                /*navController.navigate(
+                navController.navigate(
                     R.id.licenseFragment, bundleOf(), NavOptions.Builder()
                         .setEnterAnim(R.anim.nav_default_enter_anim)
                         .setExitAnim(R.anim.nav_default_exit_anim)
@@ -237,9 +237,6 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
                         .setPopExitAnim(R.anim.nav_default_pop_exit_anim)
                         .build()
                 )
-                return true*/
-
-                startActivity(Intent(requireContext(), OssLicensesMenuActivity::class.java))
             }
 
             R.id.scan -> {

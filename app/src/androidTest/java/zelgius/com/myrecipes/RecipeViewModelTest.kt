@@ -8,7 +8,6 @@ import androidx.lifecycle.LiveData
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
-import com.facebook.stetho.Stetho
 import org.jetbrains.annotations.TestOnly
 import org.junit.Assert.*
 import org.junit.Before
@@ -42,7 +41,6 @@ class RecipeViewModelTest {
 
     @Before
     fun init() {
-        Stetho.initializeWithDefaults(context)
 
     }
 

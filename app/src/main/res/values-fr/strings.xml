@@ -114,4 +114,12 @@
         <item quantity="other">%d recettes</item>
         <item quantity="one">%d recette</item>
     </plurals>
+
+    <string name="intro_text">Salut,\nJ\'espère que vous allez apprécier cette application.\n Comme vous pouvez le voire, il y a déjà quelques recettes disponbles. Cela vous permettra de découvrir toutes les fonctionnalités de l\'application.\nSi elles ne vous plaisent pas, vous pouvez les supprimer en glissant sur la gauche.\nSi vous avez une nouvelle fonctionnalité que vous souhaitez vous dans l\'application, ou si vous voulez juste me donner un feedback, vous pouvez me contacter sur </string>
+    <string name="intro_text_license">Salut,\nJ\'espère que vous appréciez cette application. Vous pouvez supprimer des recettes en glissant sur la gauche.\nSi vous avez une nouvelle fonctionnalité que vous souhaitez voire dans l\'application, ou si vous voulez juste me donner un feedback, vous pouvez me contacter sur </string>
+    <string name="opensource_licenses">Licences Open Source</string>
+    <string name="intro_text_got_to_license">Vous pouvez consulter de nouveau se message en clickant sur le menu "Licences"</string>
+    <string name="send_email">Envoyer un Email</string>
+    <string name="license">Licences</string>
+    <string name="welcome">Welcome</string>
 </resources>
