@@ -9,6 +9,7 @@ plugins {
     id("androidx.navigation.safeargs")
     id("com.google.gms.google-services")
     id("com.google.android.gms.oss-licenses-plugin")
+    id("com.google.firebase.crashlytics")
 }
 
 val sdkVersion = rootProject.extra["compileSdkVersion"] as Int
@@ -135,11 +136,13 @@ val mockitoVersion = "2.16.0"
 val composeVersion = "1.0.0-alpha06"
 
 dependencies {
+    implementation("com.google.firebase:firebase-crashlytics:17.2.2")
+    implementation("com.google.firebase:firebase-analytics:18.0.0")
     val pagingVersion = "2.1.2"
     val lifecycleVersion = ("2.2.0")
     val roomVersion = "2.2.5"
     val navigationVersion = "2.3.1"
-    val workVersion = "1.0.1"
+    val workVersion = "2.4.0"
     val cameraxVersion = "1.0.0-beta11"
     val coroutinesVersion = "1.3.0-M2"
 
@@ -159,8 +162,10 @@ dependencies {
     androidTestImplementation("androidx.room:room-testing:$roomVersion")
     androidTestImplementation("org.mockito:mockito-core:3.5.13")
     androidTestImplementation("androidx.test:rules:1.3.0")
-    androidTestImplementation("com.google.code.gson:gson:2.8.6")
+    androidTestImplementation("androidx.test.ext:junit:1.1.2")
+    androidTestImplementation("androidx.work:work-testing:$workVersion")
 
+    androidTestImplementation("com.google.code.gson:gson:2.8.6")
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("de.hdodenhof:circleimageview:3.1.0")
     //debugImplementation("com.amitshekhar.android:debug-db:1.0.6") //adb forward tcp:8080 tcp:8080
@@ -206,7 +211,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-oss-licenses:17.0.0")
 
     //Worker
-    implementation("android.arch.work:work-runtime-ktx:$workVersion")
+    implementation("androidx.work:work-runtime-ktx:$workVersion")
     implementation(project(path = (":protobuff")))
 
 

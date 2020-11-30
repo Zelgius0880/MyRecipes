@@ -3,12 +3,15 @@ package zelgius.com.myrecipes.repository
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import zelgius.com.myrecipes.entities.*
+import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.entities.Step
 
 
-class StepRepository(context: Context) {
+class StepRepository(
+    context: Context,
+    database: AppDatabase = AppDatabase.getInstance(context)
+) {
 
-    private val database = AppDatabase.getInstance(context)
     private val dao = database.stepDao
 
     fun get(recipe: Recipe) =

@@ -3,12 +3,16 @@ package zelgius.com.myrecipes.repository
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import zelgius.com.myrecipes.entities.*
+import zelgius.com.myrecipes.entities.Ingredient
+import zelgius.com.myrecipes.entities.IngredientForRecipe
+import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.entities.RecipeIngredient
 
 
-class IngredientRepository(context: Context) {
-
-    private val database = AppDatabase.getInstance(context)
+class IngredientRepository(
+    context: Context,
+    database: AppDatabase = AppDatabase.getInstance(context)
+) {
     private val dao = database.ingredientDao
 
     fun get() =
@@ -74,7 +78,7 @@ class IngredientRepository(context: Context) {
         withContext(Dispatchers.Default) {
             val id = dao.getId(item.id!!, item.refRecipe!!)
 
-            if(id == null) {
+            if (id == null) {
                 dao.insert(
                     RecipeIngredient(
                         null,
@@ -88,8 +92,19 @@ class IngredientRepository(context: Context) {
                     )
                 )
                 0
-            }else
-                dao.update(RecipeIngredient(id, item.quantity, item.unit, item.optional, item.sortOrder, item.id, item.refRecipe, item.refStep))
+            } else
+                dao.update(
+                    RecipeIngredient(
+                        id,
+                        item.quantity,
+                        item.unit,
+                        item.optional,
+                        item.sortOrder,
+                        item.id,
+                        item.refRecipe,
+                        item.refStep
+                    )
+                )
         }
 
 

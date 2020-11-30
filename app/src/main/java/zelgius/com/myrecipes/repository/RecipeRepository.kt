@@ -5,9 +5,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import zelgius.com.myrecipes.entities.Recipe
 
-class RecipeRepository(context: Context) {
+class RecipeRepository(
+    context: Context,
+    private val database: AppDatabase = AppDatabase.getInstance(context)
+) {
 
-    private val database = AppDatabase.getInstance(context)
 
     fun get() =
         database.recipeDao.getAll()
@@ -44,12 +46,12 @@ class RecipeRepository(context: Context) {
         }
 
     suspend fun update(recipe: Recipe): Int =
-         withContext(Dispatchers.Default) {
-             database.recipeDao.update(recipe)
-         }
+        withContext(Dispatchers.Default) {
+            database.recipeDao.update(recipe)
+        }
 
     suspend fun delete(recipe: Recipe): Int =
-         withContext(Dispatchers.Default) {
-             database.recipeDao.delete(recipe)
-         }
+        withContext(Dispatchers.Default) {
+            database.recipeDao.delete(recipe)
+        }
 }

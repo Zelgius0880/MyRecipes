@@ -474,6 +474,7 @@ class PdfGenerator(val context: Context) {
 
 
     private fun drawQrCode(recipe: Recipe): Int {
+        recipe.imageURL = null
         val bytes = zipBytes("", recipe.toProtoBuff().toByteArray())
         val bmp = QRCode.from(Base64.encodeToString(bytes, Base64.NO_PADDING))
             .withSize(400, 400)

@@ -11,14 +11,20 @@ interface RecipeDao {
     @Insert
     suspend fun insert(recipe: Recipe):Long
 
-    @Update suspend fun update(vararg recipe: Recipe): Int
+    @Update
+    suspend fun update(vararg recipe: Recipe): Int
 
-    @Update fun blockingUpdate(vararg recipe: Recipe): Int
+    @Update
+    fun blockingUpdate(vararg recipe: Recipe): Int
 
-    @Delete suspend fun delete(vararg recipe: Recipe): Int
+    @Delete
+    suspend fun delete(vararg recipe: Recipe): Int
 
     @Query("SELECT * FROM recipe ORDER BY name")
     fun getAll(): LiveData<List<Recipe>>
+
+    @Query("SELECT * FROM recipe ORDER BY name")
+    suspend fun blockingGetAll(): List<Recipe>
 
 
     @Query("SELECT * FROM recipe WHERE type = 'MEAL' ORDER BY name")

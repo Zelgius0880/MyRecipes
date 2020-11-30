@@ -106,7 +106,7 @@
     <string name="brown_sugar_name">Brown sugar</string>
     <string name="cheese_name">Cheese</string>
     <string name="chocolate_name">Chocolate</string>
-    <string name="coconut_name" >Coconut(s)</string>
+    <string name="coconut_name">Coconut(s)</string>
     <string name="coffee_name">Coffee</string>
     <string name="hazelnut_name">Hazelnut(s)</string>
     <string name="honey_name">Honey</string>
@@ -137,6 +137,35 @@
     <string name="intro_text_got_to_license">You can see this message again by clicking on the "Licenses" menu</string>
     <string name="send_email">Send Email</string>
     <string name="welcome">Welcome</string>
+
+    <string name="default_1">
+UEsDBBQACAgIAAJxalEAAAAAAAAAAAAAAAAAAAAAxdNNTgIxFAfwGRg+ZKHIyszqyQoIAQwb40bi
+V2IiK0yMyw7z6FRLh/RD5QIeQY2n8SgewSNYRpFhb4aumtem/1/eSyul09hQEZs9ty4qd0P2BPiA
+cq4jJigQEQIJQ9ARwpTx+w7cECnsyT70YWxmCuJJcgBMgY5jmJpx1P67DiqKDQ8hwMUraDdzmCBy
++0Cn6tbPKoMr1MA0SKYQGgdRv9fswHWEop3EzpBIDspQIhMKX91WQChhoppr8S0nWeVBzRvaUH8n
+lOSRBByPut1E4bT+JalXPnRar+4qrnhOaUM1/e1UIFJq8zLuZC9vZS8pmTciXK81QtkCuJnDPAt7
+W8K+jmuFCx4b6VdTssmiArnMaSVLe/+lfQR2midGa5T+bsoWJCXIZ44rWtzzsm+Xg1rhFonS4G0E
+shzgJ1rIaPFH1gb482sKm6B9A1BLBwgZ48c0SwEAAL4EAABQSwECFAAUAAgICAACcWpRGePHNEsB
+AAC+BAAAAAAAAAAAAAAAAAAAAAAAAAAAUEsFBgAAAAABAAEALgAAAHkBAAAAAA
+    </string>
+    <string name="default_2">
+UEsDBBQACAgIABlxalEAAAAAAAAAAAAAAAAAAAAAjY/PSsNAEIfTpik1osR4UHrQIV40IE3Bqngx
+f9CbIAgelY3drkvjJuxu0MfyGXwiH8HdNJD2kODedmZ+33xj21FRZBgStMSHhndg7z/QL5DvGCgj
+HM8pZlI4Pe/EPk5KWTWQDgjVl7n6UwZCcloIp+959lGsOIAkTC8D+PmGBBY5h4vgfBbAB2WO6Udb
+hn7ha+ha91le8rEz5+gTpRm+mUwWugKG3+YRDK8N/3GFMJzQHVX2p+Jsg1IZKsp/pANTEf2a+BK6
+w7iUEvPx3hovrUpgVNujZtZ6KgnaPEDoCvS6DwhrxEituyNE6++uMTAh0G8naOGgJvzeKmG0VANg
+ticGKjFrEtsxfUM8zRmSGAbdsasmtvOMGM0yBKsbrU7DP1BLBwg/FjLQIQEAAFgCAABQSwECFAAU
+AAgICAAZcWpRPxYy0CEBAABYAgAAAAAAAAAAAAAAAAAAAAAAAAAAUEsFBgAAAAABAAEALgAAAE8B
+AAAAAA
+    </string>
+    <string name="default_3">
+UEsDBBQACAgIAC5xalEAAAAAAAAAAAAAAAAAAAAA4+J2z8xLTy1KKkpNTJFgUBLi4vPNrFBILUst
+qizJAEoJMILEnBKzUxUSSxSMDAwObXAWYNLS4GQAAYd4ByHW8MSS1CIpgZSixPLEpJxUK339cpCI
+AoMBowWDlglCJbdTUX55nkJxaXpikZQYkvokkHg8WFyB0YANqAvZfI/8vNRKFPMzQCIKTGCV6hCV
+DB/shdhc09M1ijWl+JCUpqanKzAbMCMZmQ800i0nvxTVyWkgEQUWsJEyCCO5nTKTE4uS8vOAPlJg
+NWAByoojWQgMF2AYKbCBJABQSwcIZqudsNcAAABLAQAAUEsBAhQAFAAICAgALnFqUWarnbDXAAAA
+SwEAAAAAAAAAAAAAAAAAAAAAAAAAAFBLBQYAAAAAAQABAC4AAAAFAQAAAAA
+    </string>
 </resources>
 
 
