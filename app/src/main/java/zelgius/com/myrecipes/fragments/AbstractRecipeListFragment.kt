@@ -125,7 +125,7 @@ abstract class AbstractRecipeListFragment : Fragment() {
 
 
     private fun undoSnackBar(recipe: Recipe, text: String) {
-        Snackbar.make(requireParentFragment().requireView(), text, Snackbar.LENGTH_LONG)
+        Snackbar.make(requireView(), text, Snackbar.LENGTH_LONG)
             .setAction(R.string.undo) {
                 recipe.id = null
                 //recipe.ingredients.forEach { it.id = null }

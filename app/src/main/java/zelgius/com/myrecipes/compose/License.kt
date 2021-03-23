@@ -2,25 +2,28 @@ package zelgius.com.myrecipes.compose
 
 import android.content.Intent
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.gesture.tapGestureFilter
-import androidx.compose.ui.platform.ContextAmbient
-import androidx.compose.ui.platform.UriHandlerAmbient
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.ui.tooling.preview.Preview
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
@@ -31,34 +34,47 @@ fun DrawLicense() {
     val list = icons.split("\n").map { it.split(";") }
         .filter { it.size > 1 && it[0].isNotBlank() }
 
-    ScrollableColumn {
-        Card(modifier = Modifier.padding(4.dp).fillMaxWidth()) {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        Card(
+            modifier = Modifier
+                .padding(4.dp)
+                .fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
-                    ContextAmbient.current.getString(R.string.intro_text_license)
+                    text = stringResource(R.string.intro_text_license)
                 )
                 EmailText(BuildConfig.EMAIL, BuildConfig.EMAIL)
             }
         }
 
-        val context = ContextAmbient.current
-        Card(modifier = Modifier.padding(4.dp).fillMaxWidth().clickable(onClick = {
-            context.startActivity(
-                Intent(
-                    context,
-                    OssLicensesMenuActivity::class.java
-                )
-            )
-        })) {
+        val context = LocalContext.current
+        Card(
+            modifier = Modifier
+                .padding(4.dp)
+                .fillMaxWidth()
+                .clickable(onClick = {
+                    context.startActivity(
+                        Intent(
+                            context,
+                            OssLicensesMenuActivity::class.java
+                        )
+                    )
+                })
+        ) {
             Text(
-                ContextAmbient.current.getString(R.string.opensource_licenses),
+                text = stringResource(R.string.opensource_licenses),
                 modifier = Modifier.padding(8.dp),
                 style = TextStyle(color = MaterialTheme.colors.secondary)
             )
         }
 
         list.forEach {
-            Card(modifier = Modifier.padding(4.dp).fillMaxWidth()) {
+            Card(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .fillMaxWidth()
+            ) {
                 DrawIconLicense(s = it, modifier = Modifier.padding(4.dp))
             }
         }
@@ -70,8 +86,9 @@ fun DrawIconLicense(s: List<String>, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         Row {
             Image(
+                contentDescription = "",
                 modifier = Modifier.size(24.dp),
-                asset = vectorResource(
+                painter = painterResource(
                     id =
                     when (s[0].toUpperCase(Locale.getDefault())) {
                         "EGG" -> R.drawable.ic_eggs
@@ -127,7 +144,7 @@ fun DrawIconLicense(s: List<String>, modifier: Modifier = Modifier) {
 
 @Composable
 fun UrlText(text: String, url: String, modifier: Modifier = Modifier) {
-    val uriHandler = UriHandlerAmbient.current
+    val uriHandler = LocalUriHandler.current
     val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
 
     val annotatedString = AnnotatedString.Builder().apply {
@@ -142,14 +159,16 @@ fun UrlText(text: String, url: String, modifier: Modifier = Modifier) {
     }.toAnnotatedString()
 
     Text(
-        modifier = modifier then Modifier.tapGestureFilter { pos ->
-            layoutResult.value?.let { layoutResult ->
-                val position = layoutResult.getOffsetForPosition(pos)
-                annotatedString.getStringAnnotations(position, position)
-                    .firstOrNull()
-                    ?.let { sa ->
-                        uriHandler.openUri(sa.item)
-                    }
+        modifier = modifier then Modifier.pointerInput(Unit) {
+            detectTapGestures { pos ->
+                layoutResult.value?.let { layoutResult ->
+                    val position = layoutResult.getOffsetForPosition(pos)
+                    annotatedString.getStringAnnotations(position, position)
+                        .firstOrNull()
+                        ?.let { sa ->
+                            uriHandler.openUri(sa.item)
+                        }
+                }
             }
         },
         text = annotatedString,
@@ -172,23 +191,25 @@ fun EmailText(text: String, url: String, modifier: Modifier = Modifier) {
         append(text)
     }.toAnnotatedString()
 
-    val context = ContextAmbient.current
+    val context = LocalContext.current
     Text(
-        modifier = modifier then Modifier.tapGestureFilter { pos ->
-            layoutResult.value?.let { layoutResult ->
-                val position = layoutResult.getOffsetForPosition(pos)
-                annotatedString.getStringAnnotations(position, position)
-                    .firstOrNull()
-                    ?.let { _ ->
-                        context.startActivity(
-                            Intent.createChooser(
-                                Intent(Intent.ACTION_SENDTO).apply {
-                                    data = "mailto:${BuildConfig.EMAIL}".toUri()
-                                },
-                                context.getString(R.string.send_email)
+        modifier = modifier then Modifier.pointerInput(Unit) {
+            detectTapGestures { pos ->
+                layoutResult.value?.let { layoutResult ->
+                    val position = layoutResult.getOffsetForPosition(pos)
+                    annotatedString.getStringAnnotations(position, position)
+                        .firstOrNull()
+                        ?.let { _ ->
+                            context.startActivity(
+                                Intent.createChooser(
+                                    Intent(Intent.ACTION_SENDTO).apply {
+                                        data = "mailto:${BuildConfig.EMAIL}".toUri()
+                                    },
+                                    context.getString(R.string.send_email)
+                                )
                             )
-                        )
-                    }
+                        }
+                }
             }
         },
         text = annotatedString,

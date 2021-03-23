@@ -103,7 +103,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
             if (viewModel.selectRecipe.value == true) {
                 viewModel.selectRecipe.value = false
             } else
-                requireActivity().onBackPressed()
+                requireActivity().finish()
         }
     }
 

@@ -24,7 +24,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="/private/var/folders/yr/lmvj6gy15g9gyv5qh47mtc6h0000gn/T/ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\Florian\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -68,7 +68,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="/private/var/folders/yr/lmvj6gy15g9gyv5qh47mtc6h0000gn/T/ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\Florian\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                                 <entry key="trimmed" value="true" />
                                               </map>
                                             </option>
@@ -81,7 +81,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="$PROJECT_DIR$/app/src/main/res/drawable/ic_carrot_solid.xml" />
+                                                <entry key="imagePath" value="D:\Projects\MyRecipes\app\src\main\res\drawable\ic_carrot_solid.xml" />
                                                 <entry key="scalingPercent" value="59" />
                                                 <entry key="trimmed" value="true" />
                                               </map>
@@ -117,7 +117,8 @@
                                     <map>
                                       <entry key="backgroundAssetType" value="COLOR" />
                                       <entry key="backgroundColor" value="004ba0" />
-                                      <entry key="legacyIconShape" value="CIRCLE" />
+                                      <entry key="generateLegacyIcon" value="false" />
+                                      <entry key="generateRoundIcon" value="false" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -134,7 +135,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="/private/var/folders/yr/lmvj6gy15g9gyv5qh47mtc6h0000gn/T/ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\Florian\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -178,7 +179,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="/private/var/folders/yr/lmvj6gy15g9gyv5qh47mtc6h0000gn/T/ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\Florian\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -242,7 +243,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="imagePath" value="/private/var/folders/yr/lmvj6gy15g9gyv5qh47mtc6h0000gn/T/ic_android_black_24dp.xml" />
+                                                <entry key="imagePath" value="C:\Users\Florian\AppData\Local\Temp\ic_android_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>

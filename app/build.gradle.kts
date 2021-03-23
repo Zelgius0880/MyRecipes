@@ -1,11 +1,10 @@
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 plugins {
     id("com.android.application")
     kotlin("android")
     kotlin("kapt")
-    id("kotlin-android-extensions")
     id("androidx.navigation.safeargs")
     id("com.google.gms.google-services")
     id("com.google.android.gms.oss-licenses-plugin")
@@ -28,7 +27,7 @@ val getProps: (propName: String) -> String = {
 
 android {
     compileSdkVersion(sdkVersion)
-    buildToolsVersion("30.0.2")
+    buildToolsVersion("30.0.3")
 
     defaultConfig {
         applicationId("zelgius.com.myrecipes")
@@ -96,23 +95,26 @@ android {
         }
 
         register("release").configure {
-            storeFile = file("keystore")
+            storeFile = file("zelgius.com.myrecipes")
             storePassword("keystore")
-            keyAlias = ("keystore")
+            keyAlias = ("key0")
             keyPassword("keystore")
         }
     }
 
     packagingOptions {
         exclude("META-INF/DEPENDENCIES")
-        exclude("META-INF/LICENSE")
-        exclude("META-INF/LICENSE.txt")
-        exclude("META-INF/license.txt")
-        exclude("META-INF/NOTICE")
-        exclude("META-INF/NOTICE.txt")
-        exclude("META-INF/notice.txt")
-        exclude("META-INF/ASL2.0")
-        exclude("META-INF/atomicfu.kotlin_module")
+        //withGroovyBuilder { //FIXME See in future if not available in Kotlin DSL
+            exclude("META-INF/DEPENDENCIES")
+            exclude("META-INF/LICENSE")
+            exclude("META-INF/LICENSE.txt")
+            exclude("META-INF/license.txt")
+            exclude("META-INF/NOTICE")
+            exclude("META-INF/NOTICE.txt")
+            exclude("META-INF/notice.txt")
+            exclude("META-INF/ASL2.0")
+            exclude("META-INF/atomicfu.kotlin_module")
+        //}
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -125,35 +127,35 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerVersion = "1.4.0"
-        kotlinCompilerExtensionVersion = "1.0.0-alpha05"
+        //kotlinCompilerVersion = "1.4.30"
+        kotlinCompilerExtensionVersion = "1.0.0-beta02"
     }
 
 }
 
 
 val mockitoVersion = "2.16.0"
-val composeVersion = "1.0.0-alpha06"
+val composeVersion = "1.0.0-beta02"
 
 dependencies {
-    implementation("com.google.firebase:firebase-crashlytics:17.2.2")
-    implementation("com.google.firebase:firebase-analytics:18.0.0")
+    implementation("com.google.firebase:firebase-crashlytics:17.4.0")
+    implementation("com.google.firebase:firebase-analytics:18.0.2")
     val pagingVersion = "2.1.2"
-    val lifecycleVersion = ("2.2.0")
-    val roomVersion = "2.2.5"
-    val navigationVersion = "2.3.1"
-    val workVersion = "2.4.0"
-    val cameraxVersion = "1.0.0-beta11"
+    val lifecycleVersion = ("2.3.0")
+    val roomVersion = "2.2.6"
+    val navigationVersion = "2.3.4"
+    val workVersion = "2.5.0"
+    val cameraxVersion = "1.1.0-alpha02"
     val coroutinesVersion = "1.3.0-M2"
 
 
     // implementation (fileTree(dir:("libs"), include: ["*.jar"]))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.31")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    implementation("com.google.android.material:material:1.3.0-alpha03")
+    implementation("com.google.android.material:material:1.4.0-alpha01")
 
     // Tests
-    testImplementation("junit:junit:4.13.1")
+    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:runner:1.3.0")
     androidTestImplementation("androidx.test:core:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
@@ -171,17 +173,16 @@ dependencies {
     //debugImplementation("com.amitshekhar.android:debug-db:1.0.6") //adb forward tcp:8080 tcp:8080
 
     //Android X
-    implementation("androidx.fragment:fragment:1.3.0-beta01")
-    implementation("androidx.fragment:fragment-ktx:1.3.0-beta01")
-    implementation("androidx.core:core-ktx:1.5.0-alpha04")
+    implementation("androidx.fragment:fragment:1.3.1")
+    implementation("androidx.fragment:fragment-ktx:1.3.1")
+    implementation("androidx.core:core-ktx:1.5.0-beta03")
     implementation("androidx.constraintlayout:constraintlayout:2.0.4")
-    implementation("androidx.recyclerview:recyclerview:1.2.0-alpha06")
+    implementation("androidx.recyclerview:recyclerview:1.2.0-beta02")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.lifecycle:lifecycle-extensions:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
     implementation("androidx.legacy:legacy-support-v13:1.0.0")
-    implementation("androidx.appcompat:appcompat:1.3.0-alpha02")
+    implementation("androidx.appcompat:appcompat:1.3.0-beta01")
     implementation("androidx.room:room-runtime:$roomVersion")
 
     kapt("androidx.room:room-compiler:$roomVersion")
@@ -190,7 +191,7 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
 
     //KTX & coroutines
-    implementation("androidx.core:core-ktx:1.5.0-alpha04")
+    implementation("androidx.core:core-ktx:1.5.0-beta03")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
 
@@ -215,22 +216,19 @@ dependencies {
     implementation(project(path = (":protobuff")))
 
 
-    implementation("com.google.mlkit:barcode-scanning:16.0.3")
+    implementation("com.google.mlkit:barcode-scanning:16.1.1")
 
     //CameraX
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-camera2:${cameraxVersion}")
-    implementation("androidx.camera:camera-view:1.0.0-alpha18")
+    implementation("androidx.camera:camera-view:1.0.0-alpha22")
 
     //Compose
-    val composeVersion = "1.0.0-alpha06"
+    implementation("androidx.compose.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.ui:ui:$composeVersion")
-    implementation("androidx.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
     implementation("androidx.compose.material:material:$composeVersion")
     implementation("androidx.compose.material:material-icons-core:$composeVersion")
     implementation("androidx.compose.material:material-icons-extended:$composeVersion")
-    implementation("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    implementation("androidx.compose.runtime:runtime-rxjava2:$composeVersion")
 
 }

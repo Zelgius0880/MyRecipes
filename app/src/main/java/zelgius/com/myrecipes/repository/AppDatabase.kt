@@ -67,10 +67,12 @@ abstract class AppDatabase : RoomDatabase() {
                                     .setConstraints(Constraints.NONE)
                                     .build()
 
-                                instance?._workerState?.value = WorkManager
-                                    .getInstance(context)
-                                    .enqueue(worker)
-                                    .result
+                                instance?._workerState?.postValue(
+                                    WorkManager
+                                        .getInstance(context)
+                                        .enqueue(worker)
+                                        .result
+                                )
                             }
                         })
                         .addMigrations(MIGRATION_1_2)

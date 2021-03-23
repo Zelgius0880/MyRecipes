@@ -1,9 +1,8 @@
-
-
 plugins {
     id("com.android.library")
     id("com.google.protobuf")
 }
+
 
 def generatedFilesBaseDir = "$projectDir/src"
 def sdkVersion = rootProject.ext.compileSdkVersion
@@ -15,7 +14,7 @@ val kotlinVersion = rootProject.extra["kotlinVersion"]*/
 
 android {
     compileSdkVersion(sdkVersion)
-    buildToolsVersion("30.0.2")
+    buildToolsVersion("30.0.3")
 
     sourceSets {
         getByName("main").java.srcDirs("$generatedFilesBaseDir/main/javalite")
@@ -31,11 +30,11 @@ android {
 // Please don't move it to Kotlin DSL -> the plugin does not work will with it
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.0.0'
+        artifact = "com.google.protobuf:protoc:3.0.0"
     }
     plugins {
         javalite {
-            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
         }
     }
     generateProtoTasks {

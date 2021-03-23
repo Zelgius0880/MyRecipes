@@ -77,9 +77,9 @@ class InsertDefaultDataWorker(val appContext: Context, workerParams: WorkerParam
                     )
 
                 val input = when (index) {
-                    0 -> appContext.assets.open("apple-cake.jpg")
-                    1 -> appContext.assets.open("gingerbread.jpg")
-                    2 -> appContext.assets.open("cougnou.jpg")
+                    0 -> appContext.assets.open("cougnou.jpg")
+                    1 -> appContext.assets.open("apple-cake.jpg")
+                    2 -> appContext.assets.open("gingerbread.jpg")
                     else -> error("")
                 }
                 val output = appContext.contentResolver.openOutputStream(targetFile)

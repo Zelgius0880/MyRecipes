@@ -112,6 +112,8 @@ class ImageDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             // Use the Builder class for convenient dialog construction
+            _binding = DialogFragmentImageBinding.inflate(LayoutInflater.from(requireContext()))
+
             binding.camera.setOnClickListener {
                 cameraPermissionRequest.launch(android.Manifest.permission.CAMERA)
             }
@@ -119,8 +121,6 @@ class ImageDialogFragment : DialogFragment() {
             binding.gallery.setOnClickListener {
                 galleryRequest.launch("image/*")
             }
-
-            _binding = DialogFragmentImageBinding.inflate(LayoutInflater.from(requireContext()))
 
             return AlertDialog.Builder(it)
                 .setView(binding.root)
