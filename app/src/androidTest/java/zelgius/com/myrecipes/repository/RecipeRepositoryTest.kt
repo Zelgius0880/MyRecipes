@@ -5,13 +5,14 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.repository.RecipeRepository
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class RecipeRepositoryTest : AbstractDatabaseTest() {
     private val recipeDao by lazy { db.recipeDao }
 
-    private val recipe = Recipe(null, "Recipe for testing", "image", Recipe.Type.OTHER)
+    private val recipe = RecipeEntity(null, "Recipe for testing", "image", RecipeEntity.Type.OTHER)
     private val repo by lazy { RecipeRepository(context) }
 
     @Test

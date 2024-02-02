@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.createDummySample
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.StepEntity
 import java.io.File
 
 class PdfGeneratorTest {
@@ -41,7 +41,7 @@ class PdfGeneratorTest {
             PdfGenerator(context).createPdf(recipe = viewModel.createDummySample().apply {
                 name = "Long Step $name"
                 steps.add(
-                    Step(
+                    StepEntity(
                         id = null,
                         text = LONG_STRING + LONG_STRING + LONG_STRING, order = steps.size + 1,
                         optional = false,

@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.repository
+package zelgius.com.myrecipes.data.repository
 
 import android.content.Context
 import androidx.core.content.contentValuesOf
@@ -12,15 +12,20 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.Operation
 import androidx.work.WorkManager
 import com.google.common.util.concurrent.ListenableFuture
-import zelgius.com.myrecipes.entities.*
-import zelgius.com.myrecipes.repository.dao.IngredientDao
-import zelgius.com.myrecipes.repository.dao.RecipeDao
-import zelgius.com.myrecipes.repository.dao.StepDao
+import zelgius.com.myrecipes.data.entities.DefaultIngredients
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.RecipeIngredient
+import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.repository.dao.IngredientDao
+import zelgius.com.myrecipes.data.repository.dao.RecipeDao
+import zelgius.com.myrecipes.data.repository.dao.StepDao
 import zelgius.com.myrecipes.worker.InsertDefaultDataWorker
 
 
 @Database(
-    entities = [Ingredient::class, Recipe::class, Step::class, RecipeIngredient::class],
+    entities = [IngredientEntity::class, RecipeEntity::class, StepEntity::class, RecipeIngredient::class],
     views = [IngredientForRecipe::class],
     version = 4
 )
@@ -166,14 +171,14 @@ INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
 
 class Converters {
     @TypeConverter
-    fun unitToString(unit: Ingredient.Unit): String = unit.name
+    fun unitToString(unit: IngredientEntity.Unit): String = unit.name
 
     @TypeConverter
-    fun stringToUnit(s: String): Ingredient.Unit = Ingredient.Unit.valueOf(s)
+    fun stringToUnit(s: String): IngredientEntity.Unit = IngredientEntity.Unit.valueOf(s)
 
     @TypeConverter
-    fun typeToString(type: Recipe.Type): String = type.name
+    fun typeToString(type: RecipeEntity.Type): String = type.name
 
     @TypeConverter
-    fun stringToType(s: String): Recipe.Type = Recipe.Type.valueOf(s)
+    fun stringToType(s: String): RecipeEntity.Type = RecipeEntity.Type.valueOf(s)
 }

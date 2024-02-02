@@ -32,7 +32,7 @@ import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.databinding.FragmentRecipeBinding
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.utils.UiUtils
 import java.io.File
 
@@ -143,9 +143,9 @@ class RecipeFragment : Fragment(),
         navController = findNavController()
 
         binding.apply {
-            val recipe = arguments?.getParcelable<Recipe>("RECIPE")?.apply {
+            val recipe = arguments?.getParcelable<RecipeEntity>("RECIPE")?.apply {
                 viewModel.loadRecipe(id!!)
-            } ?: Recipe(Recipe.Type.MEAL)
+            } ?: RecipeEntity(RecipeEntity.Type.MEAL)
             //viewModel.selectedRecipe.value = recipe
 
             if (arguments != null)

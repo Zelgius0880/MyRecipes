@@ -20,21 +20,21 @@ import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.databinding.AdapterFragmentRecipeBinding
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.utils.context
 import zelgius.com.myrecipes.utils.dpToPx
 
 
 class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit) :
-    PagedListAdapter<Recipe, RecipePagedAdapter.ViewHolder>(DIFF_CALLBACK),
+    PagedListAdapter<RecipeEntity, RecipePagedAdapter.ViewHolder>(DIFF_CALLBACK),
     SwipeableItemAdapter<RecipePagedAdapter.ViewHolder> {
 
-    var deleteListener: ((Recipe) -> Unit)? = null
-    var editListener: ((Recipe, FragmentNavigator.Extras) -> Unit)? = null
-    var clickListener: ((Recipe, FragmentNavigator.Extras?) -> Unit)? = null
+    var deleteListener: ((RecipeEntity) -> Unit)? = null
+    var editListener: ((RecipeEntity, FragmentNavigator.Extras) -> Unit)? = null
+    var clickListener: ((RecipeEntity, FragmentNavigator.Extras?) -> Unit)? = null
 
     var isSelectionEnabled = false
-    private val selection = mutableListOf<Recipe>()
+    private val selection = mutableListOf<RecipeEntity>()
 
     init {
         setHasStableIds(true)
@@ -58,9 +58,9 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
             binding.name.text = recipe.name
             binding.category.text = when (recipe.type) {
-                Recipe.Type.MEAL -> binding.context.getString(R.string.meal)
-                Recipe.Type.DESSERT -> binding.context.getString(R.string.dessert)
-                Recipe.Type.OTHER -> binding.context.getString(R.string.other)
+                RecipeEntity.Type.MEAL -> binding.context.getString(R.string.meal)
+                RecipeEntity.Type.DESSERT -> binding.context.getString(R.string.dessert)
+                RecipeEntity.Type.OTHER -> binding.context.getString(R.string.other)
             }
 
             if (!recipe.imageURL.isNullOrEmpty() && recipe.imageURL != "null") {
@@ -237,12 +237,12 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
     companion object {
 
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Recipe>() {
-            override fun areItemsTheSame(oldItem: Recipe, newItem: Recipe): Boolean =
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<RecipeEntity>() {
+            override fun areItemsTheSame(oldItem: RecipeEntity, newItem: RecipeEntity): Boolean =
                 oldItem.id == newItem.id
 
 
-            override fun areContentsTheSame(oldItem: Recipe, newItem: Recipe): Boolean =
+            override fun areContentsTheSame(oldItem: RecipeEntity, newItem: RecipeEntity): Boolean =
                 oldItem == newItem
 
         }

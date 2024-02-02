@@ -1,14 +1,13 @@
 package zelgius.com.myrecipes.adapters
 
+import TextDrawable
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
-import com.amulyakhare.textdrawable.TextDrawable
 import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableItemState
 import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableItemViewHolder
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
@@ -18,12 +17,11 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.databinding.AdapterIngredientBinding
 import zelgius.com.myrecipes.databinding.AdapterStepBinding
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.StepEntity
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.ViewUtils
 import zelgius.com.myrecipes.utils.context
-import zelgius.com.myrecipes.utils.dpToPx
 
 
 class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) :
@@ -94,7 +92,7 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         this.layoutManager = recyclerView.layoutManager as LinearLayoutManager
     }
 
-    class StepItem(adapterId: Long, val item: Step?) : DataItem(adapterId) {
+    class StepItem(adapterId: Long, val item: StepEntity?) : DataItem(adapterId) {
         override val isSectionHeader: Boolean
             get() = false
     }
@@ -160,17 +158,7 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
 
             if (item != null) {
                 binding.stepImage.setImageDrawable(
-                    TextDrawable.builder()
-                        .beginConfig()
-                        .fontSize(binding.context.dpToPx(20f).toInt())
-                        .width(binding.context.dpToPx(36f).toInt())
-                        .height(binding.context.dpToPx(36f).toInt())
-                        .bold()
-                        .endConfig()
-                        .buildRound(
-                            "${item.order}",
-                            ContextCompat.getColor(binding.context, R.color.md_cyan_A700)
-                        )
+                    TextDrawable(binding.context.resources, "${item.order}")
                 )
             }
 
@@ -226,17 +214,7 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
 
 
             binding.stepImage.setImageDrawable(
-                TextDrawable.builder()
-                    .beginConfig()
-                    .fontSize(binding.context.dpToPx(20f).toInt())
-                    .width(binding.context.dpToPx(36f).toInt())
-                    .height(binding.context.dpToPx(36f).toInt())
-                    .bold()
-                    .endConfig()
-                    .buildRound(
-                        "${item.order}",
-                        ContextCompat.getColor(binding.context, R.color.md_cyan_A700)
-                    )
+                TextDrawable(binding.context.resources, "${item.order}")
             )
 
             if (item.optional) {

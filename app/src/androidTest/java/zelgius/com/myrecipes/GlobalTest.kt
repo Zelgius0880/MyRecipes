@@ -10,9 +10,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.repository.OneTimeObserver
-import zelgius.com.myrecipes.repository.RecipeRepository
+import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.protobuff.RecipeProto
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -63,7 +63,7 @@ class GlobalTest {
         viewModel.createDummySample()
         val protoBuff = viewModel.currentRecipe.toProtoBuff().toByteArray()
 
-        val recipe = Recipe(RecipeProto.Recipe.parseFrom(protoBuff))
+        val recipe = RecipeEntity(RecipeProto.Recipe.parseFrom(protoBuff))
         assertEquals(viewModel.currentRecipe, recipe)
 
         viewModel.currentRecipe.steps.forEach {
@@ -81,7 +81,7 @@ class GlobalTest {
         val viewModel = RecipeViewModel(context)
         val recipeRepository = RecipeRepository(context)
 
-        var list = listOf<Recipe>()
+        var list = listOf<RecipeEntity>()
         var latch = CountDownLatch(1)
 
         recipeRepository.get().observeOnce {

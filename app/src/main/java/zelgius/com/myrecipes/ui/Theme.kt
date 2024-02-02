@@ -1,8 +1,12 @@
-package zelgius.com.myrecipes.compose
+package zelgius.com.myrecipes.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import zelgius.com.myrecipes.ui.license.DrawLicense
 
 val lightThemeColors = lightColors(
     primary = Color(0xFF1976d2),
@@ -32,3 +36,17 @@ val darkThemeColors = darkColors(
     onSurface = Color.White,
     onError = Color.Black
 )
+
+
+@Composable
+fun AppTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colors = if (isSystemInDarkTheme()) {
+            darkThemeColors
+        } else {
+            lightThemeColors
+        }
+    ) {
+        content()
+    }
+}

@@ -10,9 +10,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.compose.DrawLicense
-import zelgius.com.myrecipes.compose.darkThemeColors
-import zelgius.com.myrecipes.compose.lightThemeColors
+import zelgius.com.myrecipes.ui.license.DrawLicense
+import zelgius.com.myrecipes.ui.darkThemeColors
+import zelgius.com.myrecipes.ui.lightThemeColors
 
 /**
  * A simple [Fragment] subclass.

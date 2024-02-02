@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.entities
+package zelgius.com.myrecipes.data.entities
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -22,8 +22,8 @@ import java.io.File
  * @property image File?                                       temporary file for containing the image when loaded from the device. Before being sent to Firestore
  * @constructor  Create a new recipe with no image file, no ingredients and no steps
  */
-@Entity
-data class Recipe(
+@Entity(tableName = "Recipe")
+data class RecipeEntity(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var name: String,
     @ColumnInfo(name = "image_url") var imageURL: String?,
@@ -38,7 +38,7 @@ data class Recipe(
     constructor(type: Type) : this(null, "", "", type)
 
     @Ignore
-    val steps: MutableList<Step> = mutableListOf()
+    val steps: MutableList<StepEntity> = mutableListOf()
 
     @Ignore
     val ingredients: MutableList<IngredientForRecipe> = mutableListOf()
@@ -56,8 +56,8 @@ data class Recipe(
         parcel.readString(),
         Type.valueOf(parcel.readString()!!)
     ) {
-        parcel.readTypedList(ingredients, IngredientForRecipe.CREATOR)
-        parcel.readTypedList(steps, Step.CREATOR)
+        parcel.readTypedList(ingredients, IngredientForRecipe)
+        parcel.readTypedList(steps, StepEntity)
     }
 
     enum class Type {
@@ -80,12 +80,12 @@ data class Recipe(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<Recipe> {
-        override fun createFromParcel(parcel: Parcel): Recipe {
-            return Recipe(parcel)
+    companion object CREATOR : Parcelable.Creator<RecipeEntity> {
+        override fun createFromParcel(parcel: Parcel): RecipeEntity {
+            return RecipeEntity(parcel)
         }
 
-        override fun newArray(size: Int): Array<Recipe?> {
+        override fun newArray(size: Int): Array<RecipeEntity?> {
             return arrayOfNulls(size)
         }
     }
@@ -99,7 +99,7 @@ data class Recipe(
         Type.valueOf(recipe.type.name)
     ) {
         for(i in 0 until recipe.stepsCount)
-            steps.add(Step(recipe.getSteps(i)))
+            steps.add(StepEntity(recipe.getSteps(i)))
 
         for(i in 0 until recipe.ingredientsCount)
             ingredients.add(IngredientForRecipe(recipe.getIngredients(i)))

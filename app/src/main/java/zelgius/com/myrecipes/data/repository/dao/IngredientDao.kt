@@ -1,19 +1,19 @@
-package zelgius.com.myrecipes.repository.dao
+package zelgius.com.myrecipes.data.repository.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.RecipeIngredient
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeIngredient
 
 @Dao
 interface IngredientDao {
 
     @Insert
-    suspend fun insert(ingredient: Ingredient): Long
+    suspend fun insert(ingredient: IngredientEntity): Long
 
     @Insert
     suspend fun insert(join: RecipeIngredient): Long
@@ -22,7 +22,7 @@ interface IngredientDao {
     suspend fun update(join: RecipeIngredient): Int
 
     @Query("SELECT * FROM ingredient ORDER BY name")
-    fun get(): LiveData<List<Ingredient>>
+    fun get(): LiveData<List<IngredientEntity>>
 
     @Query("SELECT * FROM IngredientForRecipe WHERE refRecipe = :recipeId ORDER BY sortOrder")
     suspend fun getForRecipe(recipeId: Long): List<IngredientForRecipe>
@@ -31,7 +31,7 @@ interface IngredientDao {
     suspend fun getId(ingredientId: Long, recipeId: Long): Long?
 
     @Query("SELECT * FROM Ingredient WHERE name = :name LIMIT 1")
-    suspend fun get(name: String): Ingredient?
+    suspend fun get(name: String): IngredientEntity?
 
     @Query("DELETE FROM RecipeIngredient WHERE ref_ingredient = :ingredientId AND ref_recipe = :recipeId")
     suspend fun deleteJoin(ingredientId: Long, recipeId: Long): Int

@@ -21,9 +21,9 @@ import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.compose.EmailText
-import zelgius.com.myrecipes.compose.darkThemeColors
-import zelgius.com.myrecipes.compose.lightThemeColors
+import zelgius.com.myrecipes.ui.license.EmailText
+import zelgius.com.myrecipes.ui.darkThemeColors
+import zelgius.com.myrecipes.ui.lightThemeColors
 
 class IntroDialog : DialogFragment() {
 

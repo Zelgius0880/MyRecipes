@@ -1,12 +1,12 @@
-package zelgius.com.myrecipes.repository
+package zelgius.com.myrecipes.data.repository
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.entities.RecipeIngredient
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.RecipeIngredient
 
 
 class IngredientRepository(
@@ -30,12 +30,12 @@ class IngredientRepository(
      * @param recipe Recipe
      * @return Long the id of the inserted item
      */
-    suspend fun insert(item: IngredientForRecipe, recipe: Recipe): Long =
+    suspend fun insert(item: IngredientForRecipe, recipe: RecipeEntity): Long =
         withContext(Dispatchers.Default) {
             // Heavy work
 
             val id = if (item.id == null)
-                dao.insert(Ingredient(null, item.name, item.imageUrl))
+                dao.insert(IngredientEntity(null, item.name, item.imageUrl))
             else item.id!!
 
             dao.insert(
@@ -63,7 +63,7 @@ class IngredientRepository(
         }
 
 
-    suspend fun delete(item: Recipe): Int =
+    suspend fun delete(item: RecipeEntity): Int =
         withContext(Dispatchers.Default) {
             dao.deleteFromRecipe(item.id!!)
         }
@@ -114,7 +114,7 @@ class IngredientRepository(
      * @param ingredients IngredientForRecipe   the ingredients to keep
      * @return Int                              the number of rows affected
      */
-    suspend fun deleteAllButThem(recipe: Recipe, ingredients: List<IngredientForRecipe>): Int =
+    suspend fun deleteAllButThem(recipe: RecipeEntity, ingredients: List<IngredientForRecipe>): Int =
         withContext(Dispatchers.Default) {
             dao.deleteJoin(recipe.id!!, *ingredients.map { it.id!! }.toLongArray())
         }

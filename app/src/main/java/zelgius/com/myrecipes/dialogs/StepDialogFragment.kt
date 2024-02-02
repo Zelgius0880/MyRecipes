@@ -10,7 +10,7 @@ import androidx.fragment.app.DialogFragment
 import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.databinding.DialogFragmentStepBinding
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.StepEntity
 
 
 /**
@@ -26,7 +26,7 @@ class StepDialogFragment : DialogFragment() {
     private val binding: DialogFragmentStepBinding
         get() = _binding!!
 
-    var step = Step(null, "", Int.MAX_VALUE, false, null)
+    var step = StepEntity(null, "", Int.MAX_VALUE, false, null)
         .apply { new = true }
     var listener: NoticeDialogListener? = null
 
@@ -35,7 +35,7 @@ class StepDialogFragment : DialogFragment() {
             this.listener = listener
         }
 
-        fun newInstance(step: Step, listener: NoticeDialogListener? = null) =
+        fun newInstance(step: StepEntity, listener: NoticeDialogListener? = null) =
             StepDialogFragment().apply {
                 this.listener = listener
 

@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.entities
+package zelgius.com.myrecipes.data.entities
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -17,15 +17,16 @@ import zelgius.com.protobuff.RecipeProto
  * @constructor     Create from a parcel
  */
 @Entity(
+    tableName = "Step",
     foreignKeys = [
         ForeignKey(
-            entity = Recipe::class,
+            entity = RecipeEntity::class,
             childColumns = ["ref_recipe"], parentColumns = ["id"]
         )
     ],
     indices = [Index(value = ["ref_recipe"])]
 )
-data class Step(
+data class StepEntity(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var text: String,
     var order: Int = Int.MAX_VALUE,
@@ -66,12 +67,12 @@ data class Step(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<Step> {
-        override fun createFromParcel(parcel: Parcel): Step {
-            return Step(parcel)
+    companion object CREATOR : Parcelable.Creator<StepEntity> {
+        override fun createFromParcel(parcel: Parcel): StepEntity {
+            return StepEntity(parcel)
         }
 
-        override fun newArray(size: Int): Array<Step?> {
+        override fun newArray(size: Int): Array<StepEntity?> {
             return arrayOfNulls(size)
         }
     }

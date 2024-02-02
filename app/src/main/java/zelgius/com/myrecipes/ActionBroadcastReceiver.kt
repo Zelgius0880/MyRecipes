@@ -9,8 +9,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.os.bundleOf
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.StepEntity
 import zelgius.com.myrecipes.utils.UiUtils
 
 class ActionBroadcastReceiver : BroadcastReceiver() {
@@ -29,17 +29,17 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
             intentAction.putExtra("TITLE", title)
             val o = list[index]
             val text = when (o) {
-                is Step -> o.text
+                is StepEntity -> o.text
                 is IngredientForRecipe -> IngredientForRecipe.text(context, o)
                 else -> error("Should not be there")
             }.let {
-                if(o is Step && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
+                if(o is StepEntity && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
                     "($it)"
                 else it
             }
 
             val drawable = when (o) {
-                is Step -> UiUtils.getDrawable(
+                is StepEntity -> UiUtils.getDrawable(
                     context,
                     "${o.order}"
                 )

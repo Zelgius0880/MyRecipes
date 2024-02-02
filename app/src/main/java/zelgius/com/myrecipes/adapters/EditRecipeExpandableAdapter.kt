@@ -1,14 +1,13 @@
 package zelgius.com.myrecipes.adapters
 
+import TextDrawable
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
-import com.amulyakhare.textdrawable.TextDrawable
 import com.google.android.material.card.MaterialCardView
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager
@@ -22,9 +21,9 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.databinding.AdapterIngredientBinding
 import zelgius.com.myrecipes.databinding.AdapterStepBinding
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.StepEntity
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.ViewUtils
 import zelgius.com.myrecipes.utils.context
@@ -51,7 +50,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
             createProvider()
         }
 
-    var draggingStep: Step? = null
+    var draggingStep: StepEntity? = null
 
     init {
         createProvider()
@@ -95,7 +94,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         this.layoutManager = recyclerView.layoutManager as LinearLayoutManager
     }
 
-    class StepItem(adapterId: Long, val item: Step?) : DataItem(adapterId) {
+    class StepItem(adapterId: Long, val item: StepEntity?) : DataItem(adapterId) {
         override val isSectionHeader: Boolean
             get() = false
     }
@@ -106,10 +105,10 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
     }
 
 
-    var editStepListener: ((Step) -> Unit)? = null
+    var editStepListener: ((StepEntity) -> Unit)? = null
     var editIngredientListener: ((IngredientForRecipe) -> Unit)? = null
 
-    fun complete(recipe: Recipe) {
+    fun complete(recipe: RecipeEntity) {
         for (i in 0 until provider.groupCount) {
             provider.getGroupItem(i).item?.let {
                 it.order = i
@@ -243,16 +242,8 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
 
             if (item != null) {
                 binding.stepImage.setImageDrawable(
-                    TextDrawable.builder()
-                        .beginConfig()
-                        .fontSize(binding.context.dpToPx(20f).toInt())
-                        .width(binding.context.dpToPx(36f).toInt())
-                        .height(binding.context.dpToPx(36f).toInt())
-                        .bold()
-                        .endConfig()
-                        .buildRound(
-                            "${item.order}",
-                            ContextCompat.getColor(binding.context, R.color.md_cyan_A700)
+                    TextDrawable(binding.context.resources,
+                        "${item.order}",
                         )
                 )
             }
@@ -312,17 +303,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
             )
 
             binding.stepImage.setImageDrawable(
-                TextDrawable.builder()
-                    .beginConfig()
-                    .fontSize(binding.context.dpToPx(20f).toInt())
-                    .width(binding.context.dpToPx(36f).toInt())
-                    .height(binding.context.dpToPx(36f).toInt())
-                    .bold()
-                    .endConfig()
-                    .buildRound(
-                        "${item.order}",
-                        ContextCompat.getColor(binding.context, R.color.md_cyan_A700)
-                    )
+                TextDrawable(binding.context.resources, "${item.order}")
             )
 
             binding.root.setOnClickListener { editStepListener?.invoke(item) }
@@ -442,7 +423,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         }
     }
 
-    fun add(item: Step) {
+    fun add(item: StepEntity) {
         item.order = provider.groupCount
         provider.addGroupItem(StepItem(provider.groupCount.toLong(), item))
         expandableItemManager?.notifyGroupItemInserted(item.order)
@@ -464,7 +445,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         }
     }
 
-    fun update(item: Step) {
+    fun update(item: StepEntity) {
         //item.order = provider.groupCount
         val indexOf = provider.list.indexOfLast { item == it.first.item }
         expandableItemManager?.notifyGroupItemChanged(indexOf)
@@ -485,7 +466,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         }
     }
 
-    fun remove(item: Step) {
+    fun remove(item: StepEntity) {
         val i = provider.list.indexOfLast { item == it.first.item }
         if (i >= 0) {
             provider.list[i].second.forEachIndexed { j, v ->

@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Rule
+import zelgius.com.myrecipes.data.repository.AppDatabase
 import java.io.IOException
 
 

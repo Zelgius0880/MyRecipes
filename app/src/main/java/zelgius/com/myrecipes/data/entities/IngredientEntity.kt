@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.entities
+package zelgius.com.myrecipes.data.entities
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -10,12 +10,12 @@ import zelgius.com.myrecipes.R
 @Entity(
     foreignKeys = [
         ForeignKey(
-            entity = Ingredient::class,
+            entity = IngredientEntity::class,
             parentColumns = ["id"],
             childColumns = ["ref_ingredient"]
         ),
-        ForeignKey(entity = Recipe::class, parentColumns = ["id"], childColumns = ["ref_recipe"]),
-        ForeignKey(entity = Step::class, parentColumns = ["id"], childColumns = ["ref_step"])
+        ForeignKey(entity = RecipeEntity::class, parentColumns = ["id"], childColumns = ["ref_recipe"]),
+        ForeignKey(entity = StepEntity::class, parentColumns = ["id"], childColumns = ["ref_step"])
     ],
     indices = [
         Index(value = ["ref_ingredient"]),
@@ -26,7 +26,7 @@ import zelgius.com.myrecipes.R
 data class RecipeIngredient(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var quantity: Double,
-    var unit: Ingredient.Unit,
+    var unit: IngredientEntity.Unit,
     var optional: Boolean?,
     @ColumnInfo(name = "sort_order") var sortOrder: Int,
     @ColumnInfo(name = "ref_ingredient") var refIngredient: Long?,
@@ -34,8 +34,8 @@ data class RecipeIngredient(
     @ColumnInfo(name = "ref_step") var refStep: Long?
 )
 
-@Entity
-data class Ingredient(
+@Entity(tableName = "Ingredient")
+data class IngredientEntity(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var name: String,
     @ColumnInfo(name = "image_url") var imageURL: String?
@@ -77,12 +77,12 @@ data class Ingredient(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<Ingredient> {
-        override fun createFromParcel(parcel: Parcel): Ingredient {
-            return Ingredient(parcel)
+    companion object CREATOR : Parcelable.Creator<IngredientEntity> {
+        override fun createFromParcel(parcel: Parcel): IngredientEntity {
+            return IngredientEntity(parcel)
         }
 
-        override fun newArray(size: Int): Array<Ingredient?> {
+        override fun newArray(size: Int): Array<IngredientEntity?> {
             return arrayOfNulls(size)
         }
     }

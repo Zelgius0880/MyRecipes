@@ -1,27 +1,27 @@
-package zelgius.com.myrecipes.repository.dao
+package zelgius.com.myrecipes.data.repository.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.StepEntity
 
 @Dao
 interface StepDao {
 
     @Insert
-    suspend fun insert(item: Step):Long
+    suspend fun insert(item: StepEntity):Long
 
     @Update
-    suspend fun update(vararg item: Step): Int
+    suspend fun update(vararg item: StepEntity): Int
 
     @Delete
-    suspend fun delete(vararg item: Step): Int
+    suspend fun delete(vararg item: StepEntity): Int
 
 
     @Query("SELECT * FROM step WHERE :recipe = ref_recipe ORDER BY `order`")
-    fun get(recipe: Long): LiveData<List<Step>>
+    fun get(recipe: Long): LiveData<List<StepEntity>>
 
     @Query("SELECT * FROM step WHERE :recipe = ref_recipe ORDER BY `order`")
-    suspend fun blockingGet(recipe: Long): List<Step>
+    suspend fun blockingGet(recipe: Long): List<StepEntity>
 
     /**
      * Remove all RecipeIngredient for the given recipe where ref_ingredient are not in ids
