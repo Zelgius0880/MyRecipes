@@ -18,7 +18,7 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.RecipePagedAdapter
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import java.io.File
 
 abstract class AbstractRecipeListFragment : Fragment() {
@@ -124,7 +124,7 @@ abstract class AbstractRecipeListFragment : Fragment() {
     }
 
 
-    private fun undoSnackBar(recipe: Recipe, text: String) {
+    private fun undoSnackBar(recipe: RecipeEntity, text: String) {
         Snackbar.make(requireView(), text, Snackbar.LENGTH_LONG)
             .setAction(R.string.undo) {
                 recipe.id = null

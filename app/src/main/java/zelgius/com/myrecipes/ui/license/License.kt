@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.compose
+package zelgius.com.myrecipes.ui.license
 
 import android.content.Intent
 import androidx.compose.foundation.*
@@ -27,6 +27,8 @@ import androidx.core.net.toUri
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.ui.darkThemeColors
+import zelgius.com.myrecipes.ui.lightThemeColors
 import java.util.*
 
 @Composable

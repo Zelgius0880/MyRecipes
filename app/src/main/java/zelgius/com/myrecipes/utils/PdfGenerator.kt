@@ -1,5 +1,6 @@
 package zelgius.com.myrecipes.utils
 
+import TextDrawable
 import android.content.Context
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
@@ -13,14 +14,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withTranslation
 import androidx.core.net.toUri
-import com.amulyakhare.textdrawable.TextDrawable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.glxn.qrgen.android.QRCode
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.StepEntity
 import zelgius.com.myrecipes.utils.Utils.drawText
 import zelgius.com.myrecipes.utils.Utils.scaleCenterCrop
 import zelgius.com.myrecipes.utils.Utils.zipBytes
@@ -54,7 +54,7 @@ class PdfGenerator(val context: Context) {
     private val paint = Paint()
 
     private val alpha = 0.6f
-    suspend fun createPdf(recipe: Recipe, uri: Uri) =
+    suspend fun createPdf(recipe: RecipeEntity, uri: Uri) =
         withContext(Dispatchers.IO) {
             drawRecipe(recipe)
             // write the document content
@@ -65,7 +65,7 @@ class PdfGenerator(val context: Context) {
             uri
         }
 
-    private fun drawRecipe(recipe: Recipe) {
+    private fun drawRecipe(recipe: RecipeEntity) {
         pageNumber = 1
         pageInfo = PdfDocument.PageInfo.Builder(A4_WIDTH, A4_HEIGHT, pageNumber).create()
         document = PdfDocument()
@@ -128,7 +128,7 @@ class PdfGenerator(val context: Context) {
         document.finishPage(page)
     }
 
-    suspend fun createPdf(recipes: List<Recipe>, uri: Uri) =
+    suspend fun createPdf(recipes: List<RecipeEntity>, uri: Uri) =
         withContext(Dispatchers.IO) {
             val zipOut = ZipOutputStream(context.contentResolver.openOutputStream(uri)!!)
             recipes.forEach {
@@ -149,7 +149,7 @@ class PdfGenerator(val context: Context) {
      * @param recipe    Recipe the targeted recipe
      * @return Int      Return the line position reaches after the title
      */
-    private fun drawTitle(recipe: Recipe): Int {
+    private fun drawTitle(recipe: RecipeEntity): Int {
 
         val bmp = scaleCenterCrop(
             recipe.imageURL?.toUri()?.let {
@@ -295,19 +295,11 @@ class PdfGenerator(val context: Context) {
     }
 
 
-    private fun drawStep(step: Step, list: List<IngredientForRecipe>): Int {
+    private fun drawStep(step: StepEntity, list: List<IngredientForRecipe>): Int {
         val width = 200
         val bmp = scaleCenterCrop(
-            TextDrawable.builder()
-                .beginConfig()
-                .fontSize(75)
-                .width(width)
-                .height(width)
-                .bold()
-                .endConfig()
-                .buildRound(
-                    "${step.order}",
-                    ContextCompat.getColor(context, R.color.md_cyan_A700)
+            TextDrawable(context.resources,
+                "${step.order}",
                 ).toBitmap(width, width),
             width,
             width
@@ -473,7 +465,7 @@ class PdfGenerator(val context: Context) {
     }
 
 
-    private fun drawQrCode(recipe: Recipe): Int {
+    private fun drawQrCode(recipe: RecipeEntity): Int {
         recipe.imageURL = null
         val bytes = zipBytes("", recipe.toProtoBuff().toByteArray())
         val bmp = QRCode.from(Base64.encodeToString(bytes, Base64.NO_PADDING))

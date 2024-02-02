@@ -5,13 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.entities.Ingredient
+import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.utils.UiUtils
 
-class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingredient>) :
-    ArrayAdapter<Ingredient>(context, R.layout.adapter_autocomplete_ingredient), Filterable {
+class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<IngredientEntity>) :
+    ArrayAdapter<IngredientEntity>(context, R.layout.adapter_autocomplete_ingredient), Filterable {
 
-    private var resultList: List<Ingredient> = ingredients.subList(
+    private var resultList: List<IngredientEntity> = ingredients.subList(
         0,
         5.coerceAtMost(ingredients.size)
     )
@@ -20,7 +20,7 @@ class IngredientAutoCompleteAdapter(context: Context, val ingredients: List<Ingr
         return resultList.size
     }
 
-    override fun getItem(index: Int): Ingredient? {
+    override fun getItem(index: Int): IngredientEntity? {
         return resultList.getOrNull(index)
     }
 

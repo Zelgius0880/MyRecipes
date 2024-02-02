@@ -5,6 +5,7 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Test
+import zelgius.com.myrecipes.data.repository.AppDatabase
 
 const val TEST_DB_NAME = "test_db.db"
 

@@ -34,7 +34,7 @@ import zelgius.com.myrecipes.adapters.GroupDividerDecoration
 import zelgius.com.myrecipes.databinding.FragmentRecipeEditBinding
 import zelgius.com.myrecipes.dialogs.IngredientDialogFragment
 import zelgius.com.myrecipes.dialogs.StepDialogFragment
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.utils.UiUtils
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -129,7 +129,7 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
         navController = findNavController()
         binding.apply {
 
-            val recipe = arguments?.getParcelable("RECIPE") ?: Recipe(viewModel.selectedType)
+            val recipe = arguments?.getParcelable("RECIPE") ?: RecipeEntity(viewModel.selectedType)
             viewModel.selectedRecipe.value = recipe
 
             if (arguments != null)
@@ -360,7 +360,7 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
             }
 
             R.id.save -> {
-                val recipe: Recipe = viewModel.currentRecipe
+                val recipe: RecipeEntity = viewModel.currentRecipe
                 headerWrapper.complete(recipe)
                 recipe.imageURL = viewModel.selectedImageUrl.value.toString()
                 adapter.complete(recipe)
@@ -400,19 +400,19 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
                     duration = 100L
                     start()
                     addListener(object : Animator.AnimatorListener {
-                        override fun onAnimationRepeat(p0: Animator?) {
+                        override fun onAnimationRepeat(p0: Animator) {
 
                         }
 
-                        override fun onAnimationEnd(p0: Animator?) {
+                        override fun onAnimationEnd(p0: Animator) {
                             rootLayout.visibility = View.INVISIBLE
                             navController.popBackStack()
                         }
 
-                        override fun onAnimationCancel(p0: Animator?) {
+                        override fun onAnimationCancel(p0: Animator) {
                         }
 
-                        override fun onAnimationStart(p0: Animator?) {
+                        override fun onAnimationStart(p0: Animator) {
                         }
 
                     })

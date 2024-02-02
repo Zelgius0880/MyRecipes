@@ -11,7 +11,7 @@ import com.squareup.picasso.Picasso
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.databinding.LayoutHeaderBinding
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.utils.context
 
 
@@ -22,7 +22,7 @@ class HeaderAdapterWrapper(
 ) :
     AbstractHeaderFooterWrapperAdapter<HeaderAdapterWrapper.HeaderViewHolder, RecyclerView.ViewHolder>() {
 
-    var recipe: Recipe = viewModel.currentRecipe
+    var recipe: RecipeEntity = viewModel.currentRecipe
     var viewHolder: HeaderViewHolder? = null
 
     override fun onCreateHeaderItemViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder =
@@ -49,9 +49,9 @@ class HeaderAdapterWrapper(
         this.viewHolder = viewHolder
         val binding = viewHolder.binding
         val category = when (recipe.type) {
-            Recipe.Type.MEAL -> binding.context.getString(R.string.meal)
-            Recipe.Type.DESSERT -> binding.context.getString(R.string.dessert)
-            Recipe.Type.OTHER -> binding.context.getString(R.string.other)
+            RecipeEntity.Type.MEAL -> binding.context.getString(R.string.meal)
+            RecipeEntity.Type.DESSERT -> binding.context.getString(R.string.dessert)
+            RecipeEntity.Type.OTHER -> binding.context.getString(R.string.other)
         }
 
 

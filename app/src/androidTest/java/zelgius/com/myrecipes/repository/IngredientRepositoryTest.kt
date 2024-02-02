@@ -6,17 +6,18 @@ import org.junit.Test
 
 import org.junit.Assert.*
 import org.junit.runner.RunWith
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.repository.IngredientRepository
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class IngredientRepositoryTest: AbstractDatabaseTest() {
 
     private val ingredientDao by lazy { db.ingredientDao }
     private val recipeDao by lazy { db.recipeDao }
-    private val defaultItem = IngredientForRecipe(null, 2.0, Ingredient.Unit.KILOGRAMME, "test", "test", 0, null,  null)
-    private val recipe = Recipe(null, "Recipe for testing", "image", Recipe.Type.OTHER)
+    private val defaultItem = IngredientForRecipe(null, 2.0, IngredientEntity.Unit.KILOGRAMME, "test", "test", 0, null,  null)
+    private val recipe = RecipeEntity(null, "Recipe for testing", "image", RecipeEntity.Type.OTHER)
     private val repo by lazy { IngredientRepository(context) }
 
 

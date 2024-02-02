@@ -19,8 +19,8 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.IngredientAutoCompleteAdapter
 import zelgius.com.myrecipes.databinding.DialogFragmentIngredientBinding
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.enterReveal
 import zelgius.com.myrecipes.utils.hideKeyboard
@@ -52,7 +52,7 @@ class IngredientDialogFragment : DialogFragment() {
 
     private val ctx by lazy { requireContext() }
     var ingredient: IngredientForRecipe =
-        IngredientForRecipe(null, -1.0, Ingredient.Unit.UNIT, "", null, 0, null, null)
+        IngredientForRecipe(null, -1.0, IngredientEntity.Unit.UNIT, "", null, 0, null, null)
             .apply { new = true }
     private var new = false
     var listener: NoticeDialogListener? = null
@@ -71,7 +71,7 @@ class IngredientDialogFragment : DialogFragment() {
                 this.ingredient = ingredient
             }
 
-        var lastSelectedUnit = Ingredient.Unit.GRAMME
+        var lastSelectedUnit = IngredientEntity.Unit.GRAMME
     }
 
     private val addAnimation by lazy {
@@ -200,22 +200,22 @@ class IngredientDialogFragment : DialogFragment() {
                     ) {
                         when (binding.spinner.selectedItem.toString()) {
                             getString(R.string.gramme_select) -> ingredient.unit =
-                                Ingredient.Unit.GRAMME
+                                IngredientEntity.Unit.GRAMME
                             getString(R.string.kilogramme_select) -> ingredient.unit =
-                                Ingredient.Unit.KILOGRAMME
+                                IngredientEntity.Unit.KILOGRAMME
                             getString(R.string.milliliter_select) -> ingredient.unit =
-                                Ingredient.Unit.MILLILITER
+                                IngredientEntity.Unit.MILLILITER
                             getString(R.string.liter_select) -> ingredient.unit =
-                                Ingredient.Unit.LITER
+                                IngredientEntity.Unit.LITER
                             getString(R.string.unit_select) -> ingredient.unit =
-                                Ingredient.Unit.UNIT
+                                IngredientEntity.Unit.UNIT
                             getString(R.string.tablespoon_select) -> ingredient.unit =
-                                Ingredient.Unit.TABLESPOON
+                                IngredientEntity.Unit.TABLESPOON
                             getString(R.string.teaspoon_select) -> ingredient.unit =
-                                Ingredient.Unit.TEASPOON
-                            getString(R.string.cup_select) -> ingredient.unit = Ingredient.Unit.CUP
+                                IngredientEntity.Unit.TEASPOON
+                            getString(R.string.cup_select) -> ingredient.unit = IngredientEntity.Unit.CUP
                             getString(R.string.pinch_select) -> ingredient.unit =
-                                Ingredient.Unit.PINCH
+                                IngredientEntity.Unit.PINCH
                         }
 
                         lastSelectedUnit = ingredient.unit
@@ -248,15 +248,15 @@ class IngredientDialogFragment : DialogFragment() {
 
             binding.spinner.setSelection(units.indexOfFirst { s ->
                 when (s) {
-                    getString(R.string.gramme_select) -> ingredient.unit == Ingredient.Unit.GRAMME
-                    getString(R.string.kilogramme_select) -> ingredient.unit == Ingredient.Unit.KILOGRAMME
-                    getString(R.string.milliliter_select) -> ingredient.unit == Ingredient.Unit.MILLILITER
-                    getString(R.string.liter_select) -> ingredient.unit == Ingredient.Unit.LITER
-                    getString(R.string.unit_select) -> ingredient.unit == Ingredient.Unit.UNIT
-                    getString(R.string.tablespoon_select) -> ingredient.unit == Ingredient.Unit.TABLESPOON
-                    getString(R.string.teaspoon_select) -> ingredient.unit == Ingredient.Unit.TEASPOON
-                    getString(R.string.cup_select) -> ingredient.unit == Ingredient.Unit.CUP
-                    getString(R.string.pinch_select) -> ingredient.unit == Ingredient.Unit.PINCH
+                    getString(R.string.gramme_select) -> ingredient.unit == IngredientEntity.Unit.GRAMME
+                    getString(R.string.kilogramme_select) -> ingredient.unit == IngredientEntity.Unit.KILOGRAMME
+                    getString(R.string.milliliter_select) -> ingredient.unit == IngredientEntity.Unit.MILLILITER
+                    getString(R.string.liter_select) -> ingredient.unit == IngredientEntity.Unit.LITER
+                    getString(R.string.unit_select) -> ingredient.unit == IngredientEntity.Unit.UNIT
+                    getString(R.string.tablespoon_select) -> ingredient.unit == IngredientEntity.Unit.TABLESPOON
+                    getString(R.string.teaspoon_select) -> ingredient.unit == IngredientEntity.Unit.TEASPOON
+                    getString(R.string.cup_select) -> ingredient.unit == IngredientEntity.Unit.CUP
+                    getString(R.string.pinch_select) -> ingredient.unit == IngredientEntity.Unit.PINCH
                     else -> false
                 }
             })

@@ -17,10 +17,10 @@ import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.junit.MockitoRule
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.StepEntity
 import zelgius.com.myrecipes.repository.observeOnce
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -89,7 +89,7 @@ class RecipeViewModelTest {
         assertTrue(latch.count == 0L)
     }
 
-    private fun compareRecipe(o1: Recipe?, o2: Recipe) {
+    private fun compareRecipe(o1: RecipeEntity?, o2: RecipeEntity) {
         assertNotNull(o1!!)
         assertEquals(o1, o2)
 
@@ -254,7 +254,7 @@ class RecipeViewModelTest {
     @Test
     fun saveFromQrCode() {
 
-        var recipe = Recipe()
+        var recipe = RecipeEntity()
         wait(viewModel.saveFromQrCode(BASE_64_RECIPE)){
             assertNotNull(it)
 
@@ -284,9 +284,9 @@ class RecipeViewModelTest {
 }
 
 @TestOnly
-fun RecipeViewModel.createDummySample(): Recipe {
+fun RecipeViewModel.createDummySample(): RecipeEntity {
 
-    currentRecipe = Recipe().apply {
+    currentRecipe = RecipeEntity().apply {
         name = "Recipe For Testing"
         imageURL =
             "https://img.huffingtonpost.com/asset/5c92b00222000033001b332d.jpeg?ops=scalefit_630_noupscale"
@@ -294,7 +294,7 @@ fun RecipeViewModel.createDummySample(): Recipe {
             IngredientForRecipe(
                 null,
                 2.0,
-                Ingredient.Unit.UNIT,
+                IngredientEntity.Unit.UNIT,
                 "Eggs",
                 "drawable://egg",
                 1,
@@ -306,7 +306,7 @@ fun RecipeViewModel.createDummySample(): Recipe {
             IngredientForRecipe(
                 null,
                 500.0,
-                Ingredient.Unit.GRAMME,
+                IngredientEntity.Unit.GRAMME,
                 "Flour",
                 "drawable://flour",
                 2,
@@ -318,7 +318,7 @@ fun RecipeViewModel.createDummySample(): Recipe {
             IngredientForRecipe(
                 null,
                 200.0,
-                Ingredient.Unit.MILLILITER,
+                IngredientEntity.Unit.MILLILITER,
                 "Water",
                 "drawable://water",
                 3,
@@ -330,7 +330,7 @@ fun RecipeViewModel.createDummySample(): Recipe {
             IngredientForRecipe(
                 null,
                 2.33,
-                Ingredient.Unit.CUP,
+                IngredientEntity.Unit.CUP,
                 "Butter",
                 "drawable://butter",
                 4,
@@ -339,15 +339,15 @@ fun RecipeViewModel.createDummySample(): Recipe {
             )
         )
 
-        steps.add(Step(null, "Step 1", Int.MAX_VALUE, true, null).apply { order = 1 })
-        steps.add(Step(null, "Step 2", Int.MAX_VALUE, false, null).apply { order = 2 })
-        steps.add(Step(null, "Step 3", Int.MAX_VALUE, false, null).apply {
+        steps.add(StepEntity(null, "Step 1", Int.MAX_VALUE, true, null).apply { order = 1 })
+        steps.add(StepEntity(null, "Step 2", Int.MAX_VALUE, false, null).apply { order = 2 })
+        steps.add(StepEntity(null, "Step 3", Int.MAX_VALUE, false, null).apply {
             order = 3
             ingredients.add(
                 IngredientForRecipe(
                     null,
                     1.0,
-                    Ingredient.Unit.TEASPOON,
+                    IngredientEntity.Unit.TEASPOON,
                     "Salt",
                     "drawable://salt",
                     4,
@@ -362,7 +362,7 @@ fun RecipeViewModel.createDummySample(): Recipe {
                 IngredientForRecipe(
                     null,
                     1000.0,
-                    Ingredient.Unit.TABLESPOON,
+                    IngredientEntity.Unit.TABLESPOON,
                     "Sugar",
                     "drawable://sugar",
                     4,
@@ -377,7 +377,7 @@ fun RecipeViewModel.createDummySample(): Recipe {
                 IngredientForRecipe(
                     null,
                     1000.0,
-                    Ingredient.Unit.LITER,
+                    IngredientEntity.Unit.LITER,
                     "Milk",
                     "drawable://milk",
                     4,

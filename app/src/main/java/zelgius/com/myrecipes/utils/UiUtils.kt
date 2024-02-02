@@ -1,5 +1,6 @@
 package zelgius.com.myrecipes.utils
 
+import TextDrawable
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -13,14 +14,13 @@ import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import com.amulyakhare.textdrawable.TextDrawable
 import com.google.android.material.textfield.TextInputLayout
 import com.squareup.picasso.Picasso
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.entities.DefaultIngredients
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.DefaultIngredients
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -30,13 +30,17 @@ object UiUtils {
     fun getIngredientDrawable(imageView: ImageView, item: IngredientForRecipe) =
         getIngredientDrawable(
             imageView,
-            Ingredient(name = item.name, imageURL = item.imageUrl, id = item.id)
+            zelgius.com.myrecipes.data.entities.IngredientEntity(
+                name = item.name,
+                imageURL = item.imageUrl,
+                id = item.id
+            )
         )
 
 
     fun getIngredientDrawable(
         imageView: ImageView,
-        item: Ingredient, @ColorInt color: Int? = null
+        item: IngredientEntity, @ColorInt color: Int? = null
     ) {
         imageView.setImageDrawable(getDrawableForImageView(imageView.context, item, color = color))
     }
@@ -50,7 +54,7 @@ object UiUtils {
      * @return (Drawable?)
      */
     fun getDrawableForImageView(context: Context, item: IngredientForRecipe, padding: Float = 8f, @ColorInt color: Int? = null): Drawable =
-        getDrawableForImageView(context, Ingredient(name = item.name, imageURL = item.imageUrl, id = item.id), padding = padding, color = color)
+        getDrawableForImageView(context, IngredientEntity(name = item.name, imageURL = item.imageUrl, id = item.id), padding = padding, color = color)
 
     /**
      * Get a drawable with a circular background and the corresponding drawable if item.imageURL is known as a drawable from thee resources(see KNOWN_ICONS)
@@ -60,7 +64,7 @@ object UiUtils {
      * @param color Int?        if not null, set the color of the letter of the ingredient, else the color will be white
      * @return (Drawable?)
      */
-    private fun getDrawableForImageView(context: Context, item: Ingredient, padding: Float = 8f, @ColorInt color: Int? = null): Drawable =
+    private fun getDrawableForImageView(context: Context, item: IngredientEntity, padding: Float = 8f, @ColorInt color: Int? = null): Drawable =
         DefaultIngredients.values().find { it.url == item.imageURL }.let {
             if (it != null) {
                 LayerDrawable(
@@ -73,19 +77,8 @@ object UiUtils {
                     setLayerInset(1, dp, dp, dp, dp)
                 }
             } else {
-                TextDrawable.builder()
-                    .beginConfig()
-                    .fontSize(context.dpToPx(20f).toInt())
-                    .width(context.dpToPx(36f).toInt())
-                    .height(context.dpToPx(36f).toInt())
-                    .bold().apply {
-                        if (color != null)
-                            textColor(color)
-                    }
-                    .endConfig()
-                    .buildRound(
-                        "${item.name.toUpperCase(Locale.getDefault())[0]}",
-                        ContextCompat.getColor(context, R.color.md_blue_grey_700)
+                TextDrawable(context.resources,
+                    "${item.name.toUpperCase(Locale.getDefault())[0]}"
                     )
             }
         }
@@ -99,19 +92,8 @@ object UiUtils {
             if (it != null) {
                 return  ContextCompat.getDrawable(context, it.drawable)
             } else
-                return TextDrawable.builder()
-                    .beginConfig()
-                    .fontSize(context.dpToPx(20f).toInt())
-                    .width(context.dpToPx(36f).toInt())
-                    .height(context.dpToPx(36f).toInt())
-                    .bold().apply {
-                        if (color != null)
-                            textColor(color)
-                    }
-                    .endConfig()
-                    .buildRound(
-                        "${drawableName.toUpperCase(Locale.getDefault())[0]}",
-                        ContextCompat.getColor(context, R.color.md_blue_grey_700)
+                return TextDrawable(context.resources,
+                    "${drawableName.toUpperCase(Locale.getDefault())[0]}",
                     )
         }
     }
@@ -137,7 +119,7 @@ object UiUtils {
         )
     }
 
-    fun bindHeader(recipe: Recipe, viewHolder: HeaderViewHolder) {
+    fun bindHeader(recipe: RecipeEntity, viewHolder: HeaderViewHolder) {
         val context = viewHolder.root.context
 
         viewHolder.root.transitionName = "cardView${recipe.id}"
@@ -147,9 +129,9 @@ object UiUtils {
 
 
         val category = when (recipe.type) {
-            Recipe.Type.MEAL -> context.getString(R.string.meal)
-            Recipe.Type.DESSERT -> context.getString(R.string.dessert)
-            Recipe.Type.OTHER -> context.getString(R.string.other)
+            RecipeEntity.Type.MEAL -> context.getString(R.string.meal)
+            RecipeEntity.Type.DESSERT -> context.getString(R.string.dessert)
+            RecipeEntity.Type.OTHER -> context.getString(R.string.other)
         }
 
         with(viewHolder.category) {

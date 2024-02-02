@@ -1,8 +1,9 @@
-package zelgius.com.myrecipes.entities
+package zelgius.com.myrecipes.data.entities
 
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.annotation.DrawableRes
 import androidx.core.os.ParcelCompat
 import androidx.room.DatabaseView
 import androidx.room.Ignore
@@ -21,7 +22,7 @@ INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
 data class IngredientForRecipe(
     var id: Long?,
     var quantity: Double,
-    var unit: Ingredient.Unit,
+    var unit: IngredientEntity.Unit,
     var name: String,
     var imageUrl: String?,
     var optional: Boolean?,
@@ -34,13 +35,15 @@ data class IngredientForRecipe(
     var new = false
 
     @Ignore
-    var step: Step? = null
+    var step: StepEntity? = null
 
+    @get:DrawableRes
+    val drawable: Int? get() = DefaultIngredients.entries.firstOrNull { it.url == imageUrl }?.drawable
     @Ignore
     constructor(
         id: Long?,
         quantity: Double,
-        unit: Ingredient.Unit,
+        unit: IngredientEntity.Unit,
         name: String,
         imageUrl: String?,
         sortOrder: Int,
@@ -52,7 +55,7 @@ data class IngredientForRecipe(
     constructor(parcel: Parcel) : this(
         parcel.readValue(Long::class.java.classLoader) as? Long,
         parcel.readDouble(),
-        Ingredient.Unit.valueOf(parcel.readString()!!),
+        IngredientEntity.Unit.valueOf(parcel.readString()!!),
         parcel.readString()!!,
         parcel.readString(),
         ParcelCompat.readBoolean(parcel),
@@ -65,7 +68,7 @@ data class IngredientForRecipe(
     constructor(ingredient: RecipeProto.Ingredient) : this(
         null,
         ingredient.quantity,
-        Ingredient.Unit.valueOf(ingredient.unit.name),
+        IngredientEntity.Unit.valueOf(ingredient.unit.name),
         ingredient.name,
         if (ingredient.hasImageUrl()) ingredient.imageUrl else null,
         false,
@@ -74,7 +77,7 @@ data class IngredientForRecipe(
         null
     ) {
         if (ingredient.hasStep()) {
-            step = Step(ingredient.step)
+            step = StepEntity(ingredient.step)
         }
     }
 
@@ -104,42 +107,7 @@ data class IngredientForRecipe(
             return arrayOfNulls(size)
         }
 
-        fun text(context: Context, item: IngredientForRecipe): String {
-            val abrv = when (item.unit) {
-                Ingredient.Unit.MILLILITER -> context.getString(R.string.milliliter_abrv)
-                Ingredient.Unit.LITER -> context.getString(R.string.liter_abrv)
-                Ingredient.Unit.UNIT -> context.getString(R.string.unit_abrv)
-                Ingredient.Unit.TEASPOON -> context.getString(R.string.teaspoon_abrv)
-                Ingredient.Unit.TABLESPOON -> context.getString(R.string.tablespoon_abrv)
-                Ingredient.Unit.GRAMME -> context.getString(R.string.gramme_abrv)
-                Ingredient.Unit.KILOGRAMME -> context.getString(R.string.kilogramme_abrv)
-                Ingredient.Unit.CUP -> context.getString(R.string.cup_abrv)
-                Ingredient.Unit.PINCH -> context.getString(R.string.pinch_abrv)
-            }
-
-            return if (item.unit != Ingredient.Unit.CUP) {
-                String.format(
-                    "%s %s %s",
-                    DecimalFormat("#0.##").format(item.quantity),
-                    abrv,
-                    item.name
-                )
-            } else {
-                val part1 = if (item.quantity.toInt() == 0) "" else "${item.quantity.toInt()} "
-
-                val part2 = when ("${(item.quantity - item.quantity.toInt()).round(2)}".trim()) {
-                    "0.0", "0" -> ""
-                    "0.33", "0.34" -> "1/3 "
-                    "0.66", "0.67" -> "2/3 "
-                    "0.25" -> "1/4 "
-                    "0.5" -> "1/2 "
-                    "0.75" -> "3/4 "
-                    else -> "${DecimalFormat("#0.##").format(item.quantity - item.quantity.toInt())} "
-                }
-
-                String.format("%s%s%s %s", part1, part2, abrv, item.name)
-            }
-        }
+        fun text(context: Context, item: IngredientForRecipe): String = item.text(context)
     }
 
     fun toProtoBuff() = RecipeProto.Ingredient.newBuilder()
@@ -153,4 +121,41 @@ data class IngredientForRecipe(
             if (imageUrl != null) it.imageUrl = imageUrl
         }
         .build()!!
+}
+
+fun IngredientForRecipe.text(context: Context): String {
+    val abrv = when (unit) {
+        IngredientEntity.Unit.MILLILITER -> context.getString(R.string.milliliter_abrv)
+        IngredientEntity.Unit.LITER -> context.getString(R.string.liter_abrv)
+        IngredientEntity.Unit.UNIT -> context.getString(R.string.unit_abrv)
+        IngredientEntity.Unit.TEASPOON -> context.getString(R.string.teaspoon_abrv)
+        IngredientEntity.Unit.TABLESPOON -> context.getString(R.string.tablespoon_abrv)
+        IngredientEntity.Unit.GRAMME -> context.getString(R.string.gramme_abrv)
+        IngredientEntity.Unit.KILOGRAMME -> context.getString(R.string.kilogramme_abrv)
+        IngredientEntity.Unit.CUP -> context.getString(R.string.cup_abrv)
+        IngredientEntity.Unit.PINCH -> context.getString(R.string.pinch_abrv)
+    }
+
+    return if (unit != IngredientEntity.Unit.CUP) {
+        String.format(
+            "%s %s %s",
+            DecimalFormat("#0.##").format(quantity),
+            abrv,
+            name
+        )
+    } else {
+        val part1 = if (quantity.toInt() == 0) "" else "${quantity.toInt()} "
+
+        val part2 = when ("${(quantity - quantity.toInt()).round(2)}".trim()) {
+            "0.0", "0" -> ""
+            "0.33", "0.34" -> "1/3 "
+            "0.66", "0.67" -> "2/3 "
+            "0.25" -> "1/4 "
+            "0.5" -> "1/2 "
+            "0.75" -> "3/4 "
+            else -> "${DecimalFormat("#0.##").format(quantity - quantity.toInt())} "
+        }
+
+        String.format("%s%s%s %s", part1, part2, abrv, name)
+    }
 }

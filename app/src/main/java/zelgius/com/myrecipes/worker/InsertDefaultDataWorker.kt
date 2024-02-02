@@ -10,11 +10,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.repository.AppDatabase
-import zelgius.com.myrecipes.repository.IngredientRepository
-import zelgius.com.myrecipes.repository.RecipeRepository
-import zelgius.com.myrecipes.repository.StepRepository
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.repository.AppDatabase
+import zelgius.com.myrecipes.data.repository.IngredientRepository
+import zelgius.com.myrecipes.data.repository.RecipeRepository
+import zelgius.com.myrecipes.data.repository.StepRepository
 import zelgius.com.myrecipes.utils.unzip
 import zelgius.com.protobuff.RecipeProto
 import java.io.File
@@ -41,7 +41,7 @@ class InsertDefaultDataWorker(val appContext: Context, workerParams: WorkerParam
                     coroutineScope {
                         RecipeProto.Recipe.parseFrom(bytes)
                     }
-                val recipe = Recipe(proto)
+                val recipe = RecipeEntity(proto)
 
                 recipe.ingredients.forEach {
                     it.id = ingredientRepository.get(it.name)?.id

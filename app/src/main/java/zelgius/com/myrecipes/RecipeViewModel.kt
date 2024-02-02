@@ -24,14 +24,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import zelgius.com.myrecipes.entities.Ingredient
-import zelgius.com.myrecipes.entities.IngredientForRecipe
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.entities.Step
-import zelgius.com.myrecipes.repository.AppDatabase
-import zelgius.com.myrecipes.repository.IngredientRepository
-import zelgius.com.myrecipes.repository.RecipeRepository
-import zelgius.com.myrecipes.repository.StepRepository
+import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.repository.AppDatabase
+import zelgius.com.myrecipes.data.repository.IngredientRepository
+import zelgius.com.myrecipes.data.repository.RecipeRepository
+import zelgius.com.myrecipes.data.repository.StepRepository
 import zelgius.com.myrecipes.utils.PdfGenerator
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.unzip
@@ -51,7 +51,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     private val ingredientRepository = IngredientRepository(app)
     private val stepRepository = StepRepository(app)
 
-    val selectedRecipe = MutableLiveData<Recipe>()
+    val selectedRecipe = MutableLiveData<RecipeEntity>()
     val editMode = MutableLiveData<Boolean>()
     val selectedImageUrl = MutableLiveData<Uri?>()
 
@@ -61,12 +61,12 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
     val selectRecipe = MutableLiveData<Boolean>()
 
-    var selectedType: Recipe.Type = Recipe.Type.MEAL
+    var selectedType: RecipeEntity.Type = RecipeEntity.Type.MEAL
 
-    var currentRecipe: Recipe = Recipe()
+    var currentRecipe: RecipeEntity = RecipeEntity()
 
-    private val _selection = mutableListOf<Recipe>()
-    val selection: List<Recipe>
+    private val _selection = mutableListOf<RecipeEntity>()
+    val selection: List<RecipeEntity>
         get() = _selection
 
     val mealList = LivePagedListBuilder(recipeRepository.pagedMeal(), /* page size  */ 20).build()
@@ -74,10 +74,10 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         LivePagedListBuilder(recipeRepository.pagedDessert(), /* page size  */ 20).build()
     val otherList = LivePagedListBuilder(recipeRepository.pagedOther(), /* page size  */ 20).build()
 
-    val ingredients: LiveData<List<Ingredient>>
+    val ingredients: LiveData<List<IngredientEntity>>
 
     private val searchQuery = MutableLiveData<String>()
-    val searchResult = Transformations.switchMap(searchQuery) {
+    val searchResult = searchQuery.switchMap{
         recipeRepository.pagedSearch(it).toLiveData(20)
     }
 
@@ -85,16 +85,16 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         ingredients = ingredientRepository.get()
     }
 
-    fun search(query: String): LiveData<PagedList<Recipe>> {
+    fun search(query: String): LiveData<PagedList<RecipeEntity>> {
         searchQuery.value = query
 
         return searchResult
     }
 
-    fun saveCurrentRecipe(): LiveData<Recipe> =
+    fun saveCurrentRecipe(): LiveData<RecipeEntity> =
         saveRecipe(currentRecipe)
 
-    fun toggleSelectedItem(item: Recipe) {
+    fun toggleSelectedItem(item: RecipeEntity) {
         if (!_selection.remove(item))
             _selection.add(item)
     }
@@ -104,8 +104,8 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
 
-    fun saveRecipe(recipe: Recipe): LiveData<Recipe> {
-        val done = MutableLiveData<Recipe>()
+    fun saveRecipe(recipe: RecipeEntity): LiveData<RecipeEntity> {
+        val done = MutableLiveData<RecipeEntity>()
 
         runInTransaction {
             viewModelScope.launch {
@@ -156,8 +156,8 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         return done
     }
 
-    fun loadRecipe(id: Long): LiveData<Recipe?> {
-        val done = MutableLiveData<Recipe?>()
+    fun loadRecipe(id: Long): LiveData<RecipeEntity?> {
+        val done = MutableLiveData<RecipeEntity?>()
 
         viewModelScope.launch {
 
@@ -174,7 +174,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
 
-    fun delete(recipe: Recipe) = liveData {
+    fun delete(recipe: RecipeEntity) = liveData {
         ingredientRepository.delete(recipe)
 
         stepRepository.delete(recipe)
@@ -185,7 +185,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
     }
 
-    fun removeImage(recipe: Recipe) {
+    fun removeImage(recipe: RecipeEntity) {
         File(app.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${recipe.id}").delete()
     }
 
@@ -208,7 +208,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         _pdfProgress.value = false
     }
 
-    fun exportToPdf(recipe: Recipe, uri: Uri) = liveData {
+    fun exportToPdf(recipe: RecipeEntity, uri: Uri) = liveData {
         _pdfProgress.value = true
 
         with(PdfGenerator(app).createPdf(recipe, uri)) {
@@ -217,9 +217,9 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun saveFromQrCode(scannedBase64: String): LiveData<Recipe?> {
+    fun saveFromQrCode(scannedBase64: String): LiveData<RecipeEntity?> {
 
-        val result = MutableLiveData<Recipe?>()
+        val result = MutableLiveData<RecipeEntity?>()
 
         runInTransaction {
             viewModelScope.launch {
@@ -231,7 +231,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
                         coroutineScope {
                             RecipeProto.Recipe.parseFrom(bytes)
                         }
-                    val recipe = Recipe(proto)
+                    val recipe = RecipeEntity(proto)
 
                     recipe.ingredients.forEach {
                         it.id = ingredientRepository.get(it.name)?.id
@@ -266,7 +266,7 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
         return result
     }
 
-    fun buildNotification(recipe: Recipe) {
+    fun buildNotification(recipe: RecipeEntity) {
         val list = mutableListOf<Parcelable>()
         list.addAll(recipe.ingredients.filter { it.step == null }.sortedBy { it.sortOrder })
         recipe.steps.forEach { s ->
@@ -310,17 +310,17 @@ class RecipeViewModel(val app: Application) : AndroidViewModel(app) {
 
             val o = list.first()
             val text = when (o) {
-                is Step -> o.text
+                is StepEntity -> o.text
                 is IngredientForRecipe -> IngredientForRecipe.text(app, o)
                 else -> error("Should not be there")
             }.let {
-                if (o is Step && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
+                if (o is StepEntity && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
                     "($it)"
                 else it
             }
 
             val drawable = when (o) {
-                is Step -> UiUtils.getDrawable(
+                is StepEntity -> UiUtils.getDrawable(
                     app,
                     "${o.order}"
                 )

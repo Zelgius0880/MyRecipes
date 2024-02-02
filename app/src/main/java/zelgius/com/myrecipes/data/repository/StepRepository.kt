@@ -1,10 +1,10 @@
-package zelgius.com.myrecipes.repository
+package zelgius.com.myrecipes.data.repository
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import zelgius.com.myrecipes.entities.Recipe
-import zelgius.com.myrecipes.entities.Step
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.StepEntity
 
 
 class StepRepository(
@@ -14,7 +14,7 @@ class StepRepository(
 
     private val dao = database.stepDao
 
-    fun get(recipe: Recipe) =
+    fun get(recipe: RecipeEntity) =
         dao.get(recipe.id!!)
 
 
@@ -23,7 +23,7 @@ class StepRepository(
      * @param item Step
      * @return Long the id of the inserted item
      */
-    suspend fun insert(item: Step): Long =
+    suspend fun insert(item: StepEntity): Long =
         withContext(Dispatchers.Default) {
             dao.insert(item)
         }
@@ -34,19 +34,19 @@ class StepRepository(
      * @param item Step
      * @return Int the  umber of rows affected
      */
-    suspend fun update(item: Step): Int =
+    suspend fun update(item: StepEntity): Int =
         withContext(Dispatchers.Default) {
             dao.update(item)
         }
 
 
-    suspend fun delete(item: Step): Int =
+    suspend fun delete(item: StepEntity): Int =
         withContext(Dispatchers.Default) {
             dao.delete(item)
         }
 
 
-    suspend fun delete(item: Recipe): Int =
+    suspend fun delete(item: RecipeEntity): Int =
         withContext(Dispatchers.Default) {
             dao.deleteFromRecipe(item.id!!)
         }
@@ -57,7 +57,7 @@ class StepRepository(
      * @param steps Step    the steps to keep
      * @return Int          the number of rows affected
      */
-    suspend fun deleteAllButThem(recipe: Recipe, steps: List<Step>): Int =
+    suspend fun deleteAllButThem(recipe: RecipeEntity, steps: List<StepEntity>): Int =
         withContext(Dispatchers.Default) {
             dao.delete(recipe.id!!, *steps.map { it.id!! }.toLongArray())
         }

@@ -2,6 +2,7 @@ package zelgius.com.myrecipes
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -49,10 +50,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
 
-        return navController.navigateUp()
-    }
 
 
     override fun onResume() {

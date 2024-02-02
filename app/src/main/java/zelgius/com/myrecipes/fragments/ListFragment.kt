@@ -10,7 +10,7 @@ import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimat
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 
 /**
  * A fragment representing a list of Items.
@@ -42,12 +42,12 @@ class ListFragment : AbstractRecipeListFragment() {
         // Disable the change animation in order to make turning back animation of swiped item works properly.
         animator.supportsChangeAnimations = false
 
-        when (Recipe.Type.valueOf(
+        when (RecipeEntity.Type.valueOf(
             arguments?.getString("type") ?: error("Arguments are null")
         )) {
-            Recipe.Type.MEAL -> viewModel.mealList
-            Recipe.Type.DESSERT -> viewModel.dessertList
-            Recipe.Type.OTHER -> viewModel.otherList
+            RecipeEntity.Type.MEAL -> viewModel.mealList
+            RecipeEntity.Type.DESSERT -> viewModel.dessertList
+            RecipeEntity.Type.OTHER -> viewModel.otherList
         }.observe(viewLifecycleOwner, {
             adapter.submitList(it)
         })
@@ -57,7 +57,7 @@ class ListFragment : AbstractRecipeListFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(list: Recipe.Type) =
+        fun newInstance(list: RecipeEntity.Type) =
             ListFragment().apply {
                 arguments = bundleOf("type" to list.name)
             }

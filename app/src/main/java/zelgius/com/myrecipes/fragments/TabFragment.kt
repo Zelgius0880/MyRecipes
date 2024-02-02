@@ -29,7 +29,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.VisionBarcodeReaderActivity
-import zelgius.com.myrecipes.entities.Recipe
+import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.utils.AnimationUtils
 import kotlin.math.roundToInt
 
@@ -131,9 +131,9 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 viewModel.selectedType = when (tab?.text) {
-                    getString(R.string.meal) -> Recipe.Type.MEAL
-                    getString(R.string.dessert) -> Recipe.Type.DESSERT
-                    getString(R.string.other) -> Recipe.Type.OTHER
+                    getString(R.string.meal) -> RecipeEntity.Type.MEAL
+                    getString(R.string.dessert) -> RecipeEntity.Type.DESSERT
+                    getString(R.string.other) -> RecipeEntity.Type.OTHER
                     else -> throw IllegalStateException("Should not be there")
                 }
             }
@@ -277,7 +277,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         return s != null && s.length > 3
     }
 
-    override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+    override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
         container.visibility = View.GONE
         tabs.visibility = View.GONE
         searchList.visibility = View.VISIBLE
@@ -285,7 +285,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     }
 
 
-    override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+    override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
         container.visibility = View.VISIBLE
         tabs.visibility = View.VISIBLE
         searchList.visibility = View.GONE
@@ -326,9 +326,9 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         FragmentStateAdapter(activity) {
 
         private val fragments = listOf(
-            ListFragment.newInstance(Recipe.Type.MEAL),
-            ListFragment.newInstance(Recipe.Type.DESSERT),
-            ListFragment.newInstance(Recipe.Type.OTHER)
+            ListFragment.newInstance(RecipeEntity.Type.MEAL),
+            ListFragment.newInstance(RecipeEntity.Type.DESSERT),
+            ListFragment.newInstance(RecipeEntity.Type.OTHER)
         )
 
         override fun getItemCount(): Int = fragments.size
