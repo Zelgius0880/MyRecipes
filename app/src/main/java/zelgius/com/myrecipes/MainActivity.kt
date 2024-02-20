@@ -2,25 +2,30 @@ package zelgius.com.myrecipes
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
-import androidx.navigation.Navigation.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import zelgius.com.myrecipes.dialogs.IntroDialog
+import zelgius.com.myrecipes.ui.AppTheme
+import zelgius.com.myrecipes.ui.home.Home
+import zelgius.com.myrecipes.ui.home.HomeViewModel
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-
-    private val navController
-        get() = findNavController(this, R.id.nav_host_fragment)
-
-    private val viewModel: RecipeViewModel by viewModels()
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
         if (intent != null) processIntent(intent)
+
+        setContent {
+            AppTheme {
+                Home()
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -31,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun processIntent(intent: Intent) {
         if (intent.hasExtra("ID_FROM_NOTIF")) {
-            viewModel.loadRecipe(intent.getLongExtra("ID_FROM_NOTIF", 0L)).observe(this) {
+            /*viewModel.loadRecipe(intent.getLongExtra("ID_FROM_NOTIF", 0L)).observe(this) {
                 if (it != null) {
                     if (navController.currentDestination?.id != R.id.tabFragment)
                         navController.navigate(R.id.tabFragment)
@@ -46,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                     viewModel.loadRecipe(it.id!!)
                 }
             }
-
+*/
         }
     }
 

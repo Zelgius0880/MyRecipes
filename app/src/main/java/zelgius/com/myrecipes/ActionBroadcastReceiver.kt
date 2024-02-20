@@ -10,7 +10,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.os.bundleOf
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
-import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.model.Ingredient
+import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.utils.UiUtils
 
 class ActionBroadcastReceiver : BroadcastReceiver() {
@@ -29,21 +31,21 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
             intentAction.putExtra("TITLE", title)
             val o = list[index]
             val text = when (o) {
-                is StepEntity -> o.text
-                is IngredientForRecipe -> IngredientForRecipe.text(context, o)
+                is Step -> o.text
+                is Ingredient -> o.text(context)
                 else -> error("Should not be there")
             }.let {
-                if(o is StepEntity && o.optional || o is IngredientForRecipe && (o.optional == true || o.step?.optional == true))
+                if(o is Step && o.optional || o is Ingredient && (o.optional == true || o.step?.optional == true))
                     "($it)"
                 else it
             }
 
             val drawable = when (o) {
-                is StepEntity -> UiUtils.getDrawable(
+                is Step -> UiUtils.getDrawable(
                     context,
                     "${o.order}"
                 )
-                is IngredientForRecipe -> UiUtils.getDrawable(
+                is Ingredient -> UiUtils.getDrawable(
                     context,
                     if(!o.imageUrl.isNullOrEmpty()) o.imageUrl!! else o.name
                 )

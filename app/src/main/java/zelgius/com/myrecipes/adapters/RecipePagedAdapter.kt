@@ -5,8 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
-import androidx.navigation.fragment.FragmentNavigator
-import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -21,20 +19,22 @@ import com.squareup.picasso.Picasso
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.databinding.AdapterFragmentRecipeBinding
 import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.utils.context
 import zelgius.com.myrecipes.utils.dpToPx
 
 
 class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit) :
-    PagedListAdapter<RecipeEntity, RecipePagedAdapter.ViewHolder>(DIFF_CALLBACK),
+    PagedListAdapter<Recipe, RecipePagedAdapter.ViewHolder>(DIFF_CALLBACK),
     SwipeableItemAdapter<RecipePagedAdapter.ViewHolder> {
 
-    var deleteListener: ((RecipeEntity) -> Unit)? = null
-    var editListener: ((RecipeEntity, FragmentNavigator.Extras) -> Unit)? = null
-    var clickListener: ((RecipeEntity, FragmentNavigator.Extras?) -> Unit)? = null
+    var deleteListener: ((Recipe) -> Unit)? = null
+    var editListener: ((Recipe, Any) -> Unit)? = null
+    var clickListener: ((Recipe, Any?) -> Unit)? = null
 
     var isSelectionEnabled = false
-    private val selection = mutableListOf<RecipeEntity>()
+    private val selection = mutableListOf<Recipe>()
 
     init {
         setHasStableIds(true)
@@ -57,18 +57,14 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
             }
 
             binding.name.text = recipe.name
-            binding.category.text = when (recipe.type) {
-                RecipeEntity.Type.MEAL -> binding.context.getString(R.string.meal)
-                RecipeEntity.Type.DESSERT -> binding.context.getString(R.string.dessert)
-                RecipeEntity.Type.OTHER -> binding.context.getString(R.string.other)
-            }
+            binding.category.text = recipe.type.text(holder.binding.context)
 
-            if (!recipe.imageURL.isNullOrEmpty() && recipe.imageURL != "null") {
+            if (!recipe.imageUrl.isNullOrEmpty() && recipe.imageUrl != "null") {
                 Picasso.get().apply {
                     /*setIndicatorsEnabled(true)
                     isLoggingEnabled = true*/
                 }
-                    .load(recipe.imageURL!!.toUri())
+                    .load(recipe.imageUrl!!.toUri())
                     .resize(2048, 2048)
                     .centerCrop()
                     //.placeholder(R.drawable.ic_dish)
@@ -112,12 +108,7 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
                     binding.category.transitionName = "category${recipe.id}"
 
                     editListener?.invoke(
-                        recipe, FragmentNavigatorExtras(
-                            binding.materialCardView to "cardView${recipe.id}",
-                            binding.imageView to "imageView${recipe.id}",
-                            binding.name to "name${recipe.id}",
-                            binding.category to "category${recipe.id}"
-                        )
+                        recipe, Unit
                     )
                 } else binding.root.performClick()
 
@@ -134,12 +125,7 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
                     binding.name.transitionName = "name${recipe.id}"
                     binding.category.transitionName = "category${recipe.id}"
 
-                    FragmentNavigatorExtras(
-                        binding.materialCardView to "cardView${recipe.id}",
-                        binding.imageView to "imageView${recipe.id}",
-                        binding.name to "name${recipe.id}",
-                        binding.category to "category${recipe.id}"
-                    )
+
                 } else {
                     binding.root.isChecked = if (selection.contains(recipe)) {
                         selection.remove(recipe)
@@ -169,8 +155,8 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
             holder.isProportionalSwipeAmountModeEnabled = false
             holder.maxLeftSwipeAmount = -binding.context.dpToPx(160f)
             holder.maxRightSwipeAmount = 0f
-            holder.swipeItemHorizontalSlideAmount =
-                if (recipe.isPinned) -binding.context.dpToPx(160f) else 0f
+            /*holder.swipeItemHorizontalSlideAmount =
+                if (recipe.isPinned) -binding.context.dpToPx(160f) else 0f*/
         }
     }
 
@@ -237,12 +223,12 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
     companion object {
 
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<RecipeEntity>() {
-            override fun areItemsTheSame(oldItem: RecipeEntity, newItem: RecipeEntity): Boolean =
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Recipe>() {
+            override fun areItemsTheSame(oldItem: Recipe, newItem: Recipe): Boolean =
                 oldItem.id == newItem.id
 
 
-            override fun areContentsTheSame(oldItem: RecipeEntity, newItem: RecipeEntity): Boolean =
+            override fun areContentsTheSame(oldItem: Recipe, newItem: Recipe): Boolean =
                 oldItem == newItem
 
         }
@@ -264,11 +250,11 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
 
             val item = getItem(position)
 
-            if (item?.isPinned == false) {
+            /*if (item?.isPinned == false) {
                 item.isPinned = true
                 notifyItemChanged(position)
                 mSetPinned = true
-            }
+            }*/
         }
 
     }
@@ -281,10 +267,10 @@ class RecipePagedAdapter(private val selectionChangeListener: (Boolean) -> Unit)
             super.onPerformAction()
 
             val item = getItem(position)
-            if (item?.isPinned == true) {
+            /*if (item?.isPinned == true) {
                 item.isPinned = false
                 notifyItemChanged(position)
-            }
+            }*/
         }
     }
 

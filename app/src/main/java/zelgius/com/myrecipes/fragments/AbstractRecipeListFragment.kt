@@ -4,10 +4,8 @@ import android.os.Bundle
 import android.os.Environment
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -19,6 +17,7 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.RecipePagedAdapter
 import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.model.Recipe
 import java.io.File
 
 abstract class AbstractRecipeListFragment : Fragment() {
@@ -90,12 +89,6 @@ abstract class AbstractRecipeListFragment : Fragment() {
         }
 
         adapter.editListener = { r, extras ->
-            Navigation.findNavController(view).navigate(
-                R.id.action_tabFragment_to_editRecipeFragment,
-                bundleOf("RECIPE" to r),
-                null,
-                extras // ID is used to bind the transition name
-            )
 
             viewModel.loadRecipe(r.id!!)
         }
@@ -104,9 +97,7 @@ abstract class AbstractRecipeListFragment : Fragment() {
 
             if (extras != null) {
                 viewModel.loadRecipe(r.id!!)
-                Navigation.findNavController(view).navigate(
-                    R.id.action_tabFragment_to_recipeFragment, bundleOf("RECIPE" to r), null, extras
-                )
+
             } else {
                 viewModel.toggleSelectedItem(r)
             }
@@ -124,12 +115,12 @@ abstract class AbstractRecipeListFragment : Fragment() {
     }
 
 
-    private fun undoSnackBar(recipe: RecipeEntity, text: String) {
+    private fun undoSnackBar(recipe: Recipe, text: String) {
         Snackbar.make(requireView(), text, Snackbar.LENGTH_LONG)
             .setAction(R.string.undo) {
-                recipe.id = null
+                //recipe.id = null
                 //recipe.ingredients.forEach { it.id = null }
-                recipe.steps.forEach { it.id = null }
+                //recipe.steps.forEach { it.id = null }
                 viewModel.saveRecipe(recipe).observe(viewLifecycleOwner) {
                     File(ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${recipe.id}")
                         .renameTo(

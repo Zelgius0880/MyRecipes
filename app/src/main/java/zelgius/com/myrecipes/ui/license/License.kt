@@ -4,9 +4,9 @@ import android.content.Intent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,7 +67,7 @@ fun DrawLicense() {
             Text(
                 text = stringResource(R.string.opensource_licenses),
                 modifier = Modifier.padding(8.dp),
-                style = TextStyle(color = MaterialTheme.colors.secondary)
+                style = TextStyle(color = MaterialTheme.colorScheme.secondary)
             )
         }
 
@@ -152,7 +152,7 @@ fun UrlText(text: String, url: String, modifier: Modifier = Modifier) {
     val annotatedString = AnnotatedString.Builder().apply {
         pushStyle(
             SpanStyle(
-                color = MaterialTheme.colors.secondary,
+                color = MaterialTheme.colorScheme.secondary,
                 textDecoration = TextDecoration.Underline
             )
         )
@@ -185,7 +185,7 @@ fun EmailText(text: String, url: String, modifier: Modifier = Modifier) {
     val annotatedString = AnnotatedString.Builder().apply {
         pushStyle(
             SpanStyle(
-                color = MaterialTheme.colors.secondary,
+                color = MaterialTheme.colorScheme.secondary,
                 textDecoration = TextDecoration.Underline
             )
         )
@@ -224,7 +224,7 @@ fun EmailText(text: String, url: String, modifier: Modifier = Modifier) {
 fun LicensePreview() {
 
     MaterialTheme(
-        colors = if (isSystemInDarkTheme()) {
+        colorScheme = if (isSystemInDarkTheme()) {
             darkThemeColors
         } else {
             lightThemeColors

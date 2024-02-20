@@ -19,11 +19,15 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeabl
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractExpandableItemAdapter
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.RecipeViewModel
-import zelgius.com.myrecipes.databinding.AdapterIngredientBinding
-import zelgius.com.myrecipes.databinding.AdapterStepBinding
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.model.Ingredient
+import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.data.text
+import zelgius.com.myrecipes.databinding.AdapterIngredientBinding
+import zelgius.com.myrecipes.databinding.AdapterStepBinding
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.ViewUtils
 import zelgius.com.myrecipes.utils.context
@@ -50,7 +54,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
             createProvider()
         }
 
-    var draggingStep: StepEntity? = null
+    var draggingStep: Step? = null
 
     init {
         createProvider()
@@ -94,25 +98,25 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         this.layoutManager = recyclerView.layoutManager as LinearLayoutManager
     }
 
-    class StepItem(adapterId: Long, val item: StepEntity?) : DataItem(adapterId) {
+    class StepItem(adapterId: Long, val item: Step?) : DataItem(adapterId) {
         override val isSectionHeader: Boolean
             get() = false
     }
 
-    class IngredientItem(adapterId: Long, val item: IngredientForRecipe) : DataItem(adapterId) {
+    class IngredientItem(adapterId: Long, val item: Ingredient) : DataItem(adapterId) {
         override val isSectionHeader: Boolean
             get() = false
     }
 
 
-    var editStepListener: ((StepEntity) -> Unit)? = null
-    var editIngredientListener: ((IngredientForRecipe) -> Unit)? = null
+    var editStepListener: ((Step) -> Unit)? = null
+    var editIngredientListener: ((Ingredient) -> Unit)? = null
 
-    fun complete(recipe: RecipeEntity) {
+    fun complete(recipe: Recipe) {
         for (i in 0 until provider.groupCount) {
             provider.getGroupItem(i).item?.let {
-                it.order = i
-                recipe.steps.add(it)
+                //it.order = i
+                //recipe.steps.add(it)
             }
 
             for (j in 0 until provider.getChildCount(i)) {
@@ -120,9 +124,9 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                 if (item is IngredientItem) {
 
                     item.item.let {
-                        it.sortOrder = j
-                        it.step = provider.getGroupItem(i).item
-                        recipe.ingredients.add(it)
+                        //it.sortOrder = j
+                        //it.step = provider.getGroupItem(i).item
+                        //recipe.ingredients.add(it)
                     }
                 }
             }
@@ -164,7 +168,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                 )
             }
 
-            binding.ingredientName.text = IngredientForRecipe.text(context, item)
+            binding.ingredientName.text = item.text(context)
             UiUtils.getIngredientDrawable(binding.image, item)
 
             binding.root.setOnClickListener { editIngredientListener?.invoke(item) }
@@ -401,10 +405,10 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
 
     //region Add Remove Update
 
-    fun add(item: IngredientForRecipe) {
+    fun add(item: Ingredient) {
         val i = provider.list.indexOfLast { item.step == it.first.item }
         if (i >= 0) {
-            item.sortOrder =
+            /*item.sortOrder =
                 if (provider.getChildCount(i) > 0 && provider.getChildItem(
                         i,
                         provider.getChildCount(i) - 1
@@ -412,7 +416,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
                 )
                     provider.getChildCount(i) - 1
                 else
-                    provider.getChildCount(i)
+                    provider.getChildCount(i)*/
 
             provider.addChildItem(
                 i,
@@ -423,8 +427,8 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         }
     }
 
-    fun add(item: StepEntity) {
-        item.order = provider.groupCount
+    fun add(item: Step) {
+        //item.order = provider.groupCount
         provider.addGroupItem(StepItem(provider.groupCount.toLong(), item))
         expandableItemManager?.notifyGroupItemInserted(item.order)
 
@@ -435,7 +439,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         }
     }
 
-    fun update(item: IngredientForRecipe) {
+    fun update(item: Ingredient) {
         val i = provider.list.indexOfLast { item.step == it.first.item }
         if (i >= 0) {
             //item.sortOrder = provider.getChildCount(i)
@@ -445,7 +449,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         }
     }
 
-    fun update(item: StepEntity) {
+    fun update(item: Step) {
         //item.order = provider.groupCount
         val indexOf = provider.list.indexOfLast { item == it.first.item }
         expandableItemManager?.notifyGroupItemChanged(indexOf)
@@ -456,27 +460,27 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         }
     }
 
-    fun remove(item: IngredientForRecipe) {
+    fun remove(item: Ingredient) {
         val i = provider.list.indexOfLast { item.step == it.first.item }
         if (i >= 0) {
             val j = provider.list[i].second.indexOfFirst { it is IngredientItem && it.item == item }
-            item.sortOrder = provider.getChildCount(i)
+            //item.sortOrder = provider.getChildCount(i)
             provider.removeChildItem(i, j)
             expandableItemManager?.notifyChildItemRemoved(i, j)
         }
     }
 
-    fun remove(item: StepEntity) {
+    fun remove(item: Step) {
         val i = provider.list.indexOfLast { item == it.first.item }
         if (i >= 0) {
-            provider.list[i].second.forEachIndexed { j, v ->
+            /*provider.list[i].second.forEachIndexed { j, v ->
                 if (v is IngredientItem) {
                     v.item.step = null
                     v.item.refStep = null
                     expandableItemManager?.notifyChildItemRemoved(i, j)
                     add(v.item)
                 }
-            }
+            }*/
             provider.removeGroupItem(i)
             expandableItemManager?.notifyGroupItemRemoved(i)
         }
@@ -486,8 +490,8 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
 
     //region move
     override fun onMoveGroupItem(fromGroupPosition: Int, toGroupPosition: Int) {
-        provider.getGroupItem(fromGroupPosition).item?.order = toGroupPosition
-        provider.getGroupItem(toGroupPosition).item?.order = fromGroupPosition
+        //provider.getGroupItem(fromGroupPosition).item?.order = toGroupPosition
+        //provider.getGroupItem(toGroupPosition).item?.order = fromGroupPosition
 
         provider.moveGroupItem(fromGroupPosition, toGroupPosition)
     }
@@ -505,13 +509,13 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
         else null
 
         if (from is IngredientItem) {
-            from.item.step = provider.getGroupItem(toGroupPosition).item
-            from.item.sortOrder = toGroupPosition
+            //from.item.step = provider.getGroupItem(toGroupPosition).item
+            //from.item.sortOrder = toGroupPosition
         }
 
         if (to is IngredientItem) {
             //to.item.step = provider.getGroupItem(fromGroupPosition).item
-            to.item.sortOrder = fromGroupPosition
+            //to.item.sortOrder = fromGroupPosition
         }
 
         provider.moveChildItem(
@@ -738,7 +742,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
 
             val item = adapterEdit?.provider?.getChildItem(groupPosition, childPosition)
             if (item is IngredientItem) {
-                adapterEdit?.recipe?.ingredients?.remove(item.item)
+                //adapterEdit?.recipe?.ingredients?.remove(item.item)
                 adapterEdit?.remove(item.item)
             }
         }
@@ -761,7 +765,7 @@ class EditRecipeExpandableAdapter(val context: Context, viewModel: RecipeViewMod
 
             val item = adapterEdit?.provider?.getGroupItem(groupPosition)
             if (item is StepItem && item.item != null) {
-                adapterEdit?.recipe?.steps?.remove(item.item)
+                //adapterEdit?.recipe?.steps?.remove(item.item)
                 adapterEdit?.remove(item.item)
             }
         }

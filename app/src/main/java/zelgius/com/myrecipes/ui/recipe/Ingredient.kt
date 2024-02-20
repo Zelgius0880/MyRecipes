@@ -1,21 +1,25 @@
 package zelgius.com.myrecipes.ui.recipe
 
-import androidx.compose.material.MaterialTheme
+
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import zelgius.com.myrecipes.data.entities.DefaultIngredients
+import zelgius.com.myrecipes.data.DefaultIngredients
+import zelgius.com.myrecipes.data.drawable
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
-import zelgius.com.myrecipes.data.entities.text
+import zelgius.com.myrecipes.data.entities.asModel
+import zelgius.com.myrecipes.data.model.Ingredient
+import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.ui.common.StepCard
 import zelgius.com.myrecipes.ui.md_blue_grey_700
 import kotlin.random.Random
 
 @Composable
 fun Ingredient(
-    ingredient: IngredientForRecipe,
+    ingredient: Ingredient,
     shape: Shape = MaterialTheme.shapes.medium,
 ) {
     val drawable = ingredient.drawable
@@ -52,7 +56,7 @@ fun IngredientPreviewDefaultIngredient() {
         )
     }
 
-    Ingredient(ingredient = ingredient)
+    Ingredient(ingredient = ingredient.asModel())
 }
 
 @Preview
@@ -72,5 +76,5 @@ fun IngredientPreviewLetterIngredient() {
         )
     }
 
-    Ingredient(ingredient = ingredient)
+    Ingredient(ingredient = ingredient.asModel())
 }

@@ -21,6 +21,8 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.entities.asModel
+import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.utils.Utils.drawText
 import zelgius.com.myrecipes.utils.Utils.scaleCenterCrop
 import zelgius.com.myrecipes.utils.Utils.zipBytes
@@ -227,7 +229,8 @@ class PdfGenerator(val context: Context) {
         val width = 100
 
         val bmp = scaleCenterCrop(
-            UiUtils.getDrawableForImageView(context, item, padding = 6f).toBitmap(width, width),
+            UiUtils.getDrawableForImageView(context, item.asModel(), padding = 6f)
+                .toBitmap(width, width),
             width,
             width
         )
@@ -248,7 +251,7 @@ class PdfGenerator(val context: Context) {
                 alpha = (this@PdfGenerator.alpha * 255).roundToInt()
         }
 
-        val text = IngredientForRecipe.text(context, item)
+        val text = item.asModel().text(context)
 
         val builder = StaticLayout.Builder.obtain(
             text,
@@ -267,7 +270,7 @@ class PdfGenerator(val context: Context) {
 
         if (staticLayout.height > bmp.height) {
             drawText(
-                canvas, linePosition, textPaint, IngredientForRecipe.text(context, item),
+                canvas, linePosition, textPaint, item.asModel().text(context),
                 margin + 100 + bmp.width
             )
 
@@ -284,7 +287,7 @@ class PdfGenerator(val context: Context) {
                 canvas,
                 linePosition + bmp.height / 2 - staticLayout.height / 2,
                 textPaint,
-                IngredientForRecipe.text(context, item),
+                item.asModel().text(context),
                 margin + 100 + bmp.width
             )
         }
@@ -298,9 +301,10 @@ class PdfGenerator(val context: Context) {
     private fun drawStep(step: StepEntity, list: List<IngredientForRecipe>): Int {
         val width = 200
         val bmp = scaleCenterCrop(
-            TextDrawable(context.resources,
+            TextDrawable(
+                context.resources,
                 "${step.order}",
-                ).toBitmap(width, width),
+            ).toBitmap(width, width),
             width,
             width
         )
@@ -465,8 +469,9 @@ class PdfGenerator(val context: Context) {
     }
 
 
-    private fun drawQrCode(recipe: RecipeEntity): Int {
-        recipe.imageURL = null
+    private fun drawQrCode(recipeEntry: RecipeEntity): Int {
+        val recipe = recipeEntry.copy(imageURL = null)
+
         val bytes = zipBytes("", recipe.toProtoBuff().toByteArray())
         val bmp = QRCode.from(Base64.encodeToString(bytes, Base64.NO_PADDING))
             .withSize(400, 400)

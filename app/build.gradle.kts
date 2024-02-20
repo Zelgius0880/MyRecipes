@@ -4,11 +4,12 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("com.google.devtools.ksp")
     id("androidx.navigation.safeargs")
     id("com.google.gms.google-services")
     id("com.google.android.gms.oss-licenses-plugin")
     id("com.google.firebase.crashlytics")
+    id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
 }
 
 val getProps: (propName: String) -> String = {
@@ -129,19 +130,18 @@ android {
 
 
 val mockitoVersion = "2.16.0"
-val composeVersion = "1.6.0"
+val composeVersion = "1.6.1"
 
 dependencies {
     implementation("com.google.firebase:firebase-crashlytics:18.6.1")
     implementation("com.google.firebase:firebase-analytics:21.5.0")
-    val pagingVersion = "2.1.2"
+    val pagingVersion = "3.2.1"
     val lifecycleVersion = ("2.7.0")
-    val roomVersion = "2.6.1"
-    val navigationVersion = "2.7.6"
     val workVersion = "2.9.0"
     val cameraxVersion = "1.3.1"
-    val coroutinesVersion = "1.7.1"
+    val coroutinesVersion = "1.7.3"
 
+    implementation(project(":data"))
 
     // implementation (fileTree(dir:("libs"), include: ["*.jar"]))
     implementation("com.google.android.material:material:1.11.0")
@@ -152,16 +152,23 @@ dependencies {
     androidTestImplementation("androidx.test:core:1.5.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
-    testImplementation("org.mockito:mockito-core:3.12.4")
-    androidTestImplementation("androidx.room:room-testing:$roomVersion")
-    androidTestImplementation("org.mockito:mockito-core:3.12.4")
+    testImplementation("org.mockito:mockito-core:5.10.0")
+    androidTestImplementation("org.mockito:mockito-core:5.10.0")
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.work:work-testing:$workVersion")
 
     androidTestImplementation("com.google.code.gson:gson:2.10")
-    implementation("com.squareup.picasso:picasso:2.71828")
+    implementation("com.squareup.picasso:picasso:2.71828") // TODO remove that once the migration will be done
+    implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
+
+    //Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    ksp("com.google.dagger:hilt-android-compiler:2.50")
+    implementation("androidx.hilt:hilt-work:1.1.0")
+    ksp("androidx.hilt:hilt-compiler:1.1.0")
 
     //Android X
     implementation("androidx.fragment:fragment:1.6.2")
@@ -174,27 +181,17 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
     implementation("androidx.legacy:legacy-support-v13:1.0.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
 
-    ksp("androidx.room:room-compiler:$roomVersion")
-    // For Kotlin use kapt instead of annotationProcessor
-    // optional - Kotlin Extensions and Coroutines support for Room
-    implementation("androidx.room:room-ktx:$roomVersion")
 
     //KTX & coroutines
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
 
-
-    //navigation
-    implementation("androidx.navigation:navigation-fragment:$navigationVersion")
-    implementation("androidx.navigation:navigation-fragment-ktx:$navigationVersion")
-    implementation("androidx.navigation:navigation-ui-ktx:$navigationVersion")
-
     //Paging Library
-    implementation("androidx.paging:paging-runtime:$pagingVersion") // use -ktx for Kotlin)
     implementation("androidx.paging:paging-runtime-ktx:$pagingVersion")
+    implementation("androidx.paging:paging-compose:3.3.0-alpha03")
 
     //Other
     implementation("com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:1.0.0")
@@ -203,8 +200,6 @@ dependencies {
 
     //Worker
     implementation("androidx.work:work-runtime-ktx:$workVersion")
-    implementation(project(path = (":protobuff")))
-
 
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
@@ -214,11 +209,13 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.1")
 
     //Compose
+    implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.compose.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.ui:ui:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
-    implementation("androidx.compose.material:material:$composeVersion")
-    implementation("androidx.compose.material:material-icons-core:$composeVersion")
-    implementation("androidx.compose.material:material-icons-extended:$composeVersion")
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.compose.material3:material3-window-size-class:1.2.0")
+    implementation("androidx.compose.material3:material3-adaptive:1.0.0-alpha06")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.0.0-alpha03")
 
 }
