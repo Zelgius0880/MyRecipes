@@ -45,11 +45,12 @@ class DownloadImageWorker(val appContext: Context, workerParams: WorkerParameter
             if (input != null && output != null) {
                 input.copyTo(output)
 
-                val recipe = dao.blockingGet(recipeId)
-                recipe?.apply {
+                dao.blockingGet(recipeId)?.copy(
                     imageURL = targetFile.toString()
-                    dao.blockingUpdate(recipe)
+                )?.let {
+                    dao.blockingUpdate(it)
                 }
+
 
                 input.close()
             }

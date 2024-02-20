@@ -11,14 +11,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
-import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -30,8 +25,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.VisionBarcodeReaderActivity
 import zelgius.com.myrecipes.data.entities.RecipeEntity
-import zelgius.com.myrecipes.utils.AnimationUtils
-import kotlin.math.roundToInt
+import zelgius.com.myrecipes.data.model.Recipe
 
 
 class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener,
@@ -110,7 +104,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         pagerAdapter = SectionsPagerAdapter(requireActivity())
-        navController = findNavController()
+
         toolbar = view.findViewById(R.id.toolbar)
 
         container = view.findViewById(R.id.container)
@@ -131,9 +125,9 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 viewModel.selectedType = when (tab?.text) {
-                    getString(R.string.meal) -> RecipeEntity.Type.MEAL
-                    getString(R.string.dessert) -> RecipeEntity.Type.DESSERT
-                    getString(R.string.other) -> RecipeEntity.Type.OTHER
+                    getString(R.string.meal) -> Recipe.Type.Meal
+                    getString(R.string.dessert) -> Recipe.Type.Dessert
+                    getString(R.string.other) -> Recipe.Type.Other
                     else -> throw IllegalStateException("Should not be there")
                 }
             }
@@ -157,19 +151,6 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
             add.setImageDrawable(vectorAnimation)
             vectorAnimation?.start()
             viewModel.selectedImageUrl.value = null
-
-            navController.navigate(
-                R.id.action_tabFragment_to_editRecipeFragment, bundleOf(
-                    "ADD" to true,
-                    AnimationUtils.EXTRA_CIRCULAR_REVEAL_SETTINGS to
-                            AnimationUtils.RevealAnimationSetting(
-                                (add.x + add.width / 2).roundToInt(),
-                                (add.y + add.height / 2).roundToInt(),
-                                view.width,
-                                view.height
-                            )
-                )
-            )
         }
 
         viewModel.searchResult.observe(viewLifecycleOwner, {
@@ -192,10 +173,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
         super.onResume()
 
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
-        NavigationUI.setupActionBarWithNavController(
-            requireActivity() as AppCompatActivity,
-            navController
-        )
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -229,14 +207,7 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
 
         when (item.itemId) {
             R.id.action_license -> {
-                navController.navigate(
-                    R.id.licenseFragment, bundleOf(), NavOptions.Builder()
-                        .setEnterAnim(R.anim.nav_default_enter_anim)
-                        .setExitAnim(R.anim.nav_default_exit_anim)
-                        .setPopEnterAnim(R.anim.nav_default_pop_enter_anim)
-                        .setPopExitAnim(R.anim.nav_default_pop_exit_anim)
-                        .build()
-                )
+
             }
 
             R.id.scan -> {
@@ -308,12 +279,6 @@ class TabFragment : AbstractRecipeListFragment(), SearchView.OnQueryTextListener
                             R.string.recipe_saved,
                             Snackbar.LENGTH_SHORT
                         ).setAction(R.string.open) { _ ->
-                            Navigation.findNavController(requireView()).navigate(
-                                R.id.action_tabFragment_to_recipeFragment,
-                                bundleOf("RECIPE" to it),
-                                null,
-                                null
-                            )
 
                             viewModel.loadRecipe(it.id!!)
                         }.show()

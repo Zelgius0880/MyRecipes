@@ -19,6 +19,9 @@ import zelgius.com.myrecipes.databinding.AdapterIngredientBinding
 import zelgius.com.myrecipes.databinding.AdapterStepBinding
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.model.Ingredient
+import zelgius.com.myrecipes.data.model.asEntity
+import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.ViewUtils
 import zelgius.com.myrecipes.utils.context
@@ -71,12 +74,12 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
             .toMutableList())
 
         recipe.steps.forEachIndexed { i, s ->
-            list.add(StepItem(i + 1L, s) to recipe.ingredients
+            list.add(StepItem(i + 1L, s.asEntity()) to recipe.ingredients
                 .filter { it.step == s }
                 .map { IngredientItem(it.id ?: 0L, it) }
                 .toMutableList<DataItem>()
                 .apply {
-                    add(StepItem(i + 1L, s))
+                    add(StepItem(i + 1L, s.asEntity()))
                 }
             )
         }
@@ -97,7 +100,7 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
             get() = false
     }
 
-    class IngredientItem(adapterId: Long, val item: IngredientForRecipe) : DataItem(adapterId) {
+    class IngredientItem(adapterId: Long, val item: Ingredient) : DataItem(adapterId) {
         override val isSectionHeader: Boolean
             get() = false
     }
@@ -119,7 +122,7 @@ class RecipeExpandableAdapter(val context: Context, viewModel: RecipeViewModel) 
         fun bind(parentPosition: Int, childPosition: Int) {
             val item = (provider.getChildItem(parentPosition, childPosition) as IngredientItem).item
 
-            binding.ingredientName.text = IngredientForRecipe.text(context, item)
+            binding.ingredientName.text = item.text(context)
 
             UiUtils.getIngredientDrawable(binding.image, item)
 

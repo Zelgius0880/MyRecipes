@@ -10,9 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -44,7 +44,7 @@ class IntroDialog : DialogFragment() {
         ) as ComposeView).apply {
             setContent {
                 MaterialTheme(
-                    colors = if (isSystemInDarkTheme()) {
+                    colorScheme = if (isSystemInDarkTheme()) {
                         darkThemeColors
                     } else {
                         lightThemeColors
@@ -53,7 +53,7 @@ class IntroDialog : DialogFragment() {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = getString(R.string.intro_text),
-                            color = MaterialTheme.colors.onBackground
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         EmailText(text = BuildConfig.EMAIL, url = BuildConfig.EMAIL)
                         Button(onClick = { dismiss() }, modifier = Modifier.align(Alignment.End)) {

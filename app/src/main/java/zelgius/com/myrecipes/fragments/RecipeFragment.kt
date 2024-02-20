@@ -18,8 +18,6 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager
@@ -33,6 +31,8 @@ import zelgius.com.myrecipes.adapters.HeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.RecipeExpandableAdapter
 import zelgius.com.myrecipes.databinding.FragmentRecipeBinding
 import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.model.asEntity
 import zelgius.com.myrecipes.utils.UiUtils
 import java.io.File
 
@@ -106,7 +106,7 @@ class RecipeFragment : Fragment(),
         {
             if (it == null) return@registerForActivityResult
 
-            viewModel.exportToPdf(recipe = viewModel.currentRecipe, it)
+            viewModel.exportToPdf(recipe = viewModel.currentRecipe.asEntity(), it)
                 .observe(this@RecipeFragment) { uri ->
                     menu.findItem(R.id.pdf).actionView = null
 
@@ -132,7 +132,7 @@ class RecipeFragment : Fragment(),
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         setHasOptionsMenu(true)
         _binding = FragmentRecipeBinding.inflate(inflater, container, false)
         return binding.root
@@ -140,12 +140,11 @@ class RecipeFragment : Fragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        navController = findNavController()
 
         binding.apply {
-            val recipe = arguments?.getParcelable<RecipeEntity>("RECIPE")?.apply {
+            val recipe = arguments?.getParcelable<Recipe>("RECIPE")?.apply {
                 viewModel.loadRecipe(id!!)
-            } ?: RecipeEntity(RecipeEntity.Type.MEAL)
+            } ?: Recipe(type = Recipe.Type.Meal, name = "")
             //viewModel.selectedRecipe.value = recipe
 
             if (arguments != null)
@@ -154,7 +153,7 @@ class RecipeFragment : Fragment(),
                     UiUtils.HeaderViewHolder(view, header.imageView, header.name, header.category)
                 )
 
-            viewModel.selectedImageUrl.value = viewModel.selectedRecipe.value?.imageURL?.toUri()
+            viewModel.selectedImageUrl.value = viewModel.selectedRecipe.value?.imageUrl?.toUri()
 
             viewModel.editMode.value = true
 
@@ -223,10 +222,7 @@ class RecipeFragment : Fragment(),
         super.onResume()
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
-        NavigationUI.setupActionBarWithNavController(
-            requireActivity() as AppCompatActivity,
-            navController
-        )
+
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         requireActivity().invalidateOptionsMenu()
@@ -275,7 +271,7 @@ class RecipeFragment : Fragment(),
                 menu.findItem(R.id.share).apply {
                     actionView = ProgressBar(requireContext())
                 }
-                viewModel.exportToPdf(recipe, uri).observe(viewLifecycleOwner) {
+                viewModel.exportToPdf(recipe.asEntity(), uri).observe(viewLifecycleOwner) {
                     menu.findItem(R.id.share).apply {
                         actionView = null
                     }

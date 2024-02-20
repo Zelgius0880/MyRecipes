@@ -14,13 +14,10 @@
         <androidx.fragment.app.FragmentContainerView
 
                 android:id="@+id/nav_host_fragment"
-                android:name="androidx.navigation.fragment.NavHostFragment"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
                 tools:layout="@layout/fragment_tab"
-                app:defaultNavHost="true"
-                app:navGraph="@navigation/recipe_navigation"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

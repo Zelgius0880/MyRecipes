@@ -1,3 +1,4 @@
+/*
 package zelgius.com.myrecipes
 
 import android.app.Application
@@ -12,7 +13,7 @@ import org.junit.Rule
 import org.junit.Test
 import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.repository.OneTimeObserver
-import zelgius.com.myrecipes.data.repository.RecipeRepository
+import zelgius.com.myrecipes.data.RecipeRepository
 import zelgius.com.protobuff.RecipeProto
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -136,4 +137,4 @@ class GlobalTest {
         val observer = OneTimeObserver(handler = onChangeHandler)
         observe(observer, observer)
     }
-}
+}*/

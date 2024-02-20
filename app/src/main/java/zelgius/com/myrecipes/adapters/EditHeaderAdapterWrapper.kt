@@ -17,6 +17,8 @@ import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.databinding.LayoutHeaderEditBinding
 import zelgius.com.myrecipes.dialogs.ImageDialogFragment
 import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.utils.context
 
 
@@ -27,7 +29,7 @@ class EditHeaderAdapterWrapper(
 ) :
     AbstractHeaderFooterWrapperAdapter<EditHeaderAdapterWrapper.HeaderViewHolder, RecyclerView.ViewHolder>() {
 
-    var recipe: RecipeEntity = viewModel.currentRecipe
+    var recipe: Recipe = viewModel.currentRecipe
     private val typeStringArray: Array<String> by lazy {
         context.resources.getStringArray(R.array.category_array)
     }
@@ -54,11 +56,7 @@ class EditHeaderAdapterWrapper(
 
         this.viewHolder = viewHolder
         val binding = viewHolder.binding
-        val category = when (recipe.type) {
-            RecipeEntity.Type.MEAL -> binding.context.getString(R.string.meal)
-            RecipeEntity.Type.DESSERT -> binding.context.getString(R.string.dessert)
-            RecipeEntity.Type.OTHER -> binding.context.getString(R.string.other)
-        }
+        val category = recipe.type.text(binding.context)
 
         binding.editName.editText?.setText(recipe.name)
 
@@ -132,13 +130,13 @@ class EditHeaderAdapterWrapper(
 
     override fun getFooterItemCount(): Int = 0
 
-    fun complete(recipe: RecipeEntity) {
-        recipe.name = viewHolder?.binding?.editName?.editText?.text?.toString() ?: ""
+    fun complete(recipe: Recipe) {
+        /*recipe.name = viewHolder?.binding?.editName?.editText?.text?.toString() ?: ""
         recipe.type = when (viewHolder?.binding?.editCategory?.selectedItem as String) {
             context.getString(R.string.meal) -> RecipeEntity.Type.MEAL
             context.getString(R.string.dessert) -> RecipeEntity.Type.DESSERT
             else -> RecipeEntity.Type.OTHER
-        }
+        }*/
     }
 
     inner class HeaderViewHolder(val binding: LayoutHeaderEditBinding) :

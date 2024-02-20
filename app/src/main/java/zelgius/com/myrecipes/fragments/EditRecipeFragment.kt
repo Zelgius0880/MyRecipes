@@ -15,8 +15,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.google.android.material.snackbar.Snackbar
@@ -31,10 +29,11 @@ import zelgius.com.myrecipes.RecipeViewModel
 import zelgius.com.myrecipes.adapters.EditHeaderAdapterWrapper
 import zelgius.com.myrecipes.adapters.EditRecipeExpandableAdapter
 import zelgius.com.myrecipes.adapters.GroupDividerDecoration
+import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.databinding.FragmentRecipeEditBinding
 import zelgius.com.myrecipes.dialogs.IngredientDialogFragment
 import zelgius.com.myrecipes.dialogs.StepDialogFragment
-import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.utils.UiUtils
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -126,10 +125,10 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        navController = findNavController()
+
         binding.apply {
 
-            val recipe = arguments?.getParcelable("RECIPE") ?: RecipeEntity(viewModel.selectedType)
+            val recipe = arguments?.getParcelable("RECIPE") ?: Recipe(type= viewModel.selectedType, name = "")
             viewModel.selectedRecipe.value = recipe
 
             if (arguments != null)
@@ -273,7 +272,7 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
             }
 
             adapter.editStepListener = {
-                it.new = false
+                //it.new = false
                 StepDialogFragment.newInstance(it, this@EditRecipeFragment)
                     .show(parentFragmentManager, "dialog_step")
             }
@@ -305,10 +304,7 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
         super.onResume()
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
-        NavigationUI.setupActionBarWithNavController(
-            requireActivity() as AppCompatActivity,
-            navController
-        )
+
         (activity as AppCompatActivity).supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setTitle(if (arguments?.getBoolean("ADD") == true) R.string.new_recipe else R.string.edit_recipe)
@@ -360,9 +356,9 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
             }
 
             R.id.save -> {
-                val recipe: RecipeEntity = viewModel.currentRecipe
+                val recipe = viewModel.currentRecipe
                 headerWrapper.complete(recipe)
-                recipe.imageURL = viewModel.selectedImageUrl.value.toString()
+                //recipe.imageUrl = viewModel.selectedImageUrl.value.toString()
                 adapter.complete(recipe)
                 viewModel.currentRecipe = recipe // not really useful, just there in case
                 viewModel.saveCurrentRecipe().observe(this, {
@@ -457,10 +453,10 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
             "dialog_ingredient" -> {
                 if (dialog is IngredientDialogFragment) {
                     dialog.ingredient.let {
-                        if (it.new) {
-                            viewModel.currentRecipe.ingredients.add(it)
-                            it.sortOrder = viewModel.currentRecipe.ingredients.size
-                            it.new = false
+                        if (it.id == null) {
+                            //viewModel.currentRecipe.ingredients.add(it)
+                            //it.sortOrder = viewModel.currentRecipe.ingredients.size
+                            //it.new = false
 
                             adapter.add(it)
                         } else {
@@ -473,10 +469,10 @@ class EditRecipeFragment : Fragment(), NoticeDialogListener,
             "dialog_step" -> {
                 if (dialog is StepDialogFragment) {
                     dialog.step.let {
-                        if (it.new) {
-                            viewModel.currentRecipe.steps.add(it)
-                            it.order = viewModel.currentRecipe.steps.size
-                            it.new = false
+                        if (it.id == null) {
+                            //viewModel.currentRecipe.steps.add(it)
+                            //it.order = viewModel.currentRecipe.steps.size
+                            //it.new = false
 
                             adapter.add(it)
                         } else {

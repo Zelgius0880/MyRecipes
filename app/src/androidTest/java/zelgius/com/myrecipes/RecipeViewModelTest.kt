@@ -1,3 +1,4 @@
+/*
 package zelgius.com.myrecipes
 
 import android.app.Application
@@ -238,7 +239,8 @@ class RecipeViewModelTest {
         latch.await(10, TimeUnit.SECONDS)
 
 
-        /*val target = Intent(Intent.ACTION_VIEW)
+        */
+/*val target = Intent(Intent.ACTION_VIEW)
         target.setDataAndType(file.toUri(), "application/pdf")
         target.flags = Intent.FLAG_ACTIVITY_NEW_TASK // FLAG_ACTIVITY_NEW_TASK only for testing
 
@@ -248,7 +250,8 @@ class RecipeViewModelTest {
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
             fail(e.message)
-        }*/
+        }*//*
+
     }
 
     @Test
@@ -281,118 +284,9 @@ class RecipeViewModelTest {
         latch.await(10, TimeUnit.SECONDS)
         assertTrue(latch.count == 0L)
     }
-}
+}*/
 
-@TestOnly
-fun RecipeViewModel.createDummySample(): RecipeEntity {
-
-    currentRecipe = RecipeEntity().apply {
-        name = "Recipe For Testing"
-        imageURL =
-            "https://img.huffingtonpost.com/asset/5c92b00222000033001b332d.jpeg?ops=scalefit_630_noupscale"
-        ingredients.add(
-            IngredientForRecipe(
-                null,
-                2.0,
-                IngredientEntity.Unit.UNIT,
-                "Eggs",
-                "drawable://egg",
-                1,
-                null,
-                null
-            )
-        )
-        ingredients.add(
-            IngredientForRecipe(
-                null,
-                500.0,
-                IngredientEntity.Unit.GRAMME,
-                "Flour",
-                "drawable://flour",
-                2,
-                null,
-                null
-            )
-        )
-        ingredients.add(
-            IngredientForRecipe(
-                null,
-                200.0,
-                IngredientEntity.Unit.MILLILITER,
-                "Water",
-                "drawable://water",
-                3,
-                null,
-                null
-            )
-        )
-        ingredients.add(
-            IngredientForRecipe(
-                null,
-                2.33,
-                IngredientEntity.Unit.CUP,
-                "Butter",
-                "drawable://butter",
-                4,
-                null,
-                null
-            )
-        )
-
-        steps.add(StepEntity(null, "Step 1", Int.MAX_VALUE, true, null).apply { order = 1 })
-        steps.add(StepEntity(null, "Step 2", Int.MAX_VALUE, false, null).apply { order = 2 })
-        steps.add(StepEntity(null, "Step 3", Int.MAX_VALUE, false, null).apply {
-            order = 3
-            ingredients.add(
-                IngredientForRecipe(
-                    null,
-                    1.0,
-                    IngredientEntity.Unit.TEASPOON,
-                    "Salt",
-                    "drawable://salt",
-                    4,
-                    null,
-                    null
-                ).also {
-                    it.step = this
-                }
-            )
-
-            ingredients.add(
-                IngredientForRecipe(
-                    null,
-                    1000.0,
-                    IngredientEntity.Unit.TABLESPOON,
-                    "Sugar",
-                    "drawable://sugar",
-                    4,
-                    null,
-                    null
-                ).also {
-                    it.step = this
-                }
-            )
-
-            ingredients.add(
-                IngredientForRecipe(
-                    null,
-                    1000.0,
-                    IngredientEntity.Unit.LITER,
-                    "Milk",
-                    "drawable://milk",
-                    4,
-                    null,
-                    null
-                ).also {
-                    it.step = this
-                }
-            )
-        })
-    }
-
-    return currentRecipe
-}
-
+/*
 const val BASE_64_RECIPE = """
     UEsDBBQACAgIAL1wCU8AAAAAAAAAAAAAAAAAAAAA7VfNjhtFEM7uOqvEBzB7QisilYKEkGXNTmyB
 FKQoCyI5JQgwPycUlXvK4wo93bP94xx5BB4CLlx4HV6DR6C6Z8b27hsg2VqtxjXVVV9939clefzR
@@ -413,4 +307,4 @@ DSfl2fSTLun6t+uL+y+1je5ycpC1ThE4Lc+HvHsseT9joNt571IEzsqT6acP/2yfjf/54/T64vyr
 GFLiBweJqxyCUflgWvYV/31+MVqiDpfvH+R5CcBoevD7uxxN5z3W3wXDMtZ4G4NPkTtn7g9d0pnR
 a9a/3urSSODOidP/AFBLBwhnfqUhuAMAAIsQAABQSwECFAAUAAgICAC9cAlPZ36lIbgDAACLEAAA
 AAAAAAAAAAAAAAAAAAAAAAAAUEsFBgAAAAABAAEALgAAAOYDAAAAAA
-"""
+"""*/

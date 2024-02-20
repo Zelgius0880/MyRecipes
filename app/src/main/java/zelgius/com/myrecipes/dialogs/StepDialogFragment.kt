@@ -11,6 +11,7 @@ import zelgius.com.myrecipes.NoticeDialogListener
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.databinding.DialogFragmentStepBinding
 import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.model.Step
 
 
 /**
@@ -26,8 +27,7 @@ class StepDialogFragment : DialogFragment() {
     private val binding: DialogFragmentStepBinding
         get() = _binding!!
 
-    var step = StepEntity(null, "", Int.MAX_VALUE, false, null)
-        .apply { new = true }
+    var step = Step(null, "", Int.MAX_VALUE, false, null)
     var listener: NoticeDialogListener? = null
 
     companion object {
@@ -35,7 +35,7 @@ class StepDialogFragment : DialogFragment() {
             this.listener = listener
         }
 
-        fun newInstance(step: StepEntity, listener: NoticeDialogListener? = null) =
+        fun newInstance(step: Step, listener: NoticeDialogListener? = null) =
             StepDialogFragment().apply {
                 this.listener = listener
 
@@ -46,7 +46,7 @@ class StepDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogFragmentStepBinding.inflate(LayoutInflater.from(requireContext()))
         return activity?.let {
-            if(!step.new) {
+            if(step.id == null) {
                 binding.text.editText?.setText(step.text)
                 binding.optional.isChecked = step.optional
             }
@@ -72,8 +72,8 @@ class StepDialogFragment : DialogFragment() {
                             } else {
                                 //ingredient = IngredientForRecipe(null, binding.quantity.toDouble(), Ingredient.Unit.valueOf() binding.name.editText!!.text.toString(), "")
 
-                                step.text = binding.text.editText!!.text.toString()
-                                step.optional = binding.optional.isChecked
+                                //step.text = binding.text.editText!!.text.toString()
+                                //step.optional = binding.optional.isChecked
                                 dismiss()
                                 activity.let { d ->
                                     if (d is NoticeDialogListener) d.onDialogPositiveClick(this@StepDialogFragment)

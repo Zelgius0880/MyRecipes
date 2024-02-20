@@ -1,3 +1,4 @@
+/*
 package zelgius.com.myrecipes.utils
 
 import android.app.Application
@@ -62,4 +63,4 @@ const val LONG_STRING =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ante odio, cursus nec mattis bibendum, iaculis sit amet urna. Nam blandit finibus dolor ac placerat. Aenean sit amet ligula scelerisque, porta sem in, varius nibh. Nulla efficitur vehicula nibh eu pellentesque. Donec vel risus ultrices, fringilla orci ac, volutpat urna. Suspendisse vehicula venenatis magna, quis euismod magna sodales in. Ut ac placerat purus. Suspendisse volutpat lorem eget ante facilisis pharetra at nec felis. Quisque convallis nunc velit, tincidunt malesuada leo ullamcorper at. Nullam ut tellus ornare, rutrum erat sed, pulvinar velit. Phasellus lacinia tempus mauris.\n" +
             "\n" +
             "Etiam posuere enim eget diam auctor, vel faucibus orci efficitur. Aliquam erat volutpat. Ut gravida tellus nec fringilla mattis. Duis aliquet tortor eget posuere ullamcorper. Sed eget mauris et lectus vehicula vehicula tincidunt in quam. Nulla sodales, ante eleifend tempor ultrices, nisi dui placerat magna, tincidunt eleifend justo dui aliquam ante. Maecenas eu est tortor. Pellentesque euismod nibh dignissim purus tempus, vitae ullamcorper purus mollis. Vivamus fringilla egestas eros non rutrum. Aenean sagittis nisl non pretium ultrices. Maecenas cursus neque sed velit placerat bibendum.\n" +
-            "\n"
+            "\n"*/

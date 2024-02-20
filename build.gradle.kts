@@ -1,10 +1,10 @@
 buildscript {
-    val protobufVersion by extra { "0.9.4"}
+    val protobufVersion by extra { "0.9.4" }
 
     repositories {
         google()
         mavenCentral()
-
+        gradlePluginPortal()
     }
     dependencies {
         classpath("com.android.tools.build:gradle:8.2.2")
@@ -20,18 +20,21 @@ buildscript {
     }
 }
 
- allprojects {
+allprojects {
     repositories {
         google()
         mavenCentral()
-        maven (url = "https://jitpack.io")
+        maven(url = "https://jitpack.io")
     }
+
 }
 
 tasks.register("clean", Delete::class.java) {
-    delete (rootProject.buildDir)
+    delete(rootProject.buildDir)
 }
 
 plugins {
     id("com.google.devtools.ksp") version "1.9.22-1.0.17" apply false
+    id("com.google.dagger.hilt.android") version "2.50" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
 }

@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import zelgius.com.myrecipes.R
@@ -32,7 +32,7 @@ class LicenseFragment : Fragment() {
         ) as ComposeView).apply {
             setContent {
                 MaterialTheme(
-                    colors = if (isSystemInDarkTheme()) {
+                    colorScheme = if (isSystemInDarkTheme()) {
                         darkThemeColors
                     } else {
                         lightThemeColors

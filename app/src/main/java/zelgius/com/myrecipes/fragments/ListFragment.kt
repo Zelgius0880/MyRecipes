@@ -48,9 +48,9 @@ class ListFragment : AbstractRecipeListFragment() {
             RecipeEntity.Type.MEAL -> viewModel.mealList
             RecipeEntity.Type.DESSERT -> viewModel.dessertList
             RecipeEntity.Type.OTHER -> viewModel.otherList
-        }.observe(viewLifecycleOwner, {
+        }.observe(viewLifecycleOwner) {
             adapter.submitList(it)
-        })
+        }
 
     }
 

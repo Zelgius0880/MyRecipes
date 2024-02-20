@@ -21,6 +21,7 @@ import zelgius.com.myrecipes.adapters.IngredientAutoCompleteAdapter
 import zelgius.com.myrecipes.databinding.DialogFragmentIngredientBinding
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.utils.UiUtils
 import zelgius.com.myrecipes.utils.enterReveal
 import zelgius.com.myrecipes.utils.hideKeyboard
@@ -51,8 +52,8 @@ class IngredientDialogFragment : DialogFragment() {
     }
 
     private val ctx by lazy { requireContext() }
-    var ingredient: IngredientForRecipe =
-        IngredientForRecipe(null, -1.0, IngredientEntity.Unit.UNIT, "", null, 0, null, null)
+    var ingredient: Ingredient =
+        Ingredient(null, -1.0, Ingredient.Unit.Unit, "", null, false, 0, null, null)
             .apply { new = true }
     private var new = false
     var listener: NoticeDialogListener? = null
@@ -64,7 +65,7 @@ class IngredientDialogFragment : DialogFragment() {
             this.listener = listener
         }
 
-        fun newInstance(ingredient: IngredientForRecipe, listener: NoticeDialogListener? = null) =
+        fun newInstance(ingredient: Ingredient, listener: NoticeDialogListener? = null) =
             IngredientDialogFragment().apply {
                 this.listener = listener
 
@@ -118,9 +119,9 @@ class IngredientDialogFragment : DialogFragment() {
                             UiUtils.getIngredientDrawable(binding.imageHolder, i)
                             binding.ingredientNameHolder.text = i.name
 
-                            ingredient.id = i.id
-                            ingredient.name = i.name
-                            ingredient.imageUrl = i.imageURL
+                            //ingredient.id = i.id
+                            //ingredient.name = i.name
+                            //ingredient.imageUrl = i.imageURL
 
                             binding.spinner.setSelection(units.indexOfFirst { s ->
                                 s == ctx.getSharedPreferences(
@@ -153,7 +154,7 @@ class IngredientDialogFragment : DialogFragment() {
                         8f
                     )
                     addAnimation.start()
-                    ingredient.name = ""
+                    //ingredient.name = ""
                     new = true
                 } else {
                     setNewIngredient(View.GONE)
@@ -173,8 +174,8 @@ class IngredientDialogFragment : DialogFragment() {
 
 
                     closeAnimation.start()
-                    ingredient.id = null
-                    ingredient.name = ""
+                    //ingredient.id = null
+                    //ingredient.name = ""
                     new = false
                 }
             }
@@ -198,7 +199,7 @@ class IngredientDialogFragment : DialogFragment() {
                         position: Int,
                         id: Long
                     ) {
-                        when (binding.spinner.selectedItem.toString()) {
+                        /*when (binding.spinner.selectedItem.toString()) {
                             getString(R.string.gramme_select) -> ingredient.unit =
                                 IngredientEntity.Unit.GRAMME
                             getString(R.string.kilogramme_select) -> ingredient.unit =
@@ -218,12 +219,12 @@ class IngredientDialogFragment : DialogFragment() {
                                 IngredientEntity.Unit.PINCH
                         }
 
-                        lastSelectedUnit = ingredient.unit
+                        lastSelectedUnit = ingredient.unit*/
                     }
 
                 }
 
-            if (!ingredient.new) {
+            if (ingredient.id != null) {
                 binding.quantity.editText?.setText(DecimalFormat("#0.##").format(ingredient.quantity))
                 binding.ingredientName.apply {
                     text = ingredient.name
@@ -241,12 +242,12 @@ class IngredientDialogFragment : DialogFragment() {
                 setEditIngredient(View.VISIBLE)
                 setNewIngredient(View.GONE)
 
-                ingredient.unit = lastSelectedUnit
+                //ingredient.unit = lastSelectedUnit
             }
 
             binding.optional.isChecked = ingredient.optional ?: false
 
-            binding.spinner.setSelection(units.indexOfFirst { s ->
+           /* binding.spinner.setSelection(units.indexOfFirst { s ->
                 when (s) {
                     getString(R.string.gramme_select) -> ingredient.unit == IngredientEntity.Unit.GRAMME
                     getString(R.string.kilogramme_select) -> ingredient.unit == IngredientEntity.Unit.KILOGRAMME
@@ -259,7 +260,7 @@ class IngredientDialogFragment : DialogFragment() {
                     getString(R.string.pinch_select) -> ingredient.unit == IngredientEntity.Unit.PINCH
                     else -> false
                 }
-            })
+            })*/
 
             return AlertDialog.Builder(it)
                 .setView(binding.root)
@@ -281,7 +282,7 @@ class IngredientDialogFragment : DialogFragment() {
                             } else {
 
                                 try {
-                                    ingredient.quantity = binding.quantity.toDouble()
+                                    //ingredient.quantity = binding.quantity.toDouble()
                                 } catch (e: NumberFormatException) {
                                     e.printStackTrace()
                                     binding.quantity.error =
@@ -294,9 +295,9 @@ class IngredientDialogFragment : DialogFragment() {
                                     } else {
                                         //ingredient = IngredientForRecipe(null, dialogView.quantity.toDouble(), Ingredient.Unit.valueOf() dialogView.name.editText!!.text.toString(), "")
 
-                                        ingredient.name = binding.name.editText!!.text.toString()
-                                        ingredient.imageUrl = null
-                                        ingredient.optional = binding.optional.isChecked
+                                        //ingredient.name = binding.name.editText!!.text.toString()
+                                        //ingredient.imageUrl = null
+                                        //ingredient.optional = binding.optional.isChecked
                                         dismiss()
 
                                         context.getSharedPreferences(
@@ -332,7 +333,7 @@ class IngredientDialogFragment : DialogFragment() {
                                         binding.error.text =
                                             getString(R.string.select_an_ingredient)
                                     } else {
-                                        ingredient.optional = binding.optional.isChecked
+                                        //ingredient.optional = binding.optional.isChecked
                                         dismiss()
 
                                         context.getSharedPreferences(
