@@ -22,7 +22,7 @@ import zelgius.com.myrecipes.worker.InsertDefaultDataWorker
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+open class HomeViewModel @Inject constructor(
     @ApplicationContext context: Context,
     recipeRepository: RecipeRepository
 ) : ViewModel() {

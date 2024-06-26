@@ -4,6 +4,7 @@ import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.entities.asModel
 
 fun createDummySample(suffix: String = ""): RecipeEntity {
 
@@ -112,3 +113,5 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
 
     return currentRecipe
 }
+
+fun createDummyModel(suffix: String = "") = createDummySample(suffix).asModel()

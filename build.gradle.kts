@@ -9,12 +9,12 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:8.2.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-        classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.7.6")
+        classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.7.7")
 
-        classpath("com.google.gms:google-services:4.4.0")
+        classpath("com.google.gms:google-services:4.4.2")
         classpath("com.google.protobuf:protobuf-gradle-plugin:$protobufVersion")
         classpath("com.google.android.gms:oss-licenses-plugin:0.10.6")
-        classpath("com.google.firebase:firebase-crashlytics-gradle:2.9.9")
+        classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.2")
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle.kts files
     }
@@ -34,7 +34,7 @@ tasks.register("clean", Delete::class.java) {
 }
 
 plugins {
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17" apply false
+    id("com.google.devtools.ksp") version "2.0.0-1.0.22" apply false
     id("com.google.dagger.hilt.android") version "2.50" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.0" apply false
 }
