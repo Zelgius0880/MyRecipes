@@ -5,12 +5,22 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import zelgius.com.myrecipes.dialogs.IntroDialog
+import zelgius.com.myrecipes.preview.createDummyModel
 import zelgius.com.myrecipes.ui.AppTheme
+import zelgius.com.myrecipes.ui.details.RecipeDetails
+import zelgius.com.myrecipes.ui.details.RecipeDetailsPreview
 import zelgius.com.myrecipes.ui.home.Home
 import zelgius.com.myrecipes.ui.home.HomeViewModel
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -23,15 +33,34 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             AppTheme {
-                Home()
+                SharedTransitionLayout {
+
+                    val mainNavController = rememberNavController()
+                    NavHost(navController = mainNavController, startDestination = "home") {
+                        composable("home") {
+                            Home(
+                                animatedVisibilityScope = this@composable,
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                            )
+                        }
+
+                        composable("details") {
+                            RecipeDetails(
+                                animatedVisibilityScope = this@composable,
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                recipe = createDummyModel()
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        if (intent != null) processIntent(intent)
+        processIntent(intent)
     }
 
     private fun processIntent(intent: Intent) {
@@ -54,8 +83,6 @@ class MainActivity : AppCompatActivity() {
 */
         }
     }
-
-
 
 
     override fun onResume() {

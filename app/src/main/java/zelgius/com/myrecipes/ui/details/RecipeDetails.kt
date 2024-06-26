@@ -1,17 +1,15 @@
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package zelgius.com.myrecipes.ui.recipe
+package zelgius.com.myrecipes.ui.details
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -23,64 +21,43 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.paging.PagingData
-import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.preview.SharedElementPreview
-import zelgius.com.myrecipes.preview.createDummySample
+import zelgius.com.myrecipes.preview.createDummyModel
 
+
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RecipeList(
+fun RecipeDetails(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    list: Flow<PagingData<Recipe>>,
-    modifier: Modifier = Modifier
+    recipe: Recipe
 ) {
-    val items = list.collectAsLazyPagingItems()
-
-    LazyColumn(modifier = modifier) {
-        items(count = items.itemCount) { index ->
-            val recipe = items[index]
-
-            recipe?.let {
-                RecipeListItem(
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    sharedTransitionScope = sharedTransitionScope,
-                    recipe = recipe,
-                    modifier = Modifier
-                        .fillParentMaxWidth()
-                        .padding(vertical = 2.dp, horizontal = 8.dp)
-                )
-            }
+    LazyColumn {
+        item {
+            RecipeDetailsHeader(sharedTransitionScope, animatedVisibilityScope, recipe)
         }
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RecipeListItem(
+fun RecipeDetailsHeader(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    recipe: Recipe,
-    modifier: Modifier = Modifier,
-    onClick: (Recipe) -> Unit = {}
+    recipe: Recipe
 ) = with(sharedTransitionScope) {
     Card(
-        shape = RoundedCornerShape(4.dp),
-        modifier = modifier
-            .clickable { onClick(recipe) }
-            .sharedElement(
-                animatedVisibilityScope = animatedVisibilityScope,
-                state = rememberSharedContentState(
-                    key = "recipe_container"
-                )
+        shape = RoundedCornerShape(4.dp), modifier = Modifier.sharedElement(
+            animatedVisibilityScope = animatedVisibilityScope,
+            state = rememberSharedContentState(
+                key = "recipe_container"
             )
+        )
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
             AsyncImage(
@@ -92,7 +69,7 @@ fun RecipeListItem(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(128.dp)
                     .sharedElement(
                         animatedVisibilityScope = animatedVisibilityScope,
                         state = rememberSharedContentState(
@@ -104,7 +81,7 @@ fun RecipeListItem(
             Column(modifier = Modifier.padding(start = 8.dp)) {
                 Text(
                     recipe.type.text(LocalContext.current),
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.sharedElement(
                         animatedVisibilityScope = animatedVisibilityScope,
                         state = rememberSharedContentState(
@@ -115,13 +92,12 @@ fun RecipeListItem(
                 Text(
                     recipe.name, modifier = Modifier
                         .padding(top = 8.dp)
-                        .padding(top = 8.dp)
                         .sharedElement(
                             animatedVisibilityScope = animatedVisibilityScope,
                             state = rememberSharedContentState(
                                 key = "recipe_name"
                             )
-                        )
+                        ), style = MaterialTheme.typography.headlineMedium
                 )
             }
         }
@@ -130,26 +106,13 @@ fun RecipeListItem(
 
 @Preview
 @Composable
-fun RecipeListPreview() {
-    val list = (1..6).map {
-        createDummySample(" $it")
-    }
-
+fun RecipeDetailsPreview() {
     SharedElementPreview { animatedVisibilityScope, sharedTransitionScope ->
-        RecipeList(animatedVisibilityScope = animatedVisibilityScope,
-            sharedTransitionScope = sharedTransitionScope,
-            list = flowOf(PagingData.from(list.map { it.asModel() }))
-        )
-    }
-}
-
-@Composable
-@Preview
-fun RecipeListItemPreview() {
-    SharedElementPreview { animatedVisibilityScope, sharedTransitionScope ->
-        RecipeListItem(
+        RecipeDetails(
             animatedVisibilityScope = animatedVisibilityScope,
-            sharedTransitionScope = sharedTransitionScope, recipe = createDummySample().asModel()
+            sharedTransitionScope = sharedTransitionScope,
+            recipe = createDummyModel()
         )
     }
 }
+
