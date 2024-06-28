@@ -93,12 +93,16 @@ fun RecipeEntity.asModel(): Recipe {
         step = steps.find { s -> s.id == it.refStep }
     ) }
 
+
+
     return Recipe(
         name = name,
         id = id,
         imageUrl = imageURL,
         type = type.asModel(),
-        steps = steps,
+        steps = steps.map { step ->
+            step.copy(ingredients = ingredients.filter { step.id == it.step?.id })
+        },
         ingredients = ingredients
     )
 }

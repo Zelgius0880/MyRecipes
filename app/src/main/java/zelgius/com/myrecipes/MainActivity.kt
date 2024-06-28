@@ -8,15 +8,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
+import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.dialogs.IntroDialog
 import zelgius.com.myrecipes.preview.createDummyModel
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.details.RecipeDetails
 import zelgius.com.myrecipes.ui.details.RecipeDetailsPreview
+import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.home.Home
 import zelgius.com.myrecipes.ui.home.HomeViewModel
 
@@ -41,14 +46,51 @@ class MainActivity : AppCompatActivity() {
                             Home(
                                 animatedVisibilityScope = this@composable,
                                 sharedTransitionScope = this@SharedTransitionLayout,
+                                onClick = {
+                                    mainNavController.navigate(
+                                        "details?id=${it.id}&name=${it.name}&url=${it.imageUrl}&type=${it.type.name}"
+                                    ) {
+                                        popUpTo(mainNavController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                    }
+                                }
                             )
                         }
 
-                        composable("details") {
+                        composable(
+                            "details?id={id}&name={name}&url={url}&type={type}",
+                            arguments = listOf(
+                                navArgument("id") { defaultValue = 0L },
+                                navArgument("url") { defaultValue = "" },
+                                navArgument("name") { defaultValue = "" },
+                                navArgument("type") { defaultValue = "" },
+                            )
+                        ) {
+                            val id = it.arguments?.getLong("id")
+                            val type = it.arguments?.getString("type")?.let { t ->
+                                Recipe.Type.valueOf(t)
+                            }
+
+                            if (id == null || type == null) {
+                                mainNavController.popBackStack()
+                                return@composable
+                            }
+
                             RecipeDetails(
                                 animatedVisibilityScope = this@composable,
                                 sharedTransitionScope = this@SharedTransitionLayout,
-                                recipe = createDummyModel()
+                                navigateBack = { mainNavController.popBackStack() },
+                                viewModel = hiltViewModel(creationCallback = { factory: RecipeDetailsViewModel.Factory ->
+                                    factory.create(
+                                        Recipe(
+                                            id,
+                                            type = type,
+                                            name = it.arguments?.getString("name") ?: "",
+                                            imageUrl = it.arguments?.getString("url")
+                                        )
+                                    )
+                                })
                             )
                         }
                     }

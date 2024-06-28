@@ -31,7 +31,7 @@ android {
         applicationId ="zelgius.com.myrecipes"
         minSdk = 26
         targetSdk =34
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
         testInstrumentationRunner ="androidx.test.runner.AndroidJUnitRunner"
 
@@ -158,7 +158,7 @@ dependencies {
 
     androidTestImplementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.picasso:picasso:2.71828") // TODO remove that once the migration will be done
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
     //Hilt

@@ -20,11 +20,9 @@ import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.md_cyan_A700
 
 @Composable
-fun Step(step: Step) {
-    Card {
-        Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            StepContent(step = step)
-        }
+fun Step(step: Step, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        StepContent(step = step)
     }
 }
 
@@ -49,10 +47,12 @@ private fun StepContent(step: Step) {
 @Preview
 fun StepPreview() {
     AppTheme {
-        Step(step = Step(
-            text = "Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Text",
-            order = 1,
-            recipe = Recipe(name = "Recipe", type = Recipe.Type.Other)
-        ))
+        Step(
+            step = Step(
+                text = "Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Text",
+                order = 1,
+                recipe = Recipe(name = "Recipe", type = Recipe.Type.Other)
+            )
+        )
     }
 }

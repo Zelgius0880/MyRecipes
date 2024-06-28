@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.ui.recipe
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,6 +21,7 @@ import kotlin.random.Random
 @Composable
 fun Ingredient(
     ingredient: Ingredient,
+    modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
 ) {
     val drawable = ingredient.drawable
@@ -29,13 +31,15 @@ fun Ingredient(
         image = drawable,
         text = text,
         avatarColor = md_blue_grey_700,
-        shape = shape
+        shape = shape,
+        modifier = modifier
     )
     else StepCard(
         "${ingredient.name.uppercase().first()}",
         shape = shape,
         text = text,
-        avatarColor = md_blue_grey_700
+        avatarColor = md_blue_grey_700,
+        modifier = modifier
     )
 }
 
