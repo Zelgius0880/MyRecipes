@@ -31,7 +31,7 @@ fun StepCard(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
 
-) {
+    ) {
     StepCard(
         avatar = Avatar.Letter(letter),
         avatarColor = avatarColor,
@@ -67,35 +67,38 @@ private fun StepCard(
     shape: Shape,
     modifier: Modifier
 ) {
-    Card(modifier, shape = shape) {
-        Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(avatarColor), contentAlignment = Alignment.Center
-            ) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(avatarColor), contentAlignment = Alignment.Center
+        ) {
 
-                when (avatar) {
-                    is Avatar.Image -> Image(
-                        painter = painterResource(id = avatar.image),
-                        modifier = Modifier.padding(all = 8.dp),
-                        contentDescription = null
-                    )
+            when (avatar) {
+                is Avatar.Image -> Image(
+                    painter = painterResource(id = avatar.image),
+                    modifier = Modifier.padding(all = 8.dp),
+                    contentDescription = null
+                )
 
-                    is Avatar.Letter -> Text(avatar.letter)
-                }
+                is Avatar.Letter -> Text(avatar.letter)
             }
-
-            Text(text = text, Modifier.padding(horizontal = 8.dp))
         }
+
+        Text(text = text, Modifier.padding(horizontal = 8.dp))
     }
 }
 
 @Preview
 @Composable
 fun StepCardPreview() {
-    StepCard(shape = RoundedCornerShape(0.dp), letter = "A", text = " Bla sdlkjfls", avatarColor = md_blue_grey_700)
+    StepCard(
+        shape = RoundedCornerShape(0.dp),
+        letter = "A",
+        text = " Bla sdlkjfls",
+        avatarColor = md_blue_grey_700
+    )
 }
 
 private sealed interface Avatar {

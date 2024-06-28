@@ -6,7 +6,7 @@ import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.data.entities.StepEntity
 import zelgius.com.myrecipes.data.entities.asModel
 
-fun createDummySample(suffix: String = ""): RecipeEntity {
+fun createDummySample(id: Long = 0, suffix: String = ""): RecipeEntity {
 
     val currentRecipe = RecipeEntity(
         name = "Recipe For Testing$suffix", imageURL =
@@ -14,7 +14,7 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
 
         ingredients.add(
             IngredientForRecipe(
-                null,
+                id,
                 2.0,
                 IngredientEntity.Unit.UNIT,
                 "Eggs",
@@ -26,7 +26,7 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
         )
         ingredients.add(
             IngredientForRecipe(
-                null,
+                2,
                 500.0,
                 IngredientEntity.Unit.GRAMME,
                 "Flour",
@@ -38,7 +38,7 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
         )
         ingredients.add(
             IngredientForRecipe(
-                null,
+                3,
                 200.0,
                 IngredientEntity.Unit.MILLILITER,
                 "Water",
@@ -50,7 +50,7 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
         )
         ingredients.add(
             IngredientForRecipe(
-                null,
+                4,
                 2.33,
                 IngredientEntity.Unit.CUP,
                 "Butter",
@@ -61,12 +61,12 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
             )
         )
 
-        steps.add(StepEntity(id =null, text ="Step 1", optional =  true, refRecipe =  null, order = 1 ))
-        steps.add(StepEntity(id = null, text = "Step 2", optional = false, refRecipe =  null, order = 2 ))
-        steps.add(StepEntity(id = null, text = "Step 3", optional = false, refRecipe = null, order = 3).apply {
+        steps.add(StepEntity(id =1, text ="Step 1", optional =  true, refRecipe =  null, order = 1 ))
+        steps.add(StepEntity(id = 2, text = "Step 2", optional = false, refRecipe =  null, order = 2 ))
+        steps.add(StepEntity(id = 3, text = "Step 3", optional = false, refRecipe = null, order = 3).apply {
             ingredients.add(
                 IngredientForRecipe(
-                    null,
+                    1,
                     1.0,
                     IngredientEntity.Unit.TEASPOON,
                     "Salt",
@@ -81,7 +81,7 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
 
             ingredients.add(
                 IngredientForRecipe(
-                    null,
+                    2,
                     1000.0,
                     IngredientEntity.Unit.TABLESPOON,
                     "Sugar",
@@ -96,7 +96,7 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
 
             ingredients.add(
                 IngredientForRecipe(
-                    null,
+                    3,
                     1000.0,
                     IngredientEntity.Unit.LITER,
                     "Milk",
@@ -114,4 +114,4 @@ fun createDummySample(suffix: String = ""): RecipeEntity {
     return currentRecipe
 }
 
-fun createDummyModel(suffix: String = "") = createDummySample(suffix).asModel()
+fun createDummyModel(id: Long = 0, suffix: String = "") = createDummySample(suffix = suffix).asModel()

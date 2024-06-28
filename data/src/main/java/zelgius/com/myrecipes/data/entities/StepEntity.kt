@@ -37,6 +37,9 @@ data class StepEntity(
     var new = false
 
     @Ignore
+    val ingredients: MutableList<IngredientForRecipe> = mutableListOf()
+
+    @Ignore
     constructor(step: RecipeProto.Step) : this(
         null,
         step.name,

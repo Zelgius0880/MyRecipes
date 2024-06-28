@@ -28,7 +28,10 @@ class RecipeRepository @Inject constructor(
             steps.addAll(stepDao.get(id))
             ingredients.addAll(ingredientDao.getForRecipe(id))
             ingredients.forEach {
-                if (it.refStep != null) it.step = steps.find { s -> s.id == it.refStep }
+                if (it.refStep != null) {
+                    it.step = steps.find { s -> s.id == it.refStep }
+                    it.step?.ingredients?.add(it)
+                }
             }
         }?.asModel()
 

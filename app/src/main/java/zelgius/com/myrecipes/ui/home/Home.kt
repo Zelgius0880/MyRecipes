@@ -2,28 +2,18 @@
 
 package zelgius.com.myrecipes.ui.home
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -34,9 +24,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -52,31 +41,28 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.preview.SharedElementPreview
 import zelgius.com.myrecipes.preview.createDummyModel
-import zelgius.com.myrecipes.preview.createDummySample
 import zelgius.com.myrecipes.ui.recipe.RecipeList
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
 
 val tabs = listOf(Recipe.Type.Meal, Recipe.Type.Dessert, Recipe.Type.Other)
 
 @Composable
 fun Home(
-    viewModel: HomeViewModel = hiltViewModel(), sharedTransitionScope: SharedTransitionScope,
+    viewModel: HomeViewModel = hiltViewModel(),
+    sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    onClick: (Recipe) -> Unit = {},
 ) {
     HomeView(
         sharedTransitionScope = sharedTransitionScope,
         animatedVisibilityScope = animatedVisibilityScope,
         pageMeals = viewModel.mealsPage,
         pageDesserts = viewModel.dessertPage,
-        pageOther = viewModel.otherPage
+        pageOther = viewModel.otherPage,
+        onClick = onClick,
     )
 }
 
@@ -85,6 +71,7 @@ fun Home(
 private fun HomeView(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    onClick: (Recipe) -> Unit = {},
     pageMeals: Flow<PagingData<Recipe>>,
     pageDesserts: Flow<PagingData<Recipe>>,
     pageOther: Flow<PagingData<Recipe>>,
@@ -92,35 +79,33 @@ private fun HomeView(
 
     Scaffold(
         topBar = {
-            Column {
-                TopAppBar(
-                    title = { Text(text = stringResource(id = R.string.recipe_list)) },
-                    actions = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_search_24dp),
-                                contentDescription = stringResource(
-                                    id = R.string.search_hint,
-                                )
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.recipe_list)) },
+                actions = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_search_24dp),
+                            contentDescription = stringResource(
+                                id = R.string.search_hint,
                             )
-                        }
-
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_qr_code_white),
-                                modifier = Modifier.padding(8.dp),
-                                contentDescription = stringResource(
-                                    id = R.string.search_hint,
-                                )
-                            )
-                        }
+                        )
                     }
-                )
-            }
+
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_qr_code_white),
+                            modifier = Modifier.padding(8.dp),
+                            contentDescription = stringResource(
+                                id = R.string.search_hint,
+                            )
+                        )
+                    }
+                }
+            )
         },
         content = { padding ->
             val navController = rememberNavController()
-            var selectedTabIndex by remember {
+            var selectedTabIndex by rememberSaveable {
                 mutableIntStateOf(0)
             }
             var oldTabIndex by remember {
@@ -178,6 +163,7 @@ private fun HomeView(
 
                     tabComposable("meals") {
                         RecipeList(
+                            onClick = onClick,
                             list = pageMeals,
                             modifier = Modifier.fillMaxSize(),
                             animatedVisibilityScope = animatedVisibilityScope,
@@ -186,6 +172,7 @@ private fun HomeView(
                     }
                     tabComposable("desserts") {
                         RecipeList(
+                            onClick = onClick,
                             list = pageDesserts,
                             modifier = Modifier.fillMaxSize(),
                             animatedVisibilityScope = animatedVisibilityScope,
@@ -194,6 +181,7 @@ private fun HomeView(
                     }
                     tabComposable("other") {
                         RecipeList(
+                            onClick = onClick,
                             list = pageOther,
                             modifier = Modifier.fillMaxSize(),
                             animatedVisibilityScope = animatedVisibilityScope,
@@ -212,7 +200,7 @@ fun HomePreview() {
     fun createSample(index: Int) =
         flowOf(
             PagingData.from((1..6).map {
-                createDummyModel(" ${6 * index + it}")
+                createDummyModel(id = (6*index + it).toLong(), suffix = " ${6 * index + it}")
             })
         )
 

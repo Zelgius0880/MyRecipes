@@ -41,7 +41,8 @@ fun RecipeList(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     list: Flow<PagingData<Recipe>>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (Recipe) -> Unit = {}
 ) {
     val items = list.collectAsLazyPagingItems()
 
@@ -54,6 +55,7 @@ fun RecipeList(
                     animatedVisibilityScope = animatedVisibilityScope,
                     sharedTransitionScope = sharedTransitionScope,
                     recipe = recipe,
+                    onClick = onClick,
                     modifier = Modifier
                         .fillParentMaxWidth()
                         .padding(vertical = 2.dp, horizontal = 8.dp)
@@ -78,7 +80,7 @@ fun RecipeListItem(
             .sharedElement(
                 animatedVisibilityScope = animatedVisibilityScope,
                 state = rememberSharedContentState(
-                    key = "recipe_container"
+                    key = "${recipe.id}_recipe_container"
                 )
             )
     ) {
@@ -96,7 +98,7 @@ fun RecipeListItem(
                     .sharedElement(
                         animatedVisibilityScope = animatedVisibilityScope,
                         state = rememberSharedContentState(
-                            key = "recipe_image"
+                            key = "${recipe.id}_recipe_image"
                         )
                     )
             )
@@ -108,18 +110,17 @@ fun RecipeListItem(
                     modifier = Modifier.sharedElement(
                         animatedVisibilityScope = animatedVisibilityScope,
                         state = rememberSharedContentState(
-                            key = "recipe_type"
+                            key = "${recipe.id}_recipe_type"
                         )
                     )
                 )
                 Text(
                     recipe.name, modifier = Modifier
                         .padding(top = 8.dp)
-                        .padding(top = 8.dp)
                         .sharedElement(
                             animatedVisibilityScope = animatedVisibilityScope,
                             state = rememberSharedContentState(
-                                key = "recipe_name"
+                                key = "${recipe.id}_recipe_name"
                             )
                         )
                 )
@@ -132,7 +133,7 @@ fun RecipeListItem(
 @Composable
 fun RecipeListPreview() {
     val list = (1..6).map {
-        createDummySample(" $it")
+        createDummySample(suffix = " $it", id = it.toLong())
     }
 
     SharedElementPreview { animatedVisibilityScope, sharedTransitionScope ->
