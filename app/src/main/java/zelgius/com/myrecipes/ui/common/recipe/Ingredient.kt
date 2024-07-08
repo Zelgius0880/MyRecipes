@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.ui.recipe
+package zelgius.com.myrecipes.ui.common.recipe
 
 
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +42,32 @@ fun Ingredient(
         modifier = modifier
     )
 }
+
+@Composable
+fun Ingredient(
+    ingredient: Ingredient,
+    modifier: Modifier = Modifier,
+    text: String = ingredient.text(LocalContext.current),
+    shape: Shape = MaterialTheme.shapes.medium,
+) {
+    val drawable = ingredient.drawable
+
+    if (drawable != null) StepCard(
+        image = drawable,
+        text = text,
+        avatarColor = md_blue_grey_700,
+        shape = shape,
+        modifier = modifier
+    )
+    else StepCard(
+        "${ingredient.name.uppercase().first()}",
+        shape = shape,
+        text = text,
+        avatarColor = md_blue_grey_700,
+        modifier = modifier
+    )
+}
+
 
 @Preview
 @Composable

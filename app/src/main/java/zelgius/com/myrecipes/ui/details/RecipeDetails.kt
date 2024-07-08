@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.twotone.ArrowBack
+import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,8 +45,8 @@ import zelgius.com.myrecipes.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.ExpandableList
 import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.home.string
-import zelgius.com.myrecipes.ui.recipe.Ingredient
-import zelgius.com.myrecipes.ui.recipe.Step
+import zelgius.com.myrecipes.ui.common.recipe.Ingredient
+import zelgius.com.myrecipes.ui.common.recipe.Step
 
 
 @Composable
@@ -52,12 +54,13 @@ fun RecipeDetails(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: RecipeDetailsViewModel,
-    navigateBack: () -> Unit = {}
+    navigateBack: () -> Unit = {},
+    onEdit: (Recipe) -> Unit = {}
 ) {
     val recipe by viewModel.recipeFlow.collectAsState()
     val items by viewModel.itemsFlow.collectAsState(emptyList())
 
-    RecipeDetailsView(sharedTransitionScope, animatedVisibilityScope, navigateBack, recipe, items)
+    RecipeDetailsView(sharedTransitionScope, animatedVisibilityScope, navigateBack, onEdit, recipe, items)
 }
 
 @Composable
@@ -65,6 +68,7 @@ private fun RecipeDetailsView(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     navigateBack: () -> Unit = {},
+    onEdit: (Recipe) -> Unit = {},
     recipe: Recipe,
     items: List<Step>,
 ) = with(sharedTransitionScope) {
@@ -81,11 +85,20 @@ private fun RecipeDetailsView(
         }, navigationIcon = {
             IconButton(onClick = navigateBack) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
                     contentDescription = ""
                 )
             }
-        })
+        },
+            actions = {
+                IconButton(onClick = { onEdit(recipe) }) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Edit,
+                        contentDescription = ""
+                    )
+                }
+            }
+        )
     }, content = { padding ->
         ExpandableList(
             reversed = true,
@@ -148,11 +161,11 @@ fun RecipeDetailsHeader(
 ) = with(sharedTransitionScope) {
     Card(
         modifier = modifier.sharedElement(
-                animatedVisibilityScope = animatedVisibilityScope,
-                state = rememberSharedContentState(
-                    key = "${recipe.id}_recipe_container"
-                )
-            ), shape = MaterialTheme.shapes.extraLarge
+            animatedVisibilityScope = animatedVisibilityScope,
+            state = rememberSharedContentState(
+                key = "${recipe.id}_recipe_container"
+            )
+        ), shape = MaterialTheme.shapes.extraLarge
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),

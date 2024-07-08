@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.data.entities.RecipeIngredient
@@ -22,6 +23,9 @@ interface IngredientDao {
 
     @Query("SELECT * FROM ingredient ORDER BY name")
     suspend fun get(): List<IngredientEntity>
+
+    @Query("SELECT * FROM ingredient ORDER BY name")
+    fun getFlow(): Flow<List<IngredientEntity>>
 
     @Query("SELECT * FROM IngredientForRecipe WHERE refRecipe = :recipeId ORDER BY sortOrder")
     suspend fun getForRecipe(recipeId: Long): List<IngredientForRecipe>

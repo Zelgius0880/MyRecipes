@@ -312,7 +312,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:$USER_HOME$/Library/Android/sdk/icons/material/materialicons/share/baseline_share_24.xml" />
+                                      <entry key="url" value="file:/$PROJECT_DIR$/../../android-sdk/icons/material/materialiconstwotone/insert_photo/twotone_insert_photo_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -323,8 +323,8 @@
                         <option name="values">
                           <map>
                             <entry key="color" value="ffffff" />
-                            <entry key="outputName" value="ic_baseline_share_24" />
-                            <entry key="sourceFile" value="$USER_HOME$/Downloads/honey.svg" />
+                            <entry key="outputName" value="twotone_insert_photo_24" />
+                            <entry key="sourceFile" value="C:\Users\Florian\Downloads\honey.svg" />
                           </map>
                         </option>
                       </PersistentState>

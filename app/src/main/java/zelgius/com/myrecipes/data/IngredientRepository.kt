@@ -1,6 +1,7 @@
 package zelgius.com.myrecipes.data
 
 import androidx.lifecycle.liveData
+import kotlinx.coroutines.flow.map
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.data.entities.RecipeEntity
@@ -19,6 +20,8 @@ class IngredientRepository @Inject constructor(
     fun get() = liveData {
         emit(dao.get().map { it.asModel() })
     }
+
+    fun getFlow() = dao.getFlow().map { it.map {  i -> i.asModel() } }
 
     suspend fun get(name: String) = dao.get(name)
 

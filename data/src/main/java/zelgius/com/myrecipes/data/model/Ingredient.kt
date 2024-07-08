@@ -21,13 +21,13 @@ data class Ingredient(
     val step: Step?
 ) : Parcelable {
     enum class Unit {
+        Gramme,
+        Kilogramme,
         Milliliter,
         Liter,
         Unit,
         TeaSpoon,
         TableSpoon,
-        Gramme,
-        Kilogramme,
         Cup,
         Pinch
     }

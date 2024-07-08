@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.ui.details.viewModel
+package zelgius.com.myrecipes.ui.edit.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,21 +6,17 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.data.RecipeRepository
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
 
-@HiltViewModel(assistedFactory = RecipeDetailsViewModel.Factory::class)
-class RecipeDetailsViewModel @AssistedInject constructor(
+@HiltViewModel(assistedFactory = EditRecipeViewModel.Factory::class)
+class EditRecipeViewModel @AssistedInject constructor(
     @Assisted recipe: Recipe,
     private val recipeRepository: RecipeRepository
 ) : ViewModel() {
@@ -33,7 +29,13 @@ class RecipeDetailsViewModel @AssistedInject constructor(
     val itemsFlow
         get() = _recipeFlow.asStateFlow()
             .map {
-                listOf(Step(text= "", ingredients = it.ingredients, recipe = it)) + it.steps
+                it.ingredients.mapIndexed { index, item ->
+                    IngredientItem(
+                        item,
+                        isFirst = index == 0,
+                        isLast = index == it.ingredients.lastIndex
+                    )
+                } + AddIngredient + it.steps.map { s -> StepItem(s) } + AddStep
             }
 
     init {
@@ -45,8 +47,28 @@ class RecipeDetailsViewModel @AssistedInject constructor(
         }
     }
 
+    fun changeName(name: String) {
+        _recipeFlow.value = _recipeFlow.value.copy(name = name)
+    }
+
+    fun changeImageUrl(imageUrl: String) {
+        _recipeFlow.value = _recipeFlow.value.copy(imageUrl = imageUrl)
+    }
+
+
     @AssistedFactory
     interface Factory {
-        fun create(recipe: Recipe): RecipeDetailsViewModel
+        fun create(recipe: Recipe): EditRecipeViewModel
     }
 }
+
+sealed interface ListItem
+data class StepItem(val step: Step) : ListItem
+data class IngredientItem(
+    val ingredient: Ingredient,
+    val isFirst: Boolean,
+    val isLast: Boolean
+) : ListItem
+
+data object AddIngredient : ListItem
+data object AddStep : ListItem
