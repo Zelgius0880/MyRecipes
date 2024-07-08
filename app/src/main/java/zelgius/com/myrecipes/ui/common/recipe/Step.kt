@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.ui.recipe
+package zelgius.com.myrecipes.ui.common.recipe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

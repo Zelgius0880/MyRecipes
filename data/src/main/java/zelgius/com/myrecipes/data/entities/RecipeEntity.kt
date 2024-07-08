@@ -93,8 +93,6 @@ fun RecipeEntity.asModel(): Recipe {
         step = steps.find { s -> s.id == it.refStep }
     ) }
 
-
-
     return Recipe(
         name = name,
         id = id,
