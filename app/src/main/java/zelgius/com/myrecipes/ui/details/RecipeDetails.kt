@@ -2,6 +2,7 @@
 
 package zelgius.com.myrecipes.ui.details
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -46,7 +47,9 @@ import zelgius.com.myrecipes.ui.common.ExpandableList
 import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.home.string
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
+import zelgius.com.myrecipes.ui.common.recipe.IngredientChip
 import zelgius.com.myrecipes.ui.common.recipe.Step
+import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
 
 
 @Composable
@@ -60,7 +63,14 @@ fun RecipeDetails(
     val recipe by viewModel.recipeFlow.collectAsState()
     val items by viewModel.itemsFlow.collectAsState(emptyList())
 
-    RecipeDetailsView(sharedTransitionScope, animatedVisibilityScope, navigateBack, onEdit, recipe, items)
+    RecipeDetailsView(
+        sharedTransitionScope,
+        animatedVisibilityScope,
+        navigateBack,
+        onEdit,
+        recipe,
+        items
+    )
 }
 
 @Composable
@@ -70,7 +80,7 @@ private fun RecipeDetailsView(
     navigateBack: () -> Unit = {},
     onEdit: (Recipe) -> Unit = {},
     recipe: Recipe,
-    items: List<Step>,
+    items: List<StepItem>,
 ) = with(sharedTransitionScope) {
     Scaffold(topBar = {
         TopAppBar(title = {
@@ -129,12 +139,17 @@ private fun RecipeDetailsView(
                         .fillMaxWidth()
                         .padding(16.dp)
                 )
-                else Step(
-                    step = item,
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
+                else Row {
+                    Step(
+                        step = item.step,
+                        Modifier
+                            .weight(1f)
+                            .padding(8.dp)
+                    )
+                    val count = item.ingredients.size
+                    AnimatedVisibility(count > 0 && !isExpanded) { IngredientChip(count) }
+
+                }
             },
             child = { _, item ->
                 Ingredient(
@@ -146,8 +161,7 @@ private fun RecipeDetailsView(
             children = {
                 it.ingredients
             },
-
-            )
+        )
     })
 }
 
@@ -205,11 +219,14 @@ fun RecipeDetailsPreview() {
             animatedVisibilityScope = animatedVisibilityScope,
             sharedTransitionScope = sharedTransitionScope,
             recipe = recipe,
-            items = listOf(
+            items = (listOf(
                 Step(
-                    text = "", ingredients = recipe.ingredients, recipe = recipe
+                    text = "", recipe = recipe
                 )
-            ) + recipe.steps
+            ) + recipe.steps).mapIndexed { index, item ->
+                if (index == 0) StepItem(item, ingredients = recipe.ingredients)
+                else StepItem(item, emptyList())
+            }
         )
     }
 }

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package zelgius.com.myrecipes.ui.common
 
@@ -6,21 +6,17 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -31,11 +27,20 @@ fun AppTextField(
     enabled: Boolean = true,
     readOnly: Boolean = false,
     isError: Boolean = false,
-    shape: Shape = RoundedCornerShape(50),
+    shape: Shape = RoundedCornerShape(24.dp),
     visualTransformation: VisualTransformation = VisualTransformation.None,
     singleLine: Boolean = false,
     label: @Composable () -> Unit = {},
+    maxLines: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    textAlign: TextAlign = TextAlign.Start,
+    contentPadding: PaddingValues =  PaddingValues(
+        horizontal = 16.dp,
+        vertical = 4.dp
+    )
 ) {
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
@@ -47,7 +52,10 @@ fun AppTextField(
         interactionSource = interactionSource,
         enabled = enabled,
         readOnly = readOnly,
+        maxLines = maxLines,
         singleLine = singleLine,
+        keyboardOptions = keyboardOptions,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, textAlign = textAlign)
     ) { innerTextField ->
         OutlinedTextFieldDefaults.DecorationBox(
             value = value,
@@ -57,6 +65,8 @@ fun AppTextField(
             innerTextField = innerTextField,
             singleLine = singleLine,
             enabled = enabled,
+            trailingIcon = trailingIcon,
+            leadingIcon = leadingIcon,
             container = {
                 OutlinedTextFieldDefaults.Container(
                     enabled = enabled,
@@ -66,10 +76,7 @@ fun AppTextField(
                 )
             },
             interactionSource = interactionSource,
-            contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 4.dp
-            ), // this is how you can remove the padding
+            contentPadding = contentPadding, // this is how you can remove the padding
         )
     }
 }
@@ -86,6 +93,9 @@ fun AppTextField(
     singleLine: Boolean = false,
     label: @Composable () -> Unit = {},
     interactionSource: MutableInteractionSource? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    textAlign: TextAlign = TextAlign.Start
 ) {
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
@@ -97,6 +107,8 @@ fun AppTextField(
         interactionSource = interactionSource,
         enabled = enabled,
         readOnly = readOnly,
+        keyboardOptions = keyboardOptions,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, textAlign = textAlign),
         singleLine = singleLine,
     ) { innerTextField ->
         OutlinedTextFieldDefaults.DecorationBox(
@@ -107,6 +119,7 @@ fun AppTextField(
             innerTextField = innerTextField,
             singleLine = singleLine,
             enabled = enabled,
+            trailingIcon = trailingIcon,
             container = {
                 OutlinedTextFieldDefaults.Container(
                     enabled = enabled,

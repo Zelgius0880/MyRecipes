@@ -46,6 +46,7 @@ fun <T> AppDropDown(
 
         ExposedDropdownMenu(
             expanded = expanded,
+            matchTextFieldWidth = false,
             onDismissRequest = {
                 expanded = false
             }

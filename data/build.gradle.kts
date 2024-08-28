@@ -1,3 +1,5 @@
+
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -25,6 +27,8 @@ android {
                 "proguard-rules.pro"
             )
         }
+
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -33,11 +37,14 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+
 }
 
 dependencies {
     val roomVersion = "2.6.1"
     api(project(path = (":protobuff")))
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     //Room
     ksp("androidx.room:room-compiler:$roomVersion")
@@ -46,6 +53,6 @@ dependencies {
     androidTestImplementation("androidx.room:room-testing:$roomVersion")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
