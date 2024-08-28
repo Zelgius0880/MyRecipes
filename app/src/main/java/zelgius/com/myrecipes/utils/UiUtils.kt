@@ -2,6 +2,9 @@ package zelgius.com.myrecipes.utils
 
 import TextDrawable
 import android.content.Context
+import android.graphics.ColorFilter
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
@@ -43,8 +46,18 @@ object UiUtils {
      * @param color Int?        if not null, set the color of the letter of the ingredient, else the color will be white
      * @return (Drawable?)
      */
-    fun getDrawableForImageView(context: Context, item: Ingredient, padding: Float = 8f, @ColorInt color: Int? = null): Drawable =
-        getDrawableForImageView(context, IngredientEntity(name = item.name, imageURL = item.imageUrl, id = item.id), padding = padding, color = color)
+    fun getDrawableForImageView(
+        context: Context,
+        item: Ingredient,
+        padding: Float = 8f,
+        @ColorInt color: Int? = null
+    ): Drawable =
+        getDrawableForImageView(
+            context,
+            IngredientEntity(name = item.name, imageURL = item.imageUrl, id = item.id),
+            padding = padding,
+            color = color
+        )
 
     /**
      * Get a drawable with a circular background and the corresponding drawable if item.imageURL is known as a drawable from thee resources(see KNOWN_ICONS)
@@ -54,22 +67,35 @@ object UiUtils {
      * @param color Int?        if not null, set the color of the letter of the ingredient, else the color will be white
      * @return (Drawable?)
      */
-    private fun getDrawableForImageView(context: Context, item: IngredientEntity, padding: Float = 8f, @ColorInt color: Int? = null): Drawable =
-        DefaultIngredients.values().find { it.url == item.imageURL }.let {
+    private fun getDrawableForImageView(
+        context: Context,
+        item: IngredientEntity,
+        padding: Float = 8f,
+        @ColorInt color: Int? = null
+    ): Drawable =
+        DefaultIngredients.entries.find { it.url == item.imageURL }.let {
             if (it != null) {
                 LayerDrawable(
                     arrayOf(
-                        ContextCompat.getDrawable(context, R.drawable.background_circle)
-                        ,  ContextCompat.getDrawable(context, it.drawable)
+                        ContextCompat.getDrawable(context, R.drawable.background_circle),
+                        ContextCompat.getDrawable(context, it.drawable)
                     )
                 ).apply {
                     val dp = context.dpToPx(padding).roundToInt()
                     setLayerInset(1, dp, dp, dp, dp)
                 }
             } else {
-                TextDrawable(context.resources,
-                    "${item.name.toUpperCase(Locale.getDefault())[0]}"
-                    )
+                TextDrawable(
+                    context.resources,
+                    "${item.name.uppercase(Locale.getDefault())[0]}"
+                ).apply {
+                    color?.let { c ->
+                        colorFilter = PorterDuffColorFilter(
+                            c,
+                            PorterDuff.Mode.SRC_ATOP
+                        )
+                    }
+                }
             }
         }
 
@@ -78,13 +104,21 @@ object UiUtils {
         context: Context,
         drawableName: String, @ColorInt color: Int? = null
     ): Drawable? {
-        DefaultIngredients.values().find { it.url == drawableName }.let {
+        DefaultIngredients.entries.find { it.url == drawableName }.let {
             if (it != null) {
-                return  ContextCompat.getDrawable(context, it.drawable)
+                return ContextCompat.getDrawable(context, it.drawable)
             } else
-                return TextDrawable(context.resources,
-                    "${drawableName.toUpperCase(Locale.getDefault())[0]}",
-                    )
+                return TextDrawable(
+                    context.resources,
+                    "${drawableName.uppercase(Locale.getDefault())[0]}",
+                ).apply {
+                    color?.let { c ->
+                        colorFilter = PorterDuffColorFilter(
+                            c,
+                            PorterDuff.Mode.SRC_ATOP
+                        )
+                    }
+                }
         }
     }
 
@@ -100,7 +134,7 @@ object UiUtils {
                             imageView.context,
                             color
                         )
-                    ),  ContextCompat.getDrawable(imageView.context, drawable)
+                    ), ContextCompat.getDrawable(imageView.context, drawable)
                 )
             ).apply {
                 val px = imageView.context.dpToPx(dp).roundToInt()
@@ -139,6 +173,7 @@ object UiUtils {
                     adapter = spinnerArrayAdapter
                     setSelection(typeStringArray.indexOf(category))
                 }
+
                 is TextView -> this.text = category
             }
         }

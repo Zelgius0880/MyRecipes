@@ -11,7 +11,6 @@ data class Step(
     val order: Int = Int.MAX_VALUE,
     val optional: Boolean = false,
     val recipe: Recipe?,
-    val ingredients: List<Ingredient> = emptyList()
 ) : Parcelable
 
 fun Step.asEntity() = StepEntity(

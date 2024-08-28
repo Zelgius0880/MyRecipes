@@ -98,9 +98,7 @@ fun RecipeEntity.asModel(): Recipe {
         id = id,
         imageUrl = imageURL,
         type = type.asModel(),
-        steps = steps.map { step ->
-            step.copy(ingredients = ingredients.filter { step.id == it.step?.id })
-        },
+        steps = steps,
         ingredients = ingredients
     )
 }

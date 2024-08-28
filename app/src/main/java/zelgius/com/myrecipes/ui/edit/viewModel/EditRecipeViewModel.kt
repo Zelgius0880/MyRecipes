@@ -27,7 +27,7 @@ class EditRecipeViewModel @AssistedInject constructor(
         get() = _recipeFlow.asStateFlow()
 
     val itemsFlow
-        get() = _recipeFlow.asStateFlow()
+        get() = _recipeFlow
             .map {
                 it.ingredients.mapIndexed { index, item ->
                     IngredientItem(
@@ -35,7 +35,11 @@ class EditRecipeViewModel @AssistedInject constructor(
                         isFirst = index == 0,
                         isLast = index == it.ingredients.lastIndex
                     )
-                } + AddIngredient + it.steps.map { s -> StepItem(s) } + AddStep
+                } + AddIngredient + it.steps.map { s ->
+                    StepItem(
+                        s,
+                        it.ingredients.filter { i -> i.step == s })
+                } + AddStep
             }
 
     init {
@@ -55,6 +59,70 @@ class EditRecipeViewModel @AssistedInject constructor(
         _recipeFlow.value = _recipeFlow.value.copy(imageUrl = imageUrl)
     }
 
+    fun addStep(step: Step) {
+        val recipe = _recipeFlow.value
+        _recipeFlow.value =
+            recipe.copy(steps = recipe.steps + step.copy(order = recipe.steps.size + 1))
+    }
+
+    fun updateStep(old: StepItem, newStep: StepItem) {
+        val recipe = _recipeFlow.value
+
+        val steps = recipe.steps.toMutableList()
+        val index = steps.indexOf(old.step)
+        if (index >= 0) {
+            steps[index] = newStep.step.copy(order = index + 1)
+
+            val ingredients = recipe.ingredients.toMutableList()
+            ingredients.updateIngredients(old.ingredients, null)
+            ingredients.updateIngredients(newStep.ingredients, newStep.step)
+            _recipeFlow.value = recipe.copy(ingredients = ingredients, steps = steps)
+        }
+    }
+
+    fun deleteStep(step: Step) {
+        val recipe = _recipeFlow.value
+        val steps = recipe.steps.toMutableList()
+        steps.remove(step)
+        _recipeFlow.value = recipe.copy(steps = steps)
+    }
+
+
+    fun addIngredient(ingredient: Ingredient) {
+        val recipe = _recipeFlow.value
+        _recipeFlow.value = recipe.copy(ingredients = recipe.ingredients + ingredient)
+    }
+
+    fun updateIngredient(old: Ingredient, new: Ingredient) {
+        val recipe = _recipeFlow.value
+
+        val ingredients = recipe.ingredients.toMutableList()
+        val index = ingredients.indexOf(old)
+        if (index >= 0) {
+            ingredients[index] = new
+            _recipeFlow.value = recipe.copy(ingredients = ingredients)
+        }
+    }
+
+    fun deleteIngredient(ingredient: Ingredient) {
+        val recipe = _recipeFlow.value
+        val ingredients = recipe.ingredients.toMutableList()
+        ingredients.remove(ingredient)
+        _recipeFlow.value = recipe.copy(
+            ingredients = ingredients,
+            steps = recipe.steps
+        )
+    }
+
+
+    private fun MutableList<Ingredient>.updateIngredients(ingredients: List<Ingredient>, step: Step?) {
+        forEachIndexed { index, ingredient ->
+            val i = ingredients.find { it.id == ingredient.id }
+            if (i != null) {
+                this[index] = i.copy(step = step)
+            }
+        }
+    }
 
     @AssistedFactory
     interface Factory {
@@ -63,7 +131,7 @@ class EditRecipeViewModel @AssistedInject constructor(
 }
 
 sealed interface ListItem
-data class StepItem(val step: Step) : ListItem
+data class StepItem(val step: Step, val ingredients: List<Ingredient> = emptyList()) : ListItem
 data class IngredientItem(
     val ingredient: Ingredient,
     val isFirst: Boolean,

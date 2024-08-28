@@ -4,17 +4,12 @@ import android.content.Context
 import androidx.core.content.contentValuesOf
 import androidx.room.OnConflictStrategy
 import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import zelgius.com.myrecipes.data.repository.AppDatabase
-import zelgius.com.myrecipes.worker.InsertDefaultDataWorker
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)

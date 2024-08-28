@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import zelgius.com.myrecipes.ui.md_blue_grey_700
@@ -86,7 +87,7 @@ private fun StepCard(
             }
         }
 
-        Text(text = text, Modifier.padding(horizontal = 8.dp))
+        Text(text = text, Modifier.padding(horizontal = 8.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

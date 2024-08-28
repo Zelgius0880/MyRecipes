@@ -18,6 +18,7 @@ import zelgius.com.myrecipes.data.RecipeRepository
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
 
 @HiltViewModel(assistedFactory = RecipeDetailsViewModel.Factory::class)
 class RecipeDetailsViewModel @AssistedInject constructor(
@@ -31,9 +32,13 @@ class RecipeDetailsViewModel @AssistedInject constructor(
         get() = _recipeFlow.asStateFlow()
 
     val itemsFlow
-        get() = _recipeFlow.asStateFlow()
+        get() = _recipeFlow
             .map {
-                listOf(Step(text= "", ingredients = it.ingredients, recipe = it)) + it.steps
+                (listOf(Step(text = "", recipe = it)) + it.steps)
+                    .mapIndexed { index, item ->
+                        if (index == 0) StepItem(item, ingredients = it.ingredients)
+                        else StepItem(item, it.ingredients.filter { i -> i.step ==  item})
+                    }
             }
 
     init {
