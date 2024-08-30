@@ -1,24 +1,35 @@
 package zelgius.com.myrecipes.ui.edit.viewModel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import zelgius.com.myrecipes.data.RecipeRepository
+import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
+import zelgius.com.myrecipes.worker.DownloadImageWorker
 
 @HiltViewModel(assistedFactory = EditRecipeViewModel.Factory::class)
 class EditRecipeViewModel @AssistedInject constructor(
     @Assisted recipe: Recipe,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val saveRecipeUseCase: SaveRecipeUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _recipeFlow = MutableStateFlow(recipe)
@@ -114,6 +125,26 @@ class EditRecipeViewModel @AssistedInject constructor(
         )
     }
 
+    suspend fun save() {
+        viewModelScope.launch {
+            val recipe = recipeFlow.first()
+            saveRecipeUseCase.execute(recipe = recipe)
+
+            val worker = OneTimeWorkRequestBuilder<DownloadImageWorker>()
+                .setInputData(
+                    Data.Builder()
+                        .putString("URL", recipe.imageUrl)
+                        .putLong("ID", recipe.id ?: 0L)
+                        .build()
+                )
+                .setConstraints(Constraints.NONE)
+                .build()
+
+            WorkManager
+                .getInstance(context)
+                .enqueue(worker)
+        }
+    }
 
     private fun MutableList<Ingredient>.updateIngredients(ingredients: List<Ingredient>, step: Step?) {
         forEachIndexed { index, ingredient ->

@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import javax.inject.Singleton
@@ -14,6 +15,6 @@ class DataStoreModule {
 
     @Provides
     @Singleton
-    fun dataStore(context: Context) = DataStoreRepository(context)
+    fun dataStore(@ApplicationContext context: Context) = DataStoreRepository(context)
 
 }

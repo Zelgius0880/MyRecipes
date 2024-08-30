@@ -2,7 +2,6 @@
 
 package zelgius.com.myrecipes.ui.edit
 
-import android.content.Context
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -54,19 +52,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.data.IngredientRepository
+import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.abrv
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.string
-import zelgius.com.myrecipes.preview.createDummyModel
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.AppDropDown
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
@@ -77,7 +74,7 @@ import javax.inject.Inject
 fun IngredientBottomSheet(
     modalBottomSheetState: SheetState,
     initialIngredient: Ingredient?,
-    viewModel: AddIngredientViewModel = hiltViewModel<AddIngredientViewModel>(),
+    viewModel: IngredientBottomSheetViewModel = hiltViewModel<IngredientBottomSheetViewModel>(),
     onSaved: (Ingredient) -> Unit = {},
     onDismiss: () -> Unit = {}
 ) {
@@ -96,7 +93,7 @@ fun IngredientBottomSheet(
         if (ingredients.isNotEmpty() && ingredient != null) IngredientBottomSheet(ingredient = ingredient!!,
             ingredients = ingredients,
             onSaved = {
-                viewModel.ingredient?.let(onSaved)
+                onSaved(viewModel.onSaved())
             },
             onChanged = {
                 viewModel.setIngredient(it)
@@ -143,18 +140,20 @@ private fun IngredientBottomSheet(
             UnitDropdown(ingredient, onChanged)
         }
 
-        Button(onClick = {
-            val q = quantity.toDoubleOrNull()
-            isQuantityError = q == null || q <= 0
-            isNameError = ingredient.name.isBlank()
+        Button(
+            onClick = {
+                val q = quantity.toDoubleOrNull()
+                isQuantityError = q == null || q <= 0
+                isNameError = ingredient.name.isBlank()
 
-            if (!isQuantityError && !isNameError) {
-                onChanged(ingredient.copy(quantity = q!!))
-                onSaved()
-            }
-        }, modifier = Modifier
-            .align(End)
-            .padding(8.dp)) {
+                if (!isQuantityError && !isNameError) {
+                    onChanged(ingredient.copy(quantity = q!!))
+                    onSaved()
+                }
+            }, modifier = Modifier
+                .align(End)
+                .padding(8.dp)
+        ) {
             Text(stringResource(R.string.save))
         }
     }
@@ -319,13 +318,13 @@ fun IngredientBottomSheetPreview() {
 }
 
 @HiltViewModel
-class AddIngredientViewModel @Inject constructor(
+class IngredientBottomSheetViewModel @Inject constructor(
     ingredientRepository: IngredientRepository,
     private val dataStoreRepository: DataStoreRepository,
 ) : ViewModel() {
-    private val _ingredientFlow = MutableStateFlow<Ingredient?>(null)
+    private val _ingredientFlow = MutableStateFlow(Ingredient.Empty)
 
-    val ingredient get() = _ingredientFlow.value
+    private val ingredient get() = _ingredientFlow.value
 
     val ingredientFlow = _ingredientFlow.asStateFlow().filterNotNull()
 
@@ -343,16 +342,22 @@ class AddIngredientViewModel @Inject constructor(
     fun setIngredient(ingredient: Ingredient) {
         viewModelScope.launch {
             val unit: Ingredient.Unit =
-                if (ingredient.name != _ingredientFlow.value?.name) dataStoreRepository.unit(
+                if (ingredient.name != _ingredientFlow.value.name) dataStoreRepository.unit(
                     ingredient.name
                 )?.let {
                     Ingredient.Unit.valueOf(it)
-                } ?: _ingredientFlow.value?.unit ?: Ingredient.Unit.Unit
+                } ?: _ingredientFlow.value.unit
                 else ingredient.unit
 
             _ingredientFlow.value = ingredient.copy(unit = unit)
         }
+    }
 
+    fun onSaved(): Ingredient {
+        viewModelScope.launch {
+            dataStoreRepository.saveUnit(ingredient.name, ingredient.unit.name)
+        }
+        return ingredient
     }
 
 }

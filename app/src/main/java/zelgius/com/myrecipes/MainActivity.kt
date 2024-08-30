@@ -22,7 +22,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.dialogs.IntroDialog
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.details.RecipeDetails
 import zelgius.com.myrecipes.ui.edit.viewModel.EditRecipeViewModel
@@ -181,15 +180,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 */
-        }
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-
-        if (getSharedPreferences("DEFAULT", MODE_PRIVATE).getBoolean("SHOW_POP", true)) {
-            IntroDialog().show(supportFragmentManager, "intro")
         }
     }
 }
