@@ -41,8 +41,8 @@ import coil.compose.rememberAsyncImagePainter
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
-import zelgius.com.myrecipes.preview.SharedElementPreview
-import zelgius.com.myrecipes.preview.createDummyModel
+import zelgius.com.myrecipes.ui.preview.SharedElementPreview
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.ExpandableList
 import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.home.string

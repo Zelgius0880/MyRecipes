@@ -43,8 +43,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.preview.SharedElementPreview
-import zelgius.com.myrecipes.preview.createDummyModel
+import zelgius.com.myrecipes.ui.preview.SharedElementPreview
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.recipe.RecipeList
 
 val tabs = listOf(Recipe.Type.Meal, Recipe.Type.Dessert, Recipe.Type.Other)

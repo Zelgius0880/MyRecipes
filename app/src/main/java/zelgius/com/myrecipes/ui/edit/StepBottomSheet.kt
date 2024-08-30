@@ -55,7 +55,7 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
-import zelgius.com.myrecipes.preview.createDummyModel
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.AppDropDown
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient

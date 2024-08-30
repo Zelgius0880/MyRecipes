@@ -130,7 +130,7 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
                 )
 
             } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                exc.printStackTrace()
             }
 
         }, ContextCompat.getMainExecutor(this))
@@ -165,7 +165,6 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
         override fun analyze(imageProxy: ImageProxy) {
             val mediaImage = imageProxy.image
 
-            Log.e(TAG, " Scanning")
             if (mediaImage != null) {
                 val image =
                     InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)

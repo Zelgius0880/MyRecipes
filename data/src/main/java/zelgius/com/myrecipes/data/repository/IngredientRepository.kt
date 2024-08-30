@@ -1,25 +1,19 @@
-package zelgius.com.myrecipes.data
+package zelgius.com.myrecipes.data.repository
 
-import androidx.lifecycle.liveData
 import kotlinx.coroutines.flow.map
 import zelgius.com.myrecipes.data.entities.IngredientEntity
-import zelgius.com.myrecipes.data.entities.IngredientForRecipe
-import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.data.entities.RecipeIngredient
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.asEntity
 import zelgius.com.myrecipes.data.repository.dao.IngredientDao
-import javax.inject.Inject
 
 
-class IngredientRepository @Inject constructor(
+class IngredientRepository(
     private val dao: IngredientDao
 ) {
-    fun get() = liveData {
-        emit(dao.get().map { it.asModel() })
-    }
+    suspend fun get() = dao.get().map { it.asModel() }
 
     fun getFlow() = dao.getFlow().map { it.map {  i -> i.asModel() } }
 
@@ -35,9 +29,7 @@ class IngredientRepository @Inject constructor(
     suspend fun insert(item: Ingredient, recipe: Recipe): Long {
         // Heavy work
 
-        val id = if (item.id == null)
-            dao.insert(IngredientEntity(null, item.name, item.imageUrl))
-        else item.id!!
+        val id = item.id ?: dao.insert(IngredientEntity(null, item.name, item.imageUrl))
 
         dao.insert(
             RecipeIngredient(
@@ -80,7 +72,7 @@ class IngredientRepository @Inject constructor(
                     item.optional,
                     item.sortOrder,
                     item.id,
-                    item.recipe!!.id!!,
+                    item.recipe.id,
                     item.step?.id
                 )
             )
@@ -94,7 +86,7 @@ class IngredientRepository @Inject constructor(
                     item.optional,
                     item.sortOrder,
                     item.id,
-                    item.recipe!!.id!!,
+                    item.recipe.id,
                     item.step?.id
                 )
             )

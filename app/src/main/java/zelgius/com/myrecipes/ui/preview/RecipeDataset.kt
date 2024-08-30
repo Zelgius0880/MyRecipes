@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.preview
+package zelgius.com.myrecipes.ui.preview
 
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe

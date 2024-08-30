@@ -3,7 +3,6 @@ package zelgius.com.myrecipes.ui.home
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.work.Constraints
@@ -13,11 +12,9 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.observeOn
 import kotlinx.coroutines.launch
-import zelgius.com.myrecipes.data.RecipeRepository
+import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.worker.InsertDefaultDataWorker
 import javax.inject.Inject
 

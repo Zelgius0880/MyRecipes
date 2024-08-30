@@ -31,6 +31,20 @@ data class Ingredient(
         Cup,
         Pinch
     }
+
+    companion object {
+        val Empty = Ingredient(
+            id = null,
+            name = "",
+            quantity = 0.0,
+            unit = Unit.Unit,
+            imageUrl = null,
+            optional = false,
+            sortOrder = 0,
+            recipe = null,
+            step = null
+        )
+    }
 }
 
 fun Ingredient.Unit.asEntity() = when (this) {
@@ -56,4 +70,3 @@ fun Ingredient.asEntity() = IngredientForRecipe(
     refRecipe = recipe?.id,
     refStep = step?.id,
 )
-

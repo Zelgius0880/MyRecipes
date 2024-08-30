@@ -10,6 +10,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import zelgius.com.myrecipes.data.repository.AppDatabase
+import zelgius.com.myrecipes.data.repository.IngredientRepository
+import zelgius.com.myrecipes.data.repository.RecipeRepository
+import zelgius.com.myrecipes.data.repository.StepRepository
+import zelgius.com.myrecipes.data.repository.dao.IngredientDao
+import zelgius.com.myrecipes.data.repository.dao.RecipeDao
+import zelgius.com.myrecipes.data.repository.dao.StepDao
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -35,6 +41,19 @@ class DatabaseModule {
     @Provides
     @Singleton
     fun recipeDao(appDatabase: AppDatabase) = appDatabase.recipeDao
+
+    @Provides
+    @Singleton
+    fun recipeRepository(recipeDao: RecipeDao, stepDao: StepDao, ingredientDao: IngredientDao) =
+        RecipeRepository(recipeDao, stepDao, ingredientDao)
+
+    @Provides
+    @Singleton
+    fun stepRepository(stepDao: StepDao) = StepRepository(stepDao)
+
+    @Provides
+    @Singleton
+    fun ingredientRepository(ingredientDao: IngredientDao) = IngredientRepository(ingredientDao)
 
     companion object {
         private fun insertOrUpdateIngredient(

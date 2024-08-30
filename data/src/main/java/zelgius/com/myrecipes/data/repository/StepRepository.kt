@@ -1,15 +1,13 @@
-package zelgius.com.myrecipes.data
+package zelgius.com.myrecipes.data.repository
 
 import zelgius.com.myrecipes.data.entities.RecipeEntity
-import zelgius.com.myrecipes.data.entities.StepEntity
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
 import zelgius.com.myrecipes.data.model.asEntity
 import zelgius.com.myrecipes.data.repository.dao.StepDao
-import javax.inject.Inject
 
 
-class StepRepository @Inject constructor(
+class StepRepository(
     private val dao: StepDao
 ) {
 

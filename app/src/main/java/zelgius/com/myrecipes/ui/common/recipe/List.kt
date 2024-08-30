@@ -33,8 +33,8 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.text
-import zelgius.com.myrecipes.preview.SharedElementPreview
-import zelgius.com.myrecipes.preview.createDummySample
+import zelgius.com.myrecipes.ui.preview.SharedElementPreview
+import zelgius.com.myrecipes.ui.preview.createDummySample
 
 @Composable
 fun RecipeList(

@@ -12,7 +12,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -49,6 +48,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -65,10 +65,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.preview.createDummyModel
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.RemovableItem
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
@@ -87,6 +88,7 @@ fun EditRecipe(viewModel: EditRecipeViewModel, navigateBack: () -> Unit = {}) {
 
     val recipe by viewModel.recipeFlow.collectAsState()
     val items by viewModel.itemsFlow.collectAsState(emptyList())
+    val coroutineScope = rememberCoroutineScope()
     EditRecipeView(recipe,
         items,
         navigateBack,
@@ -107,7 +109,14 @@ fun EditRecipe(viewModel: EditRecipeViewModel, navigateBack: () -> Unit = {}) {
                 is Action.Update -> viewModel.updateIngredient(action.oldItem, action.newItem)
                 is Action.Delete -> viewModel.deleteIngredient(action.item)
             }
-        })
+        },
+        onSaved = {
+            coroutineScope.launch {
+                viewModel.save()
+                navigateBack()
+            }
+        }
+    )
 }
 
 private sealed interface Action<T> {
@@ -124,7 +133,8 @@ private fun EditRecipeView(
     onNameChanged: (String) -> Unit = {},
     onImageUrlChanged: (Uri) -> Unit = {},
     onActionOnStep: (Action<StepItem>) -> Unit = { },
-    onActionOnIngredient: (Action<Ingredient>) -> Unit = { }
+    onActionOnIngredient: (Action<Ingredient>) -> Unit = { },
+    onSaved: () -> Unit = {}
 ) {
     Scaffold(topBar = {
         TopAppBar(title = {
@@ -139,7 +149,7 @@ private fun EditRecipeView(
                 )
             }
         }, actions = {
-            IconButton(onClick = { }) {
+            IconButton(onClick = onSaved) {
                 Icon(
                     imageVector = Icons.TwoTone.Check, contentDescription = ""
                 )
@@ -414,10 +424,6 @@ private fun LazyItemScope.IngredientItem(
 private fun LazyItemScope.AddIngredientButton(
     onAddIngredient: () -> Unit = {}
 ) {
-    var showAddIngredient by remember {
-        mutableStateOf(false)
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -427,27 +433,18 @@ private fun LazyItemScope.AddIngredientButton(
             topStart = ZeroCornerSize, topEnd = ZeroCornerSize
         )
     ) {
-        AnimatedContent(
-            showAddIngredient, label = "add_ingredient", modifier = Modifier.align(Alignment.End)
+        Button(
+            onClick = onAddIngredient,
+            modifier = Modifier
+                .padding(end = 8.dp, bottom = 8.dp)
+                .align(Alignment.End),
+            contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
-            if (!it) {
-                Button(
-                    onClick = { showAddIngredient = true },
-                    modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                ) {
-                    Row(verticalAlignment = CenterVertically) {
-                        Icon(imageVector = Icons.TwoTone.Add, contentDescription = "")
-                        Text(stringResource(R.string.add_ingredient))
-                    }
-                }
-            } else {
-                Row(
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    onAddIngredient()
-                }
+            Row(verticalAlignment = CenterVertically) {
+                Icon(imageVector = Icons.TwoTone.Add, contentDescription = "")
+                Text(stringResource(R.string.add_ingredient))
             }
+
         }
     }
 }

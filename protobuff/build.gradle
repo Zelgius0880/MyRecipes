@@ -29,13 +29,13 @@ android {
 // Please don't move it to Kotlin DSL -> the plugin does not work will with it
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.0.0"
-        //artifact = 'com.google.protobuf:protoc:3.14.0:osx-x86_64'
+        //artifact = "com.google.protobuf:protoc:3.0.0"
+        artifact = 'com.google.protobuf:protoc:3.14.0:osx-x86_64'
     }
     plugins {
         javalite {
-            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
-            //artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0:osx-x86_64"
+            //artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0:osx-x86_64"
         }
     }
     generateProtoTasks {
