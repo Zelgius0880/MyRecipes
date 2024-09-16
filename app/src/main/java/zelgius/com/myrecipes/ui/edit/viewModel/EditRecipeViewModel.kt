@@ -1,6 +1,7 @@
 package zelgius.com.myrecipes.ui.edit.viewModel
 
 import android.content.Context
+import android.webkit.URLUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
@@ -46,7 +47,7 @@ class EditRecipeViewModel @AssistedInject constructor(
                         isFirst = index == 0,
                         isLast = index == it.ingredients.lastIndex
                     )
-                } + AddIngredient + it.steps.map { s ->
+                } + AddIngredient(it.ingredients.isEmpty()) + it.steps.map { s ->
                     StepItem(
                         s,
                         it.ingredients.filter { i -> i.step == s })
@@ -70,10 +71,19 @@ class EditRecipeViewModel @AssistedInject constructor(
         _recipeFlow.value = _recipeFlow.value.copy(imageUrl = imageUrl)
     }
 
-    fun addStep(step: Step) {
-        val recipe = _recipeFlow.value
-        _recipeFlow.value =
-            recipe.copy(steps = recipe.steps + step.copy(order = recipe.steps.size + 1))
+    fun addStep(newStep: StepItem) {
+        _recipeFlow.value.let {
+            val step = newStep.step.copy(order = it.steps.size + 1)
+            val recipe = it.copy(steps = (it.steps + step).mapIndexed { i, s ->
+                s.copy(order = i + 1)
+            })
+
+            val ingredients = recipe.ingredients.toMutableList()
+            ingredients.updateIngredients(newStep.ingredients, step)
+
+            _recipeFlow.value =
+                recipe.copy(ingredients = ingredients)
+        }
     }
 
     fun updateStep(old: StepItem, newStep: StepItem) {
@@ -86,8 +96,14 @@ class EditRecipeViewModel @AssistedInject constructor(
 
             val ingredients = recipe.ingredients.toMutableList()
             ingredients.updateIngredients(old.ingredients, null)
-            ingredients.updateIngredients(newStep.ingredients, newStep.step)
-            _recipeFlow.value = recipe.copy(ingredients = ingredients, steps = steps)
+            ingredients.updateIngredients(
+                newStep.ingredients,
+                newStep.step
+            )
+            _recipeFlow.value =
+                recipe.copy(ingredients = ingredients, steps = steps.mapIndexed { i, step ->
+                    step.copy(order = i + 1)
+                })
         }
     }
 
@@ -101,7 +117,10 @@ class EditRecipeViewModel @AssistedInject constructor(
 
     fun addIngredient(ingredient: Ingredient) {
         val recipe = _recipeFlow.value
-        _recipeFlow.value = recipe.copy(ingredients = recipe.ingredients + ingredient)
+        _recipeFlow.value =
+            recipe.copy(ingredients = (recipe.ingredients + ingredient).mapIndexed { index, i ->
+                i.copy(sortOrder = index + 1)
+            })
     }
 
     fun updateIngredient(old: Ingredient, new: Ingredient) {
@@ -111,7 +130,9 @@ class EditRecipeViewModel @AssistedInject constructor(
         val index = ingredients.indexOf(old)
         if (index >= 0) {
             ingredients[index] = new
-            _recipeFlow.value = recipe.copy(ingredients = ingredients)
+            _recipeFlow.value = recipe.copy(ingredients = ingredients.mapIndexed { i, ingredient ->
+                ingredient.copy(sortOrder = i + 1)
+            })
         }
     }
 
@@ -127,32 +148,41 @@ class EditRecipeViewModel @AssistedInject constructor(
 
     suspend fun save() {
         viewModelScope.launch {
-            val recipe = recipeFlow.first()
-            saveRecipeUseCase.execute(recipe = recipe)
+            val recipe = recipeFlow.value
+            saveRecipeUseCase.execute(toSave = recipe)
 
-            val worker = OneTimeWorkRequestBuilder<DownloadImageWorker>()
-                .setInputData(
-                    Data.Builder()
-                        .putString("URL", recipe.imageUrl)
-                        .putLong("ID", recipe.id ?: 0L)
-                        .build()
-                )
-                .setConstraints(Constraints.NONE)
-                .build()
+            recipe.imageUrl?.takeIf { URLUtil.isHttpUrl(it) || URLUtil.isHttpsUrl(it) }?.let {
+                val worker = OneTimeWorkRequestBuilder<DownloadImageWorker>()
+                    .setInputData(
+                        Data.Builder()
+                            .putString("URL", recipe.imageUrl)
+                            .putLong("ID", recipe.id ?: 0L)
+                            .build()
+                    )
+                    .setConstraints(Constraints.NONE)
+                    .build()
 
-            WorkManager
-                .getInstance(context)
-                .enqueue(worker)
+                WorkManager
+                    .getInstance(context)
+                    .enqueue(worker)
+            }
+
         }
     }
 
-    private fun MutableList<Ingredient>.updateIngredients(ingredients: List<Ingredient>, step: Step?) {
-        forEachIndexed { index, ingredient ->
-            val i = ingredients.find { it.id == ingredient.id }
-            if (i != null) {
-                this[index] = i.copy(step = step)
+    private fun MutableList<Ingredient>.updateIngredients(
+        ingredients: List<Ingredient>,
+        step: Step?
+    ) {
+        map { it.copy(step = null) }
+            .forEachIndexed { index, ingredient ->
+                val i = ingredients
+                    .map { it.copy(step = null) }
+                    .find { it == ingredient }
+                if (i != null) {
+                    this[index] = i.copy(step = step)
+                }
             }
-        }
     }
 
     @AssistedFactory
@@ -169,5 +199,5 @@ data class IngredientItem(
     val isLast: Boolean
 ) : ListItem
 
-data object AddIngredient : ListItem
+data class AddIngredient(val isFirst: Boolean) : ListItem
 data object AddStep : ListItem

@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.data.repository.dao
 import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 import zelgius.com.myrecipes.data.entities.RecipeEntity
 
 @Dao
@@ -51,6 +52,10 @@ interface RecipeDao {
     // Coroutine get
     @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
     suspend fun coroutineGet(id: Long): RecipeEntity?
+
+    @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
+    fun getFlow(id: Long): Flow<RecipeEntity?>
+
 
     //Paging
     @Query("SELECT * FROM recipe ORDER BY name")

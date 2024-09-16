@@ -45,8 +45,8 @@ interface IngredientDao {
      * @param ingredientIds LongArray   a list of ids of ingredients to keep
      * @return Int                      The number of rows affected
      */
-    @Query("DELETE FROM RecipeIngredient WHERE ref_ingredient NOT IN (:ingredientIds) AND ref_recipe = :recipeId")
-    suspend fun deleteJoin(recipeId: Long, vararg ingredientIds: Long): Int
+    @Query("DELETE FROM RecipeIngredient WHERE id NOT IN (:ids)")
+    suspend fun deleteJoin(vararg ids: Long): Int
 
     @Query("DELETE FROM RecipeIngredient WHERE ref_recipe = :recipeId")
     suspend fun deleteFromRecipe(recipeId: Long): Int

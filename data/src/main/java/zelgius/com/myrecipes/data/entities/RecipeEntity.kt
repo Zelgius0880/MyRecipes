@@ -44,9 +44,6 @@ data class RecipeEntity(
     @Ignore
     val image: File? = null
 
-    @Ignore
-    var isPinned: Boolean = false
-
     enum class Type {
         DESSERT,
         MEAL,

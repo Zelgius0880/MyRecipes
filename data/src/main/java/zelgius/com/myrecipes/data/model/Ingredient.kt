@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.data.model
 import android.content.Context
 import android.os.Parcelable
 import androidx.annotation.DrawableRes
+import kotlinx.parcelize.IgnoredOnParcel
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import kotlinx.parcelize.Parcelize
@@ -11,6 +12,7 @@ import java.text.DecimalFormat
 @Parcelize
 data class Ingredient(
     val id: Long?,
+    val idIngredient: Long?,
     val quantity: Double,
     val unit: Unit,
     val name: String,
@@ -18,8 +20,9 @@ data class Ingredient(
     val optional: Boolean?,
     val sortOrder: Int,
     val recipe: Recipe?,
-    val step: Step?
+    val step: Step?,
 ) : Parcelable {
+
     enum class Unit {
         Gramme,
         Kilogramme,
@@ -35,6 +38,7 @@ data class Ingredient(
     companion object {
         val Empty = Ingredient(
             id = null,
+            idIngredient = null,
             name = "",
             quantity = 0.0,
             unit = Unit.Unit,
@@ -61,6 +65,7 @@ fun Ingredient.Unit.asEntity() = when (this) {
 
 fun Ingredient.asEntity() = IngredientForRecipe(
     id = id,
+    refIngredient = idIngredient,
     quantity = quantity,
     unit = unit.asEntity(),
     name = name,

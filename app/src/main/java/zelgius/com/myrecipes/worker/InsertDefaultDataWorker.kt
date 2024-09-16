@@ -13,7 +13,7 @@ import kotlinx.coroutines.coroutineScope
 import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.entities.RecipeEntity
-import zelgius.com.myrecipes.data.repository.AppDatabase
+import zelgius.com.myrecipes.data.AppDatabase
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.repository.StepRepository
@@ -41,7 +41,6 @@ class InsertDefaultDataWorker @AssistedInject constructor(
         recipes.forEachIndexed { index, s ->
             val bytes = Base64.decode(s, Base64.NO_PADDING).unzip()
 
-            @Suppress("BlockingMethodInNonBlockingContext")
             val proto =
                 coroutineScope {
                     RecipeProto.Recipe.parseFrom(bytes)
@@ -69,15 +68,15 @@ class InsertDefaultDataWorker @AssistedInject constructor(
             recipe.ingredients.clear()
 
             recipe.ingredients.addAll(ingredients.map {
-                val id = if (it.id == null)
+                val ingredient = if (it.id == null)
                     ingredientRepository.insert(it.asModel(recipe.asModel()), recipe.asModel())
                 else {
                     ingredientRepository.update(it.asModel(recipe.asModel()))
-                    it.id
                 }
 
                 it.copy(
-                    id = id ,
+                    id = ingredient.id ,
+                    refIngredient = ingredient.idIngredient,
                     refRecipe = recipe.id,
                     refStep = it.step?.id
                 )

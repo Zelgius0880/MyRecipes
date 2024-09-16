@@ -16,6 +16,7 @@ fun createDummySample(id: Long = 0, suffix: String = ""): RecipeEntity {
             "Eggs",
             "drawable://egg",
             1,
+            1,
             id,
             3
         ),
@@ -25,6 +26,7 @@ fun createDummySample(id: Long = 0, suffix: String = ""): RecipeEntity {
             IngredientEntity.Unit.GRAMME,
             "Flour",
             "drawable://flour",
+            2,
             2,
             id,
             3
@@ -36,6 +38,7 @@ fun createDummySample(id: Long = 0, suffix: String = ""): RecipeEntity {
             "Water",
             "drawable://water",
             3,
+            3,
             id,
             3
         ),
@@ -45,6 +48,7 @@ fun createDummySample(id: Long = 0, suffix: String = ""): RecipeEntity {
             IngredientEntity.Unit.CUP,
             "Butter",
             "drawable://butter",
+            4,
             4,
             id,
             null

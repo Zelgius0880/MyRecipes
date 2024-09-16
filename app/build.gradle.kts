@@ -31,8 +31,8 @@ android {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "2.0-beta01"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
@@ -52,6 +52,17 @@ android {
         getByName("androidTest").assets.srcDirs("$projectDir/schemas")
     }
 
+    signingConfigs {
+
+        register("release").configure {
+            storeFile = file("zelgius.com.myrecipes")
+            storePassword = "keystore"
+            keyAlias = ("key0")
+            keyPassword = "keystore"
+        }
+    }
+
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
@@ -60,6 +71,7 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField(type = "String", name = "EMAIL", value = getProps("app.email"))
+            signingConfig = signingConfigs.getByName("release")
         }
 
         getByName("debug") {
@@ -72,33 +84,9 @@ android {
             )
 
             buildConfigField(type = "String", name = "EMAIL", value = getProps("app.email"))
-            //buildConfigField "Boolean", "DB_IN_MEMORY", false
-        }
-
-
-        /*        debug {
-                    buildConfigField "Boolean", "DB_IN_MEMORY", false
-                }
-
-                test {
-                    buildConfigField "Boolean", "DB_IN_MEMORY", true
-                }*/
-    }
-    signingConfigs {
-        /*named("debug").configure {
-            storeFile = file("keystore")
-            storePassword ="keystore"
-            keyAlias = "keystore"
-            keyPassword="keystore"
-        }*/
-
-        register("release").configure {
-            storeFile = file("zelgius.com.myrecipes")
-            storePassword = "keystore"
-            keyAlias = ("key0")
-            keyPassword = "keystore"
         }
     }
+
 
     packaging {
         resources {

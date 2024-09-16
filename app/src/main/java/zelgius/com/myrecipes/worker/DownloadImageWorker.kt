@@ -8,7 +8,7 @@ import androidx.core.net.toUri
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import zelgius.com.myrecipes.BuildConfig
-import zelgius.com.myrecipes.data.repository.AppDatabase
+import zelgius.com.myrecipes.data.AppDatabase
 import java.io.File
 import java.net.URL
 

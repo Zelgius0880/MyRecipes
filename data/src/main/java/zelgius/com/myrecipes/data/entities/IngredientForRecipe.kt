@@ -8,8 +8,8 @@ import zelgius.com.protobuff.RecipeProto
 
 @DatabaseView(
     """
-SELECT ri.quantity, ri.unit, ri.ref_recipe AS refRecipe, ri.ref_step AS refStep, ri.sort_order AS sortOrder,
-i.name, i.id, i.image_url AS imageUrl, ri.optional FROM RecipeIngredient ri
+SELECT ri.quantity, ri.unit, ri.ref_recipe AS refRecipe, ri.ref_step AS refStep, ri.sort_order AS sortOrder, ri.id AS id,
+i.name, i.id AS refIngredient, i.image_url AS imageUrl, ri.optional FROM RecipeIngredient ri
 INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
         """
 )
@@ -21,6 +21,7 @@ data class IngredientForRecipe(
     var imageUrl: String?,
     var optional: Boolean?,
     var sortOrder: Int,
+    var refIngredient: Long?,
     var refRecipe: Long?,
     var refStep: Long?
 ) {
@@ -39,9 +40,21 @@ data class IngredientForRecipe(
         name: String,
         imageUrl: String?,
         sortOrder: Int,
+        refIngredient: Long?,
         refRecipe: Long?,
         refStep: Long?
-    ) : this(id, quantity, unit, name, imageUrl, false, sortOrder, refRecipe, refStep)
+    ) : this(
+        id,
+        quantity,
+        unit,
+        name,
+        imageUrl,
+        false,
+        sortOrder,
+        refIngredient,
+        refRecipe,
+        refStep
+    )
 
 
     @Ignore
@@ -53,6 +66,7 @@ data class IngredientForRecipe(
         if (ingredient.hasImageUrl()) ingredient.imageUrl else null,
         false,
         ingredient.sortOrder,
+        null,
         null,
         null
     ) {
@@ -66,7 +80,7 @@ data class IngredientForRecipe(
         .setName(name)
         .setQuantity(quantity)
         .setSortOrder(sortOrder)
-        .setIsOptional(optional?:false)
+        .setIsOptional(optional ?: false)
         .setUnit(RecipeProto.Ingredient.Unit.valueOf(unit.name))
         .also {
             if (step != null) it.step = step?.toProtoBuff()
@@ -75,14 +89,18 @@ data class IngredientForRecipe(
         .build()!!
 }
 
-fun IngredientForRecipe.asModel(recipe: Recipe? = null, step: zelgius.com.myrecipes.data.model.Step? = null) = Ingredient(
+fun IngredientForRecipe.asModel(
+    recipe: Recipe? = null,
+    step: zelgius.com.myrecipes.data.model.Step? = null
+) = Ingredient(
     id = id,
-            quantity = quantity,
-            unit = unit.asModel(),
-            name = name,
-            imageUrl = imageUrl,
-            optional = optional,
-            sortOrder = sortOrder,
-            recipe = recipe,
-            step = step,
+    idIngredient = refIngredient,
+    quantity = quantity,
+    unit = unit.asModel(),
+    name = name,
+    imageUrl = imageUrl,
+    optional = optional,
+    sortOrder = sortOrder,
+    recipe = recipe,
+    step = step,
 )

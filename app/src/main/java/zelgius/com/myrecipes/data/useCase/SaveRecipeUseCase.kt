@@ -1,8 +1,9 @@
 package zelgius.com.myrecipes.data.useCase
 
 import androidx.room.withTransaction
+import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.data.repository.AppDatabase
+import zelgius.com.myrecipes.data.AppDatabase
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.repository.StepRepository
@@ -14,36 +15,57 @@ class SaveRecipeUseCase @Inject constructor(
     private val ingredientRepository: IngredientRepository,
     private val database: AppDatabase,
 ) {
-    suspend fun execute(recipe: Recipe): Long = database.withTransaction {
-        val id = if (recipe.id == null)
-            recipeRepository.insert(recipe)
+    suspend fun execute(toSave: Recipe): Long = database.withTransaction {
+        var recipe = if (toSave.id == null)
+            toSave.copy(id = recipeRepository.insert(toSave))
         else {
-            recipeRepository.update(recipe)
-            recipe.id!!
-        }
+            recipeRepository.update(toSave)
+            toSave
+        }.copy(ingredients = toSave.ingredients.mapIndexed { index, i -> i.copy(sortOrder = index + 1) })
 
-        recipe.steps.forEach {
-            val step = it.copy(recipe = recipe)
+        val ingredients = mutableListOf<Ingredient>()
 
-            if (it.id == null)
-                stepRepository.insert(step)
-            else stepRepository.update(step)
-        }
+        recipe = recipe.copy(steps = recipe.steps.mapIndexed {index, s ->
+            val stepIngredients = recipe.ingredients.filter { i -> i.step == s }
 
-        recipe.ingredients.forEach {
-            val ingredient = it.copy(
-                recipe = recipe,
+            val step = s.copy(recipe = recipe, order = index + 1)
+
+            val inserted = if (s.id == null)
+                step.copy(id = stepRepository.insert(step))
+            else {
+                stepRepository.update(step)
+                step
+            }
+
+            ingredients.addAll(
+                stepIngredients.map { i ->
+                    insertIngredient(i.copy(step = inserted, recipe = recipe), recipe)
+                }
             )
 
-            if (it.id == null)
-                ingredientRepository.insert(ingredient, recipe)
-            else
-                ingredientRepository.update(ingredient)
-        }
+            inserted
+        })
 
-        ingredientRepository.deleteAllButThem(recipe, recipe.ingredients)
+        ingredients.addAll(recipe.ingredients.filter { it.step == null }.map {
+            insertIngredient(it, recipe)
+        })
+
+        ingredientRepository.deleteAllButThem(ingredients)
         stepRepository.deleteAllButThem(recipe, recipe.steps)
 
-        id
+        recipe.id!!
+    }
+
+    private suspend fun insertIngredient(
+        ingredient: Ingredient,
+        recipe: Recipe
+    ): Ingredient {
+        ingredient.copy(recipe = recipe).let {
+            return if (it.idIngredient == null)
+                ingredientRepository.insert(it, recipe)
+            else {
+                ingredientRepository.update(it)
+            }
+        }
     }
 }

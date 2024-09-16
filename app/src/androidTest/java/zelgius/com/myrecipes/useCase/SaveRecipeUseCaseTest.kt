@@ -11,13 +11,20 @@ import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import zelgius.com.myrecipes.data.repository.AppDatabase
+import zelgius.com.myrecipes.data.model.Ingredient
+import zelgius.com.myrecipes.data.model.Ingredient.Unit
+import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.data.AppDatabase
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.repository.StepRepository
 import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
+import zelgius.com.myrecipes.utils.DEFAULT_BASE_64
 import zelgius.com.myrecipes.utils.TestHelper
+import zelgius.com.myrecipes.utils.assertEquals
 import java.io.IOException
+import kotlin.random.Random
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class SaveRecipeUseCaseTest {
@@ -42,15 +49,6 @@ class SaveRecipeUseCaseTest {
         private var _db: AppDatabase? = null
         private val context by lazy { ApplicationProvider.getApplicationContext<Application>()!! }
         private val db get() = _db!!
-        private const val DEFAULT_BASE_64 =
-            "UEsDBBQACAgIABlxalEAAAAAAAAAAAAAAAAAAAAAjY/PSsNAEIfTpik1osR4UHrQIV40IE3Bqngx\n" +
-                    "f9CbIAgelY3drkvjJuxu0MfyGXwiH8HdNJD2kODedmZ+33xj21FRZBgStMSHhndg7z/QL5DvGCgj\n" +
-                    "HM8pZlI4Pe/EPk5KWTWQDgjVl7n6UwZCcloIp+959lGsOIAkTC8D+PmGBBY5h4vgfBbAB2WO6Udb\n" +
-                    "hn7ha+ha91le8rEz5+gTpRm+mUwWugKG3+YRDK8N/3GFMJzQHVX2p+Jsg1IZKsp/pANTEf2a+BK6\n" +
-                    "w7iUEvPx3hovrUpgVNujZtZ6KgnaPEDoCvS6DwhrxEituyNE6++uMTAh0G8naOGgJvzeKmG0VANg\n" +
-                    "ticGKjFrEtsxfUM8zRmSGAbdsasmtvOMGM0yBKsbrU7DP1BLBwg/FjLQIQEAAFgCAABQSwECFAAU\n" +
-                    "AAgICAAZcWpRPxYy0CEBAABYAgAAAAAAAAAAAAAAAAAAAAAAAAAAUEsFBgAAAAABAAEALgAAAE8B\n" +
-                    "AAAAAA"
 
         @BeforeClass
         @JvmStatic
@@ -72,21 +70,89 @@ class SaveRecipeUseCaseTest {
     @Throws(Exception::class)
     fun insert() {
         runBlocking {
-            val recipe = TestHelper.getFromQr(DEFAULT_BASE_64)
+            val recipe = with(TestHelper.getFromQr(DEFAULT_BASE_64)) {
+                copy(ingredients = ingredients.mapIndexed { index, ingredient ->
+                    ingredient.copy(
+                        sortOrder = index + 1
+                    )
+                }, steps = steps.mapIndexed { index, step -> step.copy(order = index + 1) })
+            }
+
             val id = saveRecipeUseCase.execute(recipe)
             val saved =
-                recipeRepository.getFull(id)?.copy(id = null) ?: error("Saved recipe no found")
+                recipeRepository.getFull(id) ?: error("Saved recipe no found")
 
-            // Removing ids to compare with original
-            val savedSteps = saved.steps.map { it.copy(id = null) }.toTypedArray()
-            assertArrayEquals(recipe.steps.toTypedArray(), savedSteps)
-
-            // Removing ids to compare with original
-            val savedIngredients =
-                saved.ingredients.map { it.copy(id = null, step = it.step?.copy(id = null)) }
-                    .toTypedArray()
-            assertArrayEquals(recipe.ingredients.toTypedArray(), savedIngredients)
+            recipe.assertEquals(saved)
         }
-
     }
+
+    @Test
+    @Throws(Exception::class)
+    fun update() {
+        runBlocking {
+            var recipe = TestHelper.getFromQr(DEFAULT_BASE_64).let {
+                val id = saveRecipeUseCase.execute(it)
+                recipeRepository.getFull(id) ?: error("Saved recipe no found")
+            }
+
+            recipe = recipe.copy(
+                type = Recipe.Type.Other,
+                name = "New name",
+                steps = recipe.steps.mapIndexed { index, step ->
+                    if (index == 1) step.copy(text = "${step.text} Updated")
+                    else step
+                }.toMutableList().apply {
+                    removeLast()
+                    add(Step(id = null, text = "New step", order = 3, recipe = null))
+                },
+                ingredients = recipe.ingredients.mapIndexed { index, ingredient ->
+                    if (index == 0 || index == 1) ingredient.copy(
+                        step = null,
+                    )
+                    else ingredient
+                }.toMutableList().apply {
+                    remove(random())
+                    remove(random())
+
+                    add(ingredient( name = "New Ingredient"))
+                    add(ingredient( name = "New Ingredient", step = recipe.steps.first()))
+
+                    add(ingredient(name = "New Ingredient", step = recipe.steps.first()))
+                    add(first().copy(id= null, unit = Unit.entries.random(), quantity = Random.nextDouble(5.0, 50.0), step = recipe.steps.first()))
+                }.mapIndexed { index, ingredient ->
+                    ingredient.copy(sortOrder = index + 1)
+                }
+            )
+
+            saveRecipeUseCase.execute(recipe)
+
+            val saved = recipeRepository.getFull(recipe.id!!) ?: error("Saved recipe no found")
+
+            recipe.assertEquals(saved)
+        }
+    }
+
+    private fun ingredient(recipe: Recipe? = null,
+                           quantity: Double = Random.nextDouble(1.0, 100.0),
+                           unit: Unit = Unit.entries.random(),
+                           name: String,
+                           imageUrl: String? = null,
+                           optional: Boolean = Random.nextBoolean(),
+                           sortOrder: Int = Random.nextInt(),
+                           step: Step? = null,
+                           id: Long ? = null,
+    ) = Ingredient(
+        quantity = quantity,
+        unit = unit,
+        name = name,
+        id = id,
+        step = step,
+        recipe = recipe,
+        idIngredient = null,
+        imageUrl = imageUrl,
+        sortOrder = sortOrder,
+        optional = optional,
+    )
+
+
 }

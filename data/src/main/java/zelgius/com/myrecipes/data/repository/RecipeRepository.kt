@@ -1,5 +1,7 @@
 package zelgius.com.myrecipes.data.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.asEntity
@@ -29,6 +31,23 @@ class RecipeRepository (
         }?.asModel()
 
 
+    fun getFullFlow(id: Long): Flow<Recipe?> =
+        recipeDao.getFlow(id).map { entity ->
+            if(entity == null) return@map null
+
+            entity.steps.addAll(stepDao.get(id))
+            entity.ingredients.addAll(ingredientDao.getForRecipe(id))
+            entity.ingredients.forEach {
+                if (it.refStep != null) {
+                    it.step = entity.steps.find { s -> s.id == it.refStep }
+                    it.step?.ingredients?.add(it)
+                }
+            }
+
+            entity.asModel()
+        }
+
+
     val pagedMeal
         get() = recipeDao.pagedMeal().map { it.asModel() }.asPagingSourceFactory()
 
@@ -40,23 +59,6 @@ class RecipeRepository (
     val pagedOther
         get() = recipeDao.pagedOther().map { it.asModel() }.asPagingSourceFactory()
 
-
-    //TODO Remove as soon as possible
-    val pagedMealLegacy
-        get() = recipeDao.pagedMeal().map { it.asModel() }.asPagingSourceFactory()
-
-
-    //TODO Remove as soon as possible
-    val pagedDessertLegacy
-        get() = recipeDao.pagedDessert().map { it.asModel() }.asPagingSourceFactory()
-
-
-    //TODO Remove as soon as possible
-    val pagedOtherLegacy
-        get() = recipeDao.pagedOther().map { it.asModel() }.asPagingSourceFactory()
-
-    fun pagedSearch(name: String) =
-        recipeDao.pagedSearch(name).map { it.asModel() }.asPagingSourceFactory()
 
     suspend fun insert(recipe: Recipe): Long =
         recipeDao.insert(recipe.asEntity())

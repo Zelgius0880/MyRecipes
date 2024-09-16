@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.data.repository
+package zelgius.com.myrecipes.data
 
 import android.content.Context
 import androidx.room.Database
@@ -21,7 +21,7 @@ import zelgius.com.myrecipes.data.repository.dao.StepDao
 @Database(
     entities = [IngredientEntity::class, RecipeEntity::class, StepEntity::class, RecipeIngredient::class],
     views = [IngredientForRecipe::class],
-    version = 4
+    version = 5
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -47,26 +47,6 @@ abstract class AppDatabase : RoomDatabase() {
                         context, AppDatabase::class.java
                     )
                         .addCallback(object : Callback() {
-                            override fun onOpen(db: SupportSQLiteDatabase) {
-                                super.onOpen(db)
-                            }
-
-                            override fun onCreate(db: SupportSQLiteDatabase) {
-                                super.onCreate(db)
-
-                                /*DefaultIngredients.values().forEach {
-                                    insertOrUpdateIngredient(context, db, it)
-                                }
-
-                                val worker = OneTimeWorkRequestBuilder<InsertDefaultDataWorker>()
-                                    .setConstraints(Constraints.NONE)
-                                    .build()
-
-                                instance?._workerState?.value = WorkManager
-                                    .getInstance(context)
-                                    .enqueue(worker)
-                                    .result*/
-                            }
                         })
                         .build()
             }
@@ -79,7 +59,6 @@ abstract class AppDatabase : RoomDatabase() {
                 context,
                 AppDatabase::class.java, "database"
             )
-                .fallbackToDestructiveMigration()
                 .addCallback(object : Callback() {
 
                     override fun onCreate(db: SupportSQLiteDatabase) {
@@ -91,6 +70,7 @@ abstract class AppDatabase : RoomDatabase() {
                 .addMigrations(MIGRATION_1_2)
                 .addMigrations(MIGRATION_2_3)
                 .addMigrations(MIGRATION_3_4)
+                .addMigrations(MIGRATION_4_5)
                 .build()
         }
 
@@ -114,11 +94,21 @@ INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
             it.execSQL("ALTER TABLE Step ADD COLUMN optional INTEGER NOT NULL DEFAULT 0")
         }
 
+        private val MIGRATION_4_5 = createMigration(4, 5) {
+            it.execSQL("DROP VIEW IngredientForRecipe")
+            it.execSQL(
+                """
+CREATE VIEW `IngredientForRecipe` AS SELECT ri.quantity, ri.unit, ri.ref_recipe AS refRecipe, ri.ref_step AS refStep, ri.sort_order AS sortOrder, ri.id AS id,
+i.name, i.id AS refIngredient, i.image_url AS imageUrl, ri.optional FROM RecipeIngredient ri
+INNER JOIN Ingredient i ON i.id = ri.ref_ingredient
+        """
+            )
+        }
 
         private fun createMigration(from: Int, to: Int, work: (SupportSQLiteDatabase) -> Unit) =
             object : Migration(from, to) {
-                override fun migrate(database: SupportSQLiteDatabase) {
-                    work(database)
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    work(db)
                 }
             }
     }

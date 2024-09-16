@@ -81,6 +81,7 @@ fun IngredientPreviewDefaultIngredient() {
             quantity = Random.nextInt(50, 101).toDouble(),
             optional = false,
             id = null,
+            refIngredient = null,
             refRecipe = null,
             refStep = null,
         )
@@ -101,6 +102,7 @@ fun IngredientPreviewLetterIngredient() {
             quantity = Random.nextInt(50, 101).toDouble(),
             optional = false,
             id = null,
+            refIngredient = null,
             refRecipe = null,
             refStep = null,
         )
