@@ -6,8 +6,12 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +37,7 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.text
+import zelgius.com.myrecipes.ui.common.RemovableItem
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummySample
 
@@ -42,12 +47,13 @@ fun RecipeList(
     animatedVisibilityScope: AnimatedVisibilityScope,
     list: Flow<PagingData<Recipe>>,
     modifier: Modifier = Modifier,
-    onClick: (Recipe) -> Unit = {}
+    onClick: (Recipe) -> Unit = {},
+    onRemove: (Recipe) -> Unit = {}
 ) {
     val items = list.collectAsLazyPagingItems()
 
     LazyColumn(modifier = modifier) {
-        items(count = items.itemCount) { index ->
+        items(count = items.itemCount, key = {it.hashCode()}) { index ->
             val recipe = items[index]
 
             recipe?.let {
@@ -56,7 +62,9 @@ fun RecipeList(
                     sharedTransitionScope = sharedTransitionScope,
                     recipe = recipe,
                     onClick = onClick,
+                    onRemove = onRemove,
                     modifier = Modifier
+                        .animateItem()
                         .fillParentMaxWidth()
                         .padding(vertical = 2.dp, horizontal = 8.dp)
                 )
@@ -71,12 +79,13 @@ fun RecipeListItem(
     animatedVisibilityScope: AnimatedVisibilityScope,
     recipe: Recipe,
     modifier: Modifier = Modifier,
-    onClick: (Recipe) -> Unit = {}
+    onClick: (Recipe) -> Unit = {},
+    onRemove: (Recipe) -> Unit = {}
 ) = with(sharedTransitionScope) {
     Card(
         shape = RoundedCornerShape(4.dp),
         modifier = modifier
-            .clickable { onClick(recipe) }
+            .height(IntrinsicSize.Max)
             .sharedElement(
                 animatedVisibilityScope = animatedVisibilityScope,
                 state = rememberSharedContentState(
@@ -84,46 +93,52 @@ fun RecipeListItem(
                 )
             )
     ) {
-        Row(modifier = Modifier.padding(8.dp)) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(recipe.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                placeholder = painterResource(R.drawable.ic_dish),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(64.dp)
-                    .sharedElement(
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        state = rememberSharedContentState(
-                            key = "${recipe.id}_recipe_image"
-                        )
-                    )
-            )
-
-            Column(modifier = Modifier.padding(start = 8.dp)) {
-                Text(
-                    recipe.type.text(LocalContext.current),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.sharedElement(
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        state = rememberSharedContentState(
-                            key = "${recipe.id}_recipe_type"
-                        )
-                    )
-                )
-                Text(
-                    recipe.name, modifier = Modifier
-                        .padding(top = 8.dp)
+        RemovableItem(
+            modifier = Modifier.clickable { onClick(recipe) }.fillMaxWidth(),
+            onRemove = {onRemove(recipe)}
+        ) {
+            Row(modifier = Modifier.padding(8.dp)) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(recipe.imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    error = painterResource(R.drawable.ic_dish),
+                    placeholder = painterResource(R.drawable.ic_dish),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(64.dp)
                         .sharedElement(
                             animatedVisibilityScope = animatedVisibilityScope,
                             state = rememberSharedContentState(
-                                key = "${recipe.id}_recipe_name"
+                                key = "${recipe.id}_recipe_image"
                             )
                         )
                 )
+
+                Column(modifier = Modifier.padding(start = 8.dp)) {
+                    Text(
+                        recipe.type.text(LocalContext.current),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.sharedElement(
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            state = rememberSharedContentState(
+                                key = "${recipe.id}_recipe_type"
+                            )
+                        )
+                    )
+                    Text(
+                        recipe.name, modifier = Modifier
+                            .padding(top = 8.dp)
+                            .sharedElement(
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                state = rememberSharedContentState(
+                                    key = "${recipe.id}_recipe_name"
+                                )
+                            )
+                    )
+                }
             }
         }
     }

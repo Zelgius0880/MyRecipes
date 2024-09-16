@@ -11,7 +11,21 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -28,23 +42,19 @@ import zelgius.com.myrecipes.ui.edit.viewModel.EditRecipeViewModel
 import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.edit.EditRecipe
 import zelgius.com.myrecipes.ui.home.Home
-import zelgius.com.myrecipes.ui.home.HomeViewModel
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private val viewModel: HomeViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if (intent != null) processIntent(intent)
 
         setContent {
             AppTheme {
                 SharedTransitionLayout {
-
+                    var selectedType by remember {
+                        mutableStateOf(Recipe.Type.Meal)
+                    }
                     val mainNavController = rememberNavController()
 
                     NavHost(navController = mainNavController, startDestination = "home") {
@@ -52,14 +62,24 @@ class MainActivity : AppCompatActivity() {
                             Home(
                                 animatedVisibilityScope = this@composable,
                                 sharedTransitionScope = this@SharedTransitionLayout,
+                                onTypeChanged = {
+                                    selectedType = it
+                                },
                                 onClick = {
-                                    mainNavController.navigate(
-                                        "details?id=${it.id}&name=${it.name}&url=${it.imageUrl}&type=${it.type.name}"
-                                    ) {
-                                        popUpTo(mainNavController.graph.findStartDestination().id) {
-                                            saveState = true
+                                    if (it == null)
+                                        mainNavController.navigate("edit?type=${selectedType.name}") {
+                                            popUpTo(mainNavController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
                                         }
-                                    }
+                                    else
+                                        mainNavController.navigate(
+                                            "details?id=${it.id}&name=${it.name}&url=${it.imageUrl}&type=${it.type.name}"
+                                        ) {
+                                            popUpTo(mainNavController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                        }
                                 }
                             )
                         }
@@ -128,7 +148,7 @@ class MainActivity : AppCompatActivity() {
         composable(
             "$route${if (route.contains("?")) "" else "?"}id={id}&name={name}&url={url}&type={type}",
             arguments = listOf(
-                navArgument("id") { defaultValue = 0L },
+                navArgument("id") { defaultValue = -1L },
                 navArgument("url") { defaultValue = "" },
                 navArgument("name") { defaultValue = "" },
                 navArgument("type") { defaultValue = "" },
@@ -147,39 +167,12 @@ class MainActivity : AppCompatActivity() {
 
             content(
                 Recipe(
-                    id,
+                    if(id == -1L) null else id,
                     type = type,
                     name = it.arguments?.getString("name") ?: "",
                     imageUrl = it.arguments?.getString("url")
                 )
             )
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-
-        processIntent(intent)
-    }
-
-    private fun processIntent(intent: Intent) {
-        if (intent.hasExtra("ID_FROM_NOTIF")) {
-            /*viewModel.loadRecipe(intent.getLongExtra("ID_FROM_NOTIF", 0L)).observe(this) {
-                if (it != null) {
-                    if (navController.currentDestination?.id != R.id.tabFragment)
-                        navController.navigate(R.id.tabFragment)
-
-                    navController.navigate(
-                        R.id.action_tabFragment_to_recipeFragment,
-                        bundleOf("RECIPE" to it),
-                        null,
-                        null
-                    )
-
-                    viewModel.loadRecipe(it.id!!)
-                }
-            }
-*/
         }
     }
 }

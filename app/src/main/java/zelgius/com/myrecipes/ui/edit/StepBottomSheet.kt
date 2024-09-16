@@ -4,7 +4,6 @@ package zelgius.com.myrecipes.ui.edit
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,15 +66,14 @@ fun StepBottomSheet(
     modalBottomSheetState: SheetState,
     initialStep: StepItem? = null,
     recipe: Recipe,
-    viewModel: StepBottomSheetViewModel = hiltViewModel(creationCallback =
-    { factory: StepBottomSheetViewModel.Factory ->
-        factory.create(recipe)
-    }).apply {
-        setStep(initialStep)
-    },
+    viewModel: StepBottomSheetViewModel = StepBottomSheetViewModel(),
     onSaved: (StepItem) -> Unit,
     onDismiss: () -> Unit = {}
 ) {
+
+    LaunchedEffect(Unit) {
+        viewModel.init(initialStep, recipe)
+    }
 
     val step by viewModel.stepFlow.collectAsState()
     val ingredients by viewModel.ingredientsFlow.collectAsState(emptyList())
@@ -107,39 +106,43 @@ private fun StepBottomSheet(
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
     ) {
-        Text(
-            text = stringResource(R.string.ingredients),
-            modifier = Modifier.padding(vertical = 16.dp),
-            style = MaterialTheme.typography.titleMedium
-        )
 
-        val listState = rememberLazyListState()
-        val scope = rememberCoroutineScope()
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .heightIn(0.dp, 300.dp)
-                .padding(vertical = 8.dp)
-        ) {
-            items(stepIngredients, key = { it }) {
-                Row(modifier = Modifier.animateItem()) {
-                    Ingredient(it, modifier = Modifier.weight(1f))
-                    IconButton(onClick = { onIngredientRemoved(it) }) {
-                        Icon(
-                            imageVector = Icons.TwoTone.Close,
-                            contentDescription = ""
-                        )
+        if (stepIngredients.isNotEmpty() || ingredients.isNotEmpty()) {
+            Text(
+                text = stringResource(R.string.ingredients),
+                modifier = Modifier.padding(vertical = 16.dp),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            val listState = rememberLazyListState()
+            val scope = rememberCoroutineScope()
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .heightIn(0.dp, 300.dp)
+                    .padding(vertical = 8.dp)
+            ) {
+                items(stepIngredients, key = { it }) {
+                    Row(modifier = Modifier.animateItem()) {
+                        Ingredient(it, modifier = Modifier.weight(1f))
+                        IconButton(onClick = { onIngredientRemoved(it) }) {
+                            Icon(
+                                imageVector = Icons.TwoTone.Close,
+                                contentDescription = ""
+                            )
+                        }
                     }
                 }
-            }
 
-            item {
-                IngredientEdition(ingredients) {
-                    onIngredientAdded(it)
-                    scope.launch {
-                        listState.animateScrollToItem(stepIngredients.size)
+                if (ingredients.isNotEmpty())
+                    item {
+                        IngredientEdition(ingredients) {
+                            onIngredientAdded(it)
+                            scope.launch {
+                                listState.animateScrollToItem(stepIngredients.size)
+                            }
+                        }
                     }
-                }
             }
         }
 
@@ -151,7 +154,6 @@ private fun StepBottomSheet(
                 Text(text = stringResource(R.string.step_description))
             },
             maxLines = 4,
-
         )
 
         Button(
@@ -200,10 +202,8 @@ private fun IngredientEdition(ingredients: List<Ingredient>, onClicked: (Ingredi
 fun StepBottomSheetContentPreview() {
     val recipe = createDummyModel()
 
-    val viewModel = StepBottomSheetViewModel(
-        recipe
-    ).apply {
-        setStep(StepItem(recipe.steps.last()))
+    val viewModel = StepBottomSheetViewModel().apply {
+        init(StepItem(recipe.steps.last()), recipe)
     }
     val step by viewModel.stepFlow.collectAsState()
     val ingredients by viewModel.ingredientsFlow.collectAsState(emptyList())
@@ -234,15 +234,15 @@ fun StepBottomSheetPreview() {
                 optional = i % 2 == 0,
                 sortOrder = i + 100,
                 id = 100 + i.toLong(),
+                idIngredient = null,
                 step = null,
             )
         })
     }
 
     val viewModel = StepBottomSheetViewModel(
-        recipe
     ).apply {
-        recipe.steps.last()
+        init(StepItem(recipe.steps.last()), recipe)
     }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var openBottomSheet by remember {
@@ -271,19 +271,21 @@ fun StepBottomSheetPreview() {
     }
 }
 
-@HiltViewModel(assistedFactory = StepBottomSheetViewModel.Factory::class)
-class StepBottomSheetViewModel @AssistedInject constructor(
-    @Assisted private val recipe: Recipe,
-) : ViewModel() {
+class StepBottomSheetViewModel: ViewModel() {
 
+    private var recipe: Recipe? = null
     private val _stepFlow = MutableStateFlow(StepItem(Step(text = "", recipe = recipe)))
     val stepFlow = _stepFlow.asStateFlow()
 
-    val stepIngredientFlow get() =  _stepFlow.map { it.ingredients }
+    val stepIngredientFlow get() = _stepFlow.map { it.ingredients }
 
-    val ingredientsFlow = stepIngredientFlow.map { recipe.ingredients.filterNot { i -> i in it } }
+    val ingredientsFlow = stepFlow.map { step ->
+        recipe?.ingredients?.filter { i -> i.step == null && i !in step.ingredients }?: emptyList()
+    }
 
-    fun setStep(item: StepItem?) {
+
+    fun init(item: StepItem?, recipe: Recipe) {
+        this.recipe = recipe
         _stepFlow.value = item ?: StepItem(Step(text = "", recipe = recipe))
     }
 
@@ -299,11 +301,15 @@ class StepBottomSheetViewModel @AssistedInject constructor(
 
     fun onIngredientRemoved(ingredient: Ingredient) {
         val item = _stepFlow.value
+
+        val index = recipe?.ingredients?.indexOf(ingredient)?.takeIf { it >= 0 }
+        if(index != null) {
+            val ingredients = recipe?.ingredients?.toMutableList() ?: return
+            ingredients[index] = ingredient.copy(step = null)
+            recipe = recipe?.copy(ingredients = ingredients)
+        }
+
         _stepFlow.value = item.copy(ingredients = item.ingredients - ingredient)
     }
 
-    @AssistedFactory
-    interface Factory : ViewModelProvider.Factory {
-        fun create(recipe: Recipe): StepBottomSheetViewModel
-    }
 }

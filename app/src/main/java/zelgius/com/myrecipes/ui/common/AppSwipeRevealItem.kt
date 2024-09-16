@@ -48,11 +48,10 @@ fun AppSwipeRevealItem(
     endAction: @Composable (RowScope.() -> Unit)? = null,
     startActionSize: Dp = 0.dp,
     endActionSize: Dp = 0.dp,
+    state : AnchoredDraggableState<DragAnchors> = rememberAnchoredDraggableState(startActionSize, endActionSize),
     contentElevation: Dp = 0.dp,
     content: @Composable () -> Unit,
 ) {
-
-    val state = rememberAnchoredDraggableState(startActionSize, endActionSize)
     Box(modifier = modifier) {
 
         endAction?.let {
@@ -119,7 +118,7 @@ fun AppSwipeRevealItem(
 }
 
 @Composable
-private fun rememberAnchoredDraggableState(
+fun rememberAnchoredDraggableState(
     startActionSize: Dp = 0.dp,
     endActionSize: Dp = 0.dp,
 ): AnchoredDraggableState<DragAnchors> {

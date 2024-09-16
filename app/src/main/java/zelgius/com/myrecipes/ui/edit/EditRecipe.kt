@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package zelgius.com.myrecipes.ui.edit
 
@@ -69,7 +69,6 @@ import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.RemovableItem
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
@@ -81,6 +80,7 @@ import zelgius.com.myrecipes.ui.edit.viewModel.EditRecipeViewModel
 import zelgius.com.myrecipes.ui.edit.viewModel.IngredientItem
 import zelgius.com.myrecipes.ui.edit.viewModel.ListItem
 import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 
 
 @Composable
@@ -89,6 +89,7 @@ fun EditRecipe(viewModel: EditRecipeViewModel, navigateBack: () -> Unit = {}) {
     val recipe by viewModel.recipeFlow.collectAsState()
     val items by viewModel.itemsFlow.collectAsState(emptyList())
     val coroutineScope = rememberCoroutineScope()
+
     EditRecipeView(recipe,
         items,
         navigateBack,
@@ -98,7 +99,7 @@ fun EditRecipe(viewModel: EditRecipeViewModel, navigateBack: () -> Unit = {}) {
         },
         onActionOnStep = { action ->
             when (action) {
-                is Action.Add -> viewModel.addStep(action.item.step)
+                is Action.Add -> viewModel.addStep(action.item)
                 is Action.Update -> viewModel.updateStep(action.oldItem, action.newItem)
                 is Action.Delete -> viewModel.deleteStep(action.item.step)
             }
@@ -136,117 +137,121 @@ private fun EditRecipeView(
     onActionOnIngredient: (Action<Ingredient>) -> Unit = { },
     onSaved: () -> Unit = {}
 ) {
-    Scaffold(topBar = {
-        TopAppBar(title = {
-            Text(
-                if (recipe.id == null) stringResource(R.string.new_recipe)
-                else stringResource(R.string.edit_recipe)
-            )
-        }, navigationIcon = {
-            IconButton(onClick = navigateBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.TwoTone.ArrowBack, contentDescription = ""
+
+    Scaffold(
+        topBar = {
+            TopAppBar(title = {
+                Text(
+                    if (recipe.id == null) stringResource(R.string.new_recipe)
+                    else stringResource(R.string.edit_recipe)
                 )
-            }
-        }, actions = {
-            IconButton(onClick = onSaved) {
-                Icon(
-                    imageVector = Icons.TwoTone.Check, contentDescription = ""
-                )
-            }
-        })
-    }, content = { padding ->
+            }, navigationIcon = {
+                IconButton(onClick = navigateBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.TwoTone.ArrowBack, contentDescription = ""
+                    )
+                }
+            }, actions = {
+                IconButton(onClick = onSaved) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Check, contentDescription = ""
+                    )
+                }
+            })
+        }, content = { padding ->
 
-        var showStepBottomSheet by remember {
-            mutableStateOf(false)
-        }
-
-        var selectedStep: StepItem? by remember {
-            mutableStateOf(null)
-        }
-
-        var showIngredientBottomSheet by remember {
-            mutableStateOf(false)
-        }
-
-        var selectedIngredient: Ingredient? by remember {
-            mutableStateOf(null)
-        }
-
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            item {
-                EditRecipeHeader(
-                    name = recipe.name,
-                    imageUrl = recipe.imageUrl,
-                    onNameChanged = onNameChanged,
-                    onImageUrlChanged = onImageUrlChanged
-                )
+            var showStepBottomSheet by remember {
+                mutableStateOf(false)
             }
 
-            items(items, key = { it.hashCode() }) { item ->
-                when (item) {
-                    is IngredientItem -> IngredientItem(item, onRemove = {
-                        onActionOnIngredient(Action.Delete(it))
-                    }, onEdit = {
-                        selectedIngredient = it
-                        showIngredientBottomSheet = true
-                    })
+            var selectedStep: StepItem? by remember {
+                mutableStateOf(null)
+            }
 
-                    is StepItem -> StepItem(item, onEdit = {
-                        selectedStep = it
-                        showStepBottomSheet = true
-                    }, onRemove = {
-                        onActionOnStep(Action.Delete(it))
-                    })
+            var showIngredientBottomSheet by remember {
+                mutableStateOf(false)
+            }
 
-                    is AddIngredient -> AddIngredientButton {
-                        selectedIngredient = null
-                        showIngredientBottomSheet = true
-                    }
+            var selectedIngredient: Ingredient? by remember {
+                mutableStateOf(null)
+            }
 
-                    is AddStep -> AddStep {
-                        selectedStep = null
-                        showStepBottomSheet = true
+            LazyColumn(modifier = Modifier.padding(padding)) {
+                item {
+                    EditRecipeHeader(
+                        name = recipe.name,
+                        imageUrl = recipe.imageUrl,
+                        onNameChanged = onNameChanged,
+                        onImageUrlChanged = onImageUrlChanged
+                    )
+                }
+
+                items(items, key = { it.hashCode() }) { item ->
+                    when (item) {
+                        is IngredientItem -> IngredientItem(item, onRemove = {
+                            onActionOnIngredient(Action.Delete(it))
+                        }, onEdit = {
+                            selectedIngredient = it
+                            showIngredientBottomSheet = true
+                        })
+
+                        is StepItem -> StepItem(item, onEdit = {
+                            selectedStep = it
+                            showStepBottomSheet = true
+                        }, onRemove = {
+                            onActionOnStep(Action.Delete(it))
+                        })
+
+                        is AddIngredient -> AddIngredientButton(
+                            isFirst = item.isFirst
+                        ) {
+                            selectedIngredient = null
+                            showIngredientBottomSheet = true
+                        }
+
+                        is AddStep -> AddStep {
+                            selectedStep = null
+                            showStepBottomSheet = true
+                        }
                     }
                 }
             }
-        }
 
-        val stepSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val stepSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-        if (showStepBottomSheet) StepBottomSheet(initialStep = selectedStep,
-            modalBottomSheetState = stepSheetState,
-            recipe = recipe,
-            onSaved = {
-                val selected = selectedStep
-                onActionOnStep(
-                    if (selected == null) Action.Add(it) else Action.Update(
-                        selected, it
+            if (showStepBottomSheet) StepBottomSheet(initialStep = selectedStep,
+                modalBottomSheetState = stepSheetState,
+                recipe = recipe,
+                onSaved = {
+                    val selected = selectedStep
+                    onActionOnStep(
+                        if (selected == null) Action.Add(it) else Action.Update(
+                            selected, it
+                        )
                     )
-                )
-                showStepBottomSheet = false
-            },
-            onDismiss = {
-                showStepBottomSheet = false
-            })
+                    showStepBottomSheet = false
+                },
+                onDismiss = {
+                    showStepBottomSheet = false
+                })
 
-        val ingredientSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val ingredientSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-        if (showIngredientBottomSheet) IngredientBottomSheet(initialIngredient = selectedIngredient,
-            modalBottomSheetState = ingredientSheetState,
-            onSaved = {
-                val selected = selectedIngredient
-                onActionOnIngredient(
-                    if (selected == null) Action.Add(it) else Action.Update(
-                        selected, it
+            if (showIngredientBottomSheet) IngredientBottomSheet(initialIngredient = selectedIngredient,
+                modalBottomSheetState = ingredientSheetState,
+                onSaved = {
+                    val selected = selectedIngredient
+                    onActionOnIngredient(
+                        if (selected == null) Action.Add(it) else Action.Update(
+                            selected, it
+                        )
                     )
-                )
-                showIngredientBottomSheet = false
-            },
-            onDismiss = {
-                showIngredientBottomSheet = false
-            })
-    })
+                    showIngredientBottomSheet = false
+                },
+                onDismiss = {
+                    showIngredientBottomSheet = false
+                })
+        })
 }
 
 
@@ -394,10 +399,6 @@ private fun LazyItemScope.IngredientItem(
         else -> RoundedCornerShape(0.dp)
     }
 
-    var isEdit by remember {
-        mutableStateOf(false)
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -422,6 +423,7 @@ private fun LazyItemScope.IngredientItem(
 
 @Composable
 private fun LazyItemScope.AddIngredientButton(
+    isFirst: Boolean = false,
     onAddIngredient: () -> Unit = {}
 ) {
     Card(
@@ -429,14 +431,14 @@ private fun LazyItemScope.AddIngredientButton(
             .fillMaxWidth()
             .animateItem()
             .padding(bottom = 4.dp, end = 8.dp, start = 8.dp),
-        shape = MaterialTheme.shapes.extraLarge.copy(
+        shape = if (isFirst) MaterialTheme.shapes.extraLarge else MaterialTheme.shapes.extraLarge.copy(
             topStart = ZeroCornerSize, topEnd = ZeroCornerSize
         )
     ) {
         Button(
             onClick = onAddIngredient,
             modifier = Modifier
-                .padding(end = 8.dp, bottom = 8.dp)
+                .padding(end = 8.dp, bottom = 8.dp, top = if(isFirst) 8.dp else 0.dp)
                 .align(Alignment.End),
             contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
@@ -484,7 +486,7 @@ fun EditRecipePreview() {
                 IngredientItem(
                     item, isFirst = index == 0, isLast = index == recipe.ingredients.lastIndex
                 )
-            } + AddIngredient + recipe.steps.map { s -> StepItem(s, emptyList()) } + AddStep)
+            } + AddIngredient(false) + recipe.steps.map { s -> StepItem(s, emptyList()) } + AddStep)
         }
     }
 }

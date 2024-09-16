@@ -60,17 +60,19 @@ fun RecipeDetails(
     navigateBack: () -> Unit = {},
     onEdit: (Recipe) -> Unit = {}
 ) {
-    val recipe by viewModel.recipeFlow.collectAsState()
+    val recipe by viewModel.recipeFlow.collectAsState(null)
     val items by viewModel.itemsFlow.collectAsState(emptyList())
 
-    RecipeDetailsView(
-        sharedTransitionScope,
-        animatedVisibilityScope,
-        navigateBack,
-        onEdit,
-        recipe,
-        items
-    )
+    recipe?.let {
+        RecipeDetailsView(
+            sharedTransitionScope,
+            animatedVisibilityScope,
+            navigateBack,
+            onEdit,
+            it,
+            items
+        )
+    }
 }
 
 @Composable
@@ -129,7 +131,7 @@ private fun RecipeDetailsView(
             section = { isExpanded, item ->
                 if (item == items.first()) if (isExpanded) Box(
                     Modifier
-                        .height(16.dp)
+                        .height(24.dp)
                         .fillMaxWidth()
                 )
                 else Text(
@@ -179,7 +181,7 @@ fun RecipeDetailsHeader(
             state = rememberSharedContentState(
                 key = "${recipe.id}_recipe_container"
             )
-        ), shape = MaterialTheme.shapes.extraLarge
+        ).padding(top = 8.dp), shape = MaterialTheme.shapes.extraLarge
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),

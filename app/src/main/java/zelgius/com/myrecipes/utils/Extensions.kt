@@ -17,23 +17,12 @@ import kotlin.math.roundToInt
 val ViewBinding.context: Context
     get() = root.context
 
-fun TextInputLayout.toDouble() = editText!!.text.toString().replace(',', '.').toDouble()
-
 fun Double.round(decimals: Int): Double {
     var multiplier = 1.0
     repeat(decimals) { multiplier *= 10 }
     return round(this * multiplier) / multiplier
 }
 
-@ColorInt
-fun Context.getColor(@ColorRes color: Int, alpha: Float) =
-    getColor(color).let{
-        Color.argb(
-            (Color.alpha(color) * alpha).roundToInt(),
-            Color.red(it),
-            Color.green(it),
-            Color.blue(it))
-    }
 
 /**
  *

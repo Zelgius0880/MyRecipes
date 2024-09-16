@@ -26,29 +26,28 @@ class IngredientRepository(
      * @param recipe Recipe
      * @return Long the id of the inserted item
      */
-    suspend fun insert(item: Ingredient, recipe: Recipe): Long {
-        // Heavy work
+    suspend fun insert(item: Ingredient, recipe: Recipe): Ingredient {
 
-        val id = item.id ?: dao.insert(IngredientEntity(null, item.name, item.imageUrl))
+        val idIngredient = item.idIngredient ?: dao.insert(IngredientEntity(null, item.name, item.imageUrl))
 
-        dao.insert(
+        val id = dao.insert(
             RecipeIngredient(
                 null,
                 item.quantity,
                 item.unit.asEntity(),
                 item.optional,
                 item.sortOrder,
-                id,
+                idIngredient,
                 recipe.id,
                 item.step?.id
             )
         )
 
-        return id
+        return item.copy(id = id, idIngredient = idIngredient)
     }
 
     suspend fun delete(item: Ingredient): Int =
-        dao.deleteJoin(item.id!!, item.recipe?.id!!)
+        dao.deleteJoin(item.idIngredient!!, item.recipe?.id!!)
 
 
     suspend fun delete(item: Recipe): Int =
@@ -60,10 +59,8 @@ class IngredientRepository(
      * @param item Step
      * @return Int the  number of rows affected
      */
-    suspend fun update(item: Ingredient): Int {
-        val id = dao.getId(item.id!!, item.recipe!!.id!!)
-
-        return if (id == null) {
+    suspend fun update(item: Ingredient): Ingredient {
+        val id = if (item.id == null ) {
             dao.insert(
                 RecipeIngredient(
                     null,
@@ -71,25 +68,29 @@ class IngredientRepository(
                     item.unit.asEntity(),
                     item.optional,
                     item.sortOrder,
-                    item.id,
-                    item.recipe.id,
+                    item.idIngredient,
+                    item.recipe?.id,
                     item.step?.id
                 )
             )
-            0
-        } else
+        } else {
             dao.update(
                 RecipeIngredient(
-                    id,
+                    item.id,
                     item.quantity,
                     item.unit.asEntity(),
                     item.optional,
                     item.sortOrder,
-                    item.id,
-                    item.recipe.id,
+                    item.idIngredient,
+                    item.recipe?.id,
                     item.step?.id
                 )
             )
+
+            item.id
+        }
+
+        return item.copy(id = id)
     }
 
 
@@ -100,10 +101,9 @@ class IngredientRepository(
      * @return Int                              the number of rows affected
      */
     suspend fun deleteAllButThem(
-        recipe: Recipe,
         ingredients: List<Ingredient>
     ): Int =
-        dao.deleteJoin(recipe.id!!, *ingredients.map { it.id!! }.toLongArray())
+        dao.deleteJoin(*ingredients.map { it.id!! }.toLongArray())
 
 
 }

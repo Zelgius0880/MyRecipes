@@ -30,7 +30,9 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +56,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -87,13 +90,19 @@ fun IngredientBottomSheet(
         null
     )
     val ingredients by viewModel.ingredientsFlow.collectAsState(emptyList())
+    val showAdd by viewModel.isAdd.collectAsState(false)
 
     ModalBottomSheet(sheetState = modalBottomSheetState, onDismissRequest = onDismiss) {
 
-        if (ingredients.isNotEmpty() && ingredient != null) IngredientBottomSheet(ingredient = ingredient!!,
+        if (ingredients.isNotEmpty() && ingredient != null) IngredientBottomSheet(
+            ingredient = ingredient!!,
             ingredients = ingredients,
+            showAdd = showAdd,
             onSaved = {
                 onSaved(viewModel.onSaved())
+            },
+            onChangeName = {
+                viewModel.changeName(it)
             },
             onChanged = {
                 viewModel.setIngredient(it)
@@ -107,6 +116,8 @@ val decimalFormat = DecimalFormat("#.##")
 private fun IngredientBottomSheet(
     ingredient: Ingredient,
     ingredients: List<Ingredient>,
+    showAdd: Boolean,
+    onChangeName: (String?) -> Unit = {},
     onChanged: (Ingredient) -> Unit,
     onSaved: () -> Unit = {},
 ) {
@@ -117,13 +128,31 @@ private fun IngredientBottomSheet(
     var isQuantityError by remember {
         mutableStateOf(false)
     }
+
+    var name by remember {
+        mutableStateOf<String?>(null)
+    }
     var isNameError by remember {
         mutableStateOf(false)
     }
 
+    LaunchedEffect(Unit) {
+        onChangeName(null)
+        name = null
+        quantity = if(showAdd) "" else decimalFormat.format(ingredient.quantity)
+    }
+
     Column(modifier = Modifier.padding(8.dp)) {
         EditIngredient(
-            ingredients, onChanged, ingredient, isNameError
+            ingredients = ingredients,
+            onChanged = onChanged,
+            ingredient = ingredient,
+            isNameError = isNameError,
+            onChangeName = {
+                name = it
+                onChangeName(it)
+            },
+            showAdd = showAdd
         )
 
         Row(modifier = Modifier.padding(top = 16.dp)) {
@@ -144,11 +173,12 @@ private fun IngredientBottomSheet(
             onClick = {
                 val q = quantity.toDoubleOrNull()
                 isQuantityError = q == null || q <= 0
-                isNameError = ingredient.name.isBlank()
+                isNameError = (name == null && ingredient.name.isEmpty()) || (name != null && name.isNullOrEmpty())
 
                 if (!isQuantityError && !isNameError) {
                     onChanged(ingredient.copy(quantity = q!!))
                     onSaved()
+                    quantity = ""
                 }
             }, modifier = Modifier
                 .align(End)
@@ -164,11 +194,17 @@ private fun EditIngredient(
     ingredients: List<Ingredient>,
     onChanged: (Ingredient) -> Unit,
     ingredient: Ingredient,
+    onChangeName: (String?) -> Unit,
+    showAdd: Boolean,
     isNameError: Boolean,
     modifier: Modifier = Modifier,
 ) {
     var newIngredient by remember {
         mutableStateOf(false)
+    }
+
+    var name by remember {
+        mutableStateOf("")
     }
 
     Row(modifier = modifier) {
@@ -178,27 +214,36 @@ private fun EditIngredient(
         ) { showTextField ->
 
             if (!showTextField) {
-                IngredientDropdown(ingredients, onChanged, ingredient, onNewIngredient = {
+                IngredientDropdown(ingredients, onChanged = {
+                    onChanged(it)
+                    onChangeName(null)
+                }, ingredient, showAdd, onNewIngredient = {
                     newIngredient = true
-                    onChanged(ingredient.copy(id = null, name = "", imageUrl = null))
+                    onChanged(Ingredient.Empty)
+                    onChangeName("")
                 })
             } else AppTextField(
-                ingredient.name,
-                onValueChange = { onChanged(ingredient.copy(name = it)) },
+                value = name,
+                onValueChange = {
+                    name = it
+                    onChangeName(it)
+                },
                 modifier = Modifier
                     .weight(1f),
                 isError = isNameError,
+                label = { Text(stringResource(R.string.ingredient)) },
                 maxLines = 1,
                 trailingIcon = {
                     IconButton(
                         onClick = {
+                            onChanged(Ingredient.Empty)
+                            onChangeName(null)
                             newIngredient = false
                         },
                     ) {
                         Icon(imageVector = Icons.TwoTone.Close, contentDescription = "")
                     }
                 },
-                textAlign = TextAlign.Center,
             )
         }
 
@@ -252,41 +297,45 @@ private fun IngredientDropdown(
     ingredients: List<Ingredient>,
     onChanged: (Ingredient) -> Unit,
     ingredient: Ingredient,
+    showAdd: Boolean,
     shape: RoundedCornerShape = CircleShape,
     onNewIngredient: () -> Unit = {}
 ) {
-    AppDropDown(modifier = Modifier.width(IntrinsicSize.Max), selection = {
-        OutlinedTextField(value = " ",
-            shape = shape,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(R.string.ingredient)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusProperties { canFocus = false },
-            leadingIcon = {
-                if (it != null) Row(
-                    modifier = Modifier.padding(8.dp),
-                    verticalAlignment = CenterVertically
-                ) {
-                    Ingredient(
-                        it, text = it.name, modifier = Modifier.weight(1f)
-                    )
-                    Icon(Icons.TwoTone.KeyboardArrowDown, contentDescription = "")
-                }
-            })
-    }, item = {
-        if (it != null) Ingredient(it, text = it.name)
-        else Text(stringResource(R.string.new_ingredient))
-    }, items = listOf(null) + ingredients, onItemSelected = {
+    AppDropDown(
+        modifier = Modifier.width(IntrinsicSize.Max), selection = {
+            OutlinedTextField(value = " ",
+                shape = shape,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.ingredient)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusProperties { canFocus = false },
+                leadingIcon = {
+                    if (it != null) Row(
+                        modifier = Modifier.padding(8.dp),
+                        verticalAlignment = CenterVertically
+                    ) {
+                        Ingredient(
+                            it, text = it.name, modifier = Modifier.weight(1f)
+                        )
+                        Icon(Icons.TwoTone.KeyboardArrowDown, contentDescription = "")
+                    }
+                })
+        },
+        item = {
+            if (it != null) Ingredient(it, text = it.name)
+            else Text(stringResource(R.string.new_ingredient))
+        },
+        items = (if (showAdd) listOf(null) else emptyList()) + ingredients, onItemSelected = {
 
-        if (it != null) {
-            onChanged(it)
-        } else {
-            onChanged(ingredient.copy(name = ""))
-            onNewIngredient()
-        }
-    }, selectedItem = ingredient
+            if (it != null) {
+                onChanged(it)
+            } else {
+                onChanged(Ingredient.Empty)
+                onNewIngredient()
+            }
+        }, selectedItem = ingredient
     )
 }
 
@@ -309,6 +358,7 @@ fun IngredientBottomSheetPreview() {
                 IngredientBottomSheet(
                     ingredient = ingredient,
                     ingredients = recipe.ingredients,
+                    showAdd = true,
                     onChanged = {
                         ingredient = it
                     })
@@ -326,12 +376,19 @@ class IngredientBottomSheetViewModel @Inject constructor(
 
     private val ingredient get() = _ingredientFlow.value
 
-    val ingredientFlow = _ingredientFlow.asStateFlow().filterNotNull()
+    val ingredientFlow = _ingredientFlow.asStateFlow().filter { it != Ingredient.Empty }
 
     val ingredientsFlow = ingredientRepository.getFlow()
 
+    private val _isAdd: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isAdd get() = _isAdd.asStateFlow()
+
+    private var name: String? = null
+
     fun init(ingredient: Ingredient?) {
-        if (ingredient == null) {
+        if (ingredient == null || ingredient == Ingredient.Empty) {
+            _isAdd.value = true
+
             viewModelScope.launch {
                 _ingredientFlow.value = ingredientsFlow.first().first()
             }
@@ -341,23 +398,30 @@ class IngredientBottomSheetViewModel @Inject constructor(
 
     fun setIngredient(ingredient: Ingredient) {
         viewModelScope.launch {
+            val i = if(ingredient == Ingredient.Empty) ingredientsFlow.first().first() else ingredient
             val unit: Ingredient.Unit =
-                if (ingredient.name != _ingredientFlow.value.name) dataStoreRepository.unit(
-                    ingredient.name
+                if (i.name != _ingredientFlow.value.name) dataStoreRepository.unit(
+                    i.name
                 )?.let {
                     Ingredient.Unit.valueOf(it)
                 } ?: _ingredientFlow.value.unit
-                else ingredient.unit
+                else i.unit
 
-            _ingredientFlow.value = ingredient.copy(unit = unit)
+            _ingredientFlow.value = i.copy(unit = unit)
         }
+    }
+
+    fun changeName(name: String?) {
+        this.name = name
     }
 
     fun onSaved(): Ingredient {
         viewModelScope.launch {
             dataStoreRepository.saveUnit(ingredient.name, ingredient.unit.name)
         }
-        return ingredient
+        return name?.let {
+            ingredient.copy(name = it, imageUrl = null, id = null, idIngredient = null)
+        } ?: ingredient
     }
 
 }

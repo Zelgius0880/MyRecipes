@@ -1,5 +1,6 @@
 package zelgius.com.myrecipes.ui.common
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,17 +18,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RemovableItem(modifier: Modifier = Modifier, onRemove: () -> Unit, content: @Composable () -> Unit, ) {
+    val endActionSize = 64.dp
+    val state = rememberAnchoredDraggableState(0.dp, endActionSize)
     AppSwipeRevealItem(
         contentElevation = 2.dp,
         modifier = modifier,
-        endActionSize = 64.dp,
+        state = state,
+        endActionSize = endActionSize,
         endAction = {
             Button(
                 modifier = Modifier
                     .fillMaxSize(),
                 onClick = {
+                    state.progress(DragAnchors.End, DragAnchors.Start)
                     onRemove()
                 },
                 shape = RectangleShape,

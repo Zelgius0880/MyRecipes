@@ -70,7 +70,8 @@ data class IngredientEntity(
 
 
 fun IngredientEntity.asModel() = Ingredient(
-    id = id,
+    id = null,
+    idIngredient = id,
     quantity = 0.0,
     unit = Ingredient.Unit.Unit,
     name = name,
