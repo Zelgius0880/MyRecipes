@@ -2,6 +2,9 @@ package zelgius.com.myrecipes.ui.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,27 +17,41 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+
+val RemovableItemEndActionSize = 64.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RemovableItem(modifier: Modifier = Modifier, onRemove: () -> Unit, content: @Composable () -> Unit, ) {
-    val endActionSize = 64.dp
-    val state = rememberAnchoredDraggableState(0.dp, endActionSize)
+fun RemovableItem(
+    modifier: Modifier = Modifier,
+    state: AnchoredDraggableState<DragAnchors> = rememberAnchoredDraggableState(
+        0.dp,
+        RemovableItemEndActionSize
+    ),
+    onRemove: () -> Unit,
+    content: @Composable () -> Unit,
+    ) {
+
+    val coroutineScope = rememberCoroutineScope()
     AppSwipeRevealItem(
         contentElevation = 2.dp,
         modifier = modifier,
         state = state,
-        endActionSize = endActionSize,
+        endActionSize = RemovableItemEndActionSize,
         endAction = {
             Button(
                 modifier = Modifier
                     .fillMaxSize(),
                 onClick = {
-                    state.progress(DragAnchors.End, DragAnchors.Start)
                     onRemove()
+                    coroutineScope.launch {
+                        state.snapTo(DragAnchors.Start)
+                    }
                 },
                 shape = RectangleShape,
                 contentPadding = PaddingValues(horizontal = 0.dp),

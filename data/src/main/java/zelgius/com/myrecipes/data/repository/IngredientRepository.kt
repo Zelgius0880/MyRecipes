@@ -15,9 +15,9 @@ class IngredientRepository(
 ) {
     suspend fun get() = dao.get().map { it.asModel() }
 
-    fun getFlow() = dao.getFlow().map { it.map {  i -> i.asModel() } }
+    fun getFlow() = dao.getFlow().map { it.map { i -> i.asModel() } }
 
-    suspend fun get(name: String) = dao.get(name)
+    suspend fun get(name: String, imageUrl: String? = null) = dao.get(name, imageUrl)
 
 
     /**
@@ -28,7 +28,8 @@ class IngredientRepository(
      */
     suspend fun insert(item: Ingredient, recipe: Recipe): Ingredient {
 
-        val idIngredient = item.idIngredient ?: dao.insert(IngredientEntity(null, item.name, item.imageUrl))
+        val idIngredient = item.idIngredient ?: dao.get(item.name, item.imageUrl)?.id
+        ?: dao.insert(IngredientEntity(null, item.name, item.imageUrl))
 
         val id = dao.insert(
             RecipeIngredient(
@@ -60,7 +61,7 @@ class IngredientRepository(
      * @return Int the  number of rows affected
      */
     suspend fun update(item: Ingredient): Ingredient {
-        val id = if (item.id == null ) {
+        val id = if (item.id == null) {
             dao.insert(
                 RecipeIngredient(
                     null,

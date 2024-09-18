@@ -5,6 +5,7 @@ package zelgius.com.myrecipes.ui.common.recipe
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +38,10 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.text
+import zelgius.com.myrecipes.ui.common.DragAnchors
 import zelgius.com.myrecipes.ui.common.RemovableItem
+import zelgius.com.myrecipes.ui.common.RemovableItemEndActionSize
+import zelgius.com.myrecipes.ui.common.rememberAnchoredDraggableState
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummySample
 
@@ -53,7 +57,7 @@ fun RecipeList(
     val items = list.collectAsLazyPagingItems()
 
     LazyColumn(modifier = modifier) {
-        items(count = items.itemCount, key = {it.hashCode()}) { index ->
+        items(count = items.itemCount, key = { it.hashCode() }) { index ->
             val recipe = items[index]
 
             recipe?.let {
@@ -73,6 +77,7 @@ fun RecipeList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecipeListItem(
     sharedTransitionScope: SharedTransitionScope,
@@ -93,9 +98,20 @@ fun RecipeListItem(
                 )
             )
     ) {
+        val state = rememberAnchoredDraggableState(
+            0.dp,
+            RemovableItemEndActionSize
+        )
+
         RemovableItem(
-            modifier = Modifier.clickable { onClick(recipe) }.fillMaxWidth(),
-            onRemove = {onRemove(recipe)}
+            modifier = Modifier
+                .clickable { onClick(recipe) }
+                .fillMaxWidth(),
+            onRemove = {
+                onRemove(recipe)
+                state.progress(DragAnchors.End, DragAnchors.Start)
+            },
+            state = state
         ) {
             Row(modifier = Modifier.padding(8.dp)) {
                 AsyncImage(
@@ -152,7 +168,8 @@ fun RecipeListPreview() {
     }
 
     SharedElementPreview { animatedVisibilityScope, sharedTransitionScope ->
-        RecipeList(animatedVisibilityScope = animatedVisibilityScope,
+        RecipeList(
+            animatedVisibilityScope = animatedVisibilityScope,
             sharedTransitionScope = sharedTransitionScope,
             list = flowOf(PagingData.from(list.map { it.asModel() }))
         )

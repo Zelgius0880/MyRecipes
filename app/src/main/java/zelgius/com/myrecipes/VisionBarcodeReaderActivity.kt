@@ -57,7 +57,7 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
             when (barcode.valueType) {
                 Barcode.TYPE_TEXT -> {
                     barcode.rawValue
-                    setResult(Activity.RESULT_OK, Intent().putExtra("BASE64", barcode.rawValue))
+                    setResult(RESULT_OK, Intent().putExtra("BASE64", barcode.rawValue))
                     finish()
                 }
             }

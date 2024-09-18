@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MyRecipes.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MyRecipes.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/protobuff/MyRecipes.protobuff.iml" filepath="$PROJECT_DIR$/.idea/modules/protobuff/MyRecipes.protobuff.iml" />
     </modules>
   </component>
 </project>
