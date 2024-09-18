@@ -355,6 +355,7 @@ private fun EditRecipeHeader(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.StepItem(
     item: StepItem, onEdit: (StepItem) -> Unit = {}, onRemove: (step: StepItem) -> Unit = {}
@@ -384,6 +385,7 @@ private fun LazyItemScope.StepItem(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.IngredientItem(
     item: IngredientItem,

@@ -42,6 +42,9 @@ import zelgius.com.myrecipes.ui.edit.viewModel.EditRecipeViewModel
 import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.edit.EditRecipe
 import zelgius.com.myrecipes.ui.home.Home
+import java.net.URLDecoder
+import java.net.URLEncoder
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -58,7 +61,13 @@ class MainActivity : AppCompatActivity() {
                     val mainNavController = rememberNavController()
 
                     NavHost(navController = mainNavController, startDestination = "home") {
-                        composable("home") {
+                        composable(
+                            "home",
+                            enterTransition = { fadeIn() },
+                            popEnterTransition = { fadeIn() },
+                            exitTransition = { fadeOut() },
+                            popExitTransition = { fadeOut() },
+                        ) {
                             Home(
                                 animatedVisibilityScope = this@composable,
                                 sharedTransitionScope = this@SharedTransitionLayout,
@@ -74,7 +83,16 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     else
                                         mainNavController.navigate(
-                                            "details?id=${it.id}&name=${it.name}&url=${it.imageUrl}&type=${it.type.name}"
+                                            "details?id=${it.id}" +
+                                                    "&name=${
+                                                        URLEncoder.encode(
+                                                            it.name,
+                                                            Charsets.UTF_8.name()
+                                                        )
+                                                    }" +
+                                                    (if (it.imageUrl?.takeIf { s -> s != "null" }
+                                                            .isNullOrBlank()) "" else "&url=${it.imageUrl}") +
+                                                    "&type=${it.type.name}"
                                         ) {
                                             popUpTo(mainNavController.graph.findStartDestination().id) {
                                                 saveState = true
@@ -85,7 +103,11 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         recipeComposable(
-                            "details",
+                            enterTransition = { fadeIn() },
+                            popEnterTransition = { fadeIn() },
+                            exitTransition = { fadeOut() },
+                            popExitTransition = { fadeOut() },
+                            route = "details",
                         ) {
                             RecipeDetails(
                                 animatedVisibilityScope = this,
@@ -167,9 +189,10 @@ class MainActivity : AppCompatActivity() {
 
             content(
                 Recipe(
-                    if(id == -1L) null else id,
+                    if (id == -1L) null else id,
                     type = type,
-                    name = it.arguments?.getString("name") ?: "",
+                    name = it.arguments?.getString("name")
+                        ?.let { s -> URLDecoder.decode(s, Charsets.UTF_8.name()) } ?: "",
                     imageUrl = it.arguments?.getString("url")
                 )
             )

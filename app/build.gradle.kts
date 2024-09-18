@@ -31,7 +31,7 @@ android {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
+        versionCode = 5
         versionName = "2.0-beta01"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -65,7 +65,7 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -116,14 +116,13 @@ android {
 }
 
 
-val mockitoVersion = "2.16.0"
-val composeVersion = "1.7.0-rc01"
+val composeVersion = "1.7.2"
 
 dependencies {
-    implementation("com.google.firebase:firebase-crashlytics:19.0.3")
+    implementation("com.google.firebase:firebase-crashlytics:19.1.0")
     implementation("com.google.firebase:firebase-analytics:22.1.0")
     val pagingVersion = "3.3.2"
-    val lifecycleVersion = "2.8.4"
+    val lifecycleVersion = "2.8.6"
     val workVersion = "2.9.1"
     val cameraxVersion = "1.3.4"
     val coroutinesVersion = "1.7.3"
@@ -146,20 +145,19 @@ dependencies {
     androidTestImplementation("androidx.work:work-testing:$workVersion")
 
     androidTestImplementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.squareup.picasso:picasso:2.71828") // TODO remove that once the migration will be done
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
     //Hilt
-    implementation("com.google.dagger:hilt-android:2.50")
+    implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    ksp("com.google.dagger:hilt-android-compiler:2.50")
+    ksp("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     //Android X
-    implementation("androidx.fragment:fragment:1.8.2")
-    implementation("androidx.fragment:fragment-ktx:1.8.2")
+    implementation("androidx.fragment:fragment:1.8.3")
+    implementation("androidx.fragment:fragment-ktx:1.8.3")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
@@ -186,7 +184,6 @@ dependencies {
 
     //Worker
     implementation("androidx.work:work-runtime-ktx:$workVersion")
-
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
     //CameraX
@@ -195,16 +192,18 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.4")
 
     //Compose
-    implementation("androidx.activity:activity-compose:1.9.1")
+    implementation("androidx.activity:activity-compose:1.9.2")
     implementation("androidx.compose.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.ui:ui:$composeVersion")
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-compose:2.8.1")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
-    implementation("androidx.compose.material3:material3:1.2.1")
-    implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
+    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.compose.material3:material3-window-size-class:1.3.0")
     implementation("androidx.compose.animation:animation:$composeVersion")
-    //implementation("androidx.compose.material3:material3-adaptive:1.3.0-beta03")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.0-rc01")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha03")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha03")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha03")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.0")
 
 
 }

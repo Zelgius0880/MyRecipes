@@ -11,6 +11,8 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,6 +23,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -128,9 +131,10 @@ private fun HomeView(
 
             val result = snackbarHostState.showSnackbar(
                 message = context.getString(R.string.recipe_removed),
-                actionLabel = context.getString(R.string.undo)
+                actionLabel = context.getString(R.string.undo),
+                duration = SnackbarDuration.Short
             )
-            if(result == SnackbarResult.ActionPerformed)
+            if (result == SnackbarResult.ActionPerformed)
                 onRestore(backup)
         }
     }
@@ -182,13 +186,7 @@ private fun HomeView(
                             selectedTabIndex = index
 
                             onTypeChanged(tab)
-                            navController.navigate(
-                                when (tab) {
-                                    Recipe.Type.Meal -> "meals"
-                                    Recipe.Type.Dessert -> "desserts"
-                                    Recipe.Type.Other -> "other"
-                                }
-                            )
+                            navController.navigate(tab.route)
                         }) {
                             Text(
                                 text = tab.string(),
@@ -286,3 +284,10 @@ fun Recipe.Type.string() = stringResource(
         Recipe.Type.Other -> R.string.other
     }
 )
+
+val Recipe.Type.route
+    get() = when (this) {
+        Recipe.Type.Meal -> "meals"
+        Recipe.Type.Dessert -> "desserts"
+        Recipe.Type.Other -> "other"
+    }
