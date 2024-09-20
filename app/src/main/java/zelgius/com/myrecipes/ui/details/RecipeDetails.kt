@@ -50,6 +50,7 @@ import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.common.recipe.IngredientChip
 import zelgius.com.myrecipes.ui.common.recipe.Step
 import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
+import zelgius.com.myrecipes.utils.isTwoPanes
 
 
 @Composable
@@ -85,32 +86,33 @@ private fun RecipeDetailsView(
     items: List<StepItem>,
 ) = with(sharedTransitionScope) {
     Scaffold(topBar = {
-        TopAppBar(title = {
-            Text(
-                recipe.type.string(), modifier = Modifier.sharedElement(
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    state = rememberSharedContentState(
-                        key = "${recipe.id}_recipe_type"
+        if (!isTwoPanes())
+            TopAppBar(title = {
+                Text(
+                    recipe.type.string(), modifier = Modifier.sharedElement(
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        state = rememberSharedContentState(
+                            key = "${recipe.id}_recipe_type"
+                        )
                     )
                 )
-            )
-        }, navigationIcon = {
-            IconButton(onClick = navigateBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
-                    contentDescription = ""
-                )
-            }
-        },
-            actions = {
-                IconButton(onClick = { onEdit(recipe) }) {
+            }, navigationIcon = {
+                IconButton(onClick = navigateBack) {
                     Icon(
-                        imageVector = Icons.TwoTone.Edit,
+                        imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
                         contentDescription = ""
                     )
                 }
-            }
-        )
+            },
+                actions = {
+                    IconButton(onClick = { onEdit(recipe) }) {
+                        Icon(
+                            imageVector = Icons.TwoTone.Edit,
+                            contentDescription = ""
+                        )
+                    }
+                }
+            )
     }, content = { padding ->
         ExpandableList(
             reversed = true,
@@ -121,6 +123,7 @@ private fun RecipeDetailsView(
                     sharedTransitionScope = sharedTransitionScope,
                     animatedVisibilityScope = animatedVisibilityScope,
                     recipe = recipe,
+                    onEdit = onEdit,
                     modifier = Modifier.fillMaxWidth()
                 )
             },
@@ -172,16 +175,19 @@ private fun RecipeDetailsView(
 fun RecipeDetailsHeader(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    onEdit: (Recipe) -> Unit = {},
     recipe: Recipe,
     modifier: Modifier = Modifier
 ) = with(sharedTransitionScope) {
     Card(
-        modifier = modifier.sharedElement(
-            animatedVisibilityScope = animatedVisibilityScope,
-            state = rememberSharedContentState(
-                key = "${recipe.id}_recipe_container"
+        modifier = modifier
+            .sharedElement(
+                animatedVisibilityScope = animatedVisibilityScope,
+                state = rememberSharedContentState(
+                    key = "${recipe.id}_recipe_container"
+                )
             )
-        ).padding(top = 8.dp), shape = MaterialTheme.shapes.extraLarge
+            .padding(top = 8.dp), shape = MaterialTheme.shapes.extraLarge
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
@@ -208,6 +214,13 @@ fun RecipeDetailsHeader(
                         )
                     ), style = MaterialTheme.typography.headlineLarge
             )
+
+            IconButton(onClick = { onEdit(recipe) }) {
+                Icon(
+                    imageVector = Icons.TwoTone.Edit,
+                    contentDescription = ""
+                )
+            }
         }
     }
 }

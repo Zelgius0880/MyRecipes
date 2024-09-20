@@ -102,7 +102,7 @@ class SaveRecipeUseCaseTest {
                     if (index == 1) step.copy(text = "${step.text} Updated")
                     else step
                 }.toMutableList().apply {
-                    removeLast()
+                    removeLastOrNull()
                     add(Step(id = null, text = "New step", order = 3, recipe = null))
                 },
                 ingredients = recipe.ingredients.mapIndexed { index, ingredient ->

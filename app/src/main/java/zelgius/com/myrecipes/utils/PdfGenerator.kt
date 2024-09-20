@@ -571,7 +571,7 @@ object Utils {
 
         val dest = Bitmap.createBitmap(
             newWidth, newHeight,
-            source.config
+            source.config?: Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(dest)
         canvas.drawBitmap(source, null, targetRect, null)
