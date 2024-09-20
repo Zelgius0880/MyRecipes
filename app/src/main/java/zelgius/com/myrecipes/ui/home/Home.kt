@@ -11,18 +11,19 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -40,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -61,18 +63,18 @@ import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.VisionBarcodeReaderActivity
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.ui.SnackBar
+import zelgius.com.myrecipes.ui.common.recipe.RecipeList
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummyModel
-import zelgius.com.myrecipes.ui.common.recipe.RecipeList
+import zelgius.com.myrecipes.utils.isTwoPanes
 
 val tabs = listOf(Recipe.Type.Meal, Recipe.Type.Dessert, Recipe.Type.Other)
 
 @Composable
 fun Home(
     viewModel: HomeViewModel = hiltViewModel(),
-    sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     onTypeChanged: (Recipe.Type) -> Unit = {},
     onClick: (Recipe?) -> Unit = {},
 ) {
@@ -107,8 +109,8 @@ fun Home(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeView(
-    sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     onClick: (Recipe?) -> Unit = {},
     onRemove: (Recipe) -> Flow<Recipe> = { emptyFlow() },
     onRestore: (Recipe) -> Unit = {},
@@ -118,7 +120,6 @@ private fun HomeView(
     pageDesserts: Flow<PagingData<Recipe>>,
     pageOther: Flow<PagingData<Recipe>>,
 ) {
-
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -144,27 +145,47 @@ private fun HomeView(
             SnackbarHost(hostState = snackbarHostState)
         },
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.recipe_list)) },
-                actions = {
-                    IconButton(onClick = onScanClicked) {
+            if (!isTwoPanes())
+                TopAppBar(
+                    title = { Text(text = stringResource(id = R.string.recipe_list)) },
+                    actions = {
+                        IconButton(onClick = onScanClicked) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_qr_code_white),
+                                modifier = Modifier.padding(8.dp),
+                                contentDescription = stringResource(
+                                    id = R.string.scan_recipe,
+                                )
+                            )
+                        }
+                    }
+                )
+        },
+        floatingActionButton = {
+            Column(horizontalAlignment = Alignment.End) {
+                if (isTwoPanes())
+                    SmallFloatingActionButton(
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        onClick = {
+                            onScanClicked()
+                        }) {
                         Icon(
+                            modifier = Modifier.size(24.dp),
                             painter = painterResource(id = R.drawable.ic_qr_code_white),
-                            modifier = Modifier.padding(8.dp),
                             contentDescription = stringResource(
-                                id = R.string.search_hint,
+                                id = R.string.scan_recipe,
                             )
                         )
                     }
+
+                FloatingActionButton(onClick = {
+                    onClick(null)
+                }) {
+                    Icon(Icons.TwoTone.Add, "Add")
                 }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                onClick(null)
-            }) {
-                Icon(Icons.TwoTone.Add, "Add")
             }
+
         },
         content = { padding ->
             val navController = rememberNavController()
@@ -176,8 +197,8 @@ private fun HomeView(
             }
             Column(modifier = Modifier.padding(padding)) {
                 TabRow(selectedTabIndex = selectedTabIndex, indicator = {
-                    TabRowDefaults.SecondaryIndicator(Modifier.tabIndicatorOffset(it[selectedTabIndex]))
-                }) {
+                    TabRowDefaults.PrimaryIndicator(Modifier.tabIndicatorOffset(it[selectedTabIndex]))
+                }, divider = {}) {
                     tabs.forEachIndexed { index, tab ->
                         Tab(selected = index == selectedTabIndex, onClick = {
                             if (selectedTabIndex == index) return@Tab
@@ -186,7 +207,9 @@ private fun HomeView(
                             selectedTabIndex = index
 
                             onTypeChanged(tab)
-                            navController.navigate(tab.route)
+                            navController.navigate(tab.route) {
+                                popUpTo(0)
+                            }
                         }) {
                             Text(
                                 text = tab.string(),

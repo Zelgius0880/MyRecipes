@@ -44,11 +44,12 @@ import zelgius.com.myrecipes.ui.common.RemovableItemEndActionSize
 import zelgius.com.myrecipes.ui.common.rememberAnchoredDraggableState
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummySample
+import zelgius.com.myrecipes.utils.conditional
 
 @Composable
 fun RecipeList(
-    sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     list: Flow<PagingData<Recipe>>,
     modifier: Modifier = Modifier,
     onClick: (Recipe) -> Unit = {},
@@ -80,8 +81,8 @@ fun RecipeList(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecipeListItem(
-    sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     recipe: Recipe,
     modifier: Modifier = Modifier,
     onClick: (Recipe) -> Unit = {},
@@ -89,14 +90,8 @@ fun RecipeListItem(
 ) = with(sharedTransitionScope) {
     Card(
         shape = RoundedCornerShape(4.dp),
-        modifier = modifier
+        modifier = modifier then modifier(animatedVisibilityScope, "${recipe.id}_recipe_card")
             .height(IntrinsicSize.Max)
-            .sharedElement(
-                animatedVisibilityScope = animatedVisibilityScope,
-                state = rememberSharedContentState(
-                    key = "${recipe.id}_recipe_container"
-                )
-            )
     ) {
         val state = rememberAnchoredDraggableState(
             0.dp,
@@ -123,42 +118,40 @@ fun RecipeListItem(
                     placeholder = painterResource(R.drawable.ic_dish),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
+                    modifier = modifier(animatedVisibilityScope, "${recipe.id}_recipe_image")
                         .size(64.dp)
-                        .sharedElement(
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            state = rememberSharedContentState(
-                                key = "${recipe.id}_recipe_image"
-                            )
-                        )
                 )
 
                 Column(modifier = Modifier.padding(start = 8.dp)) {
                     Text(
                         recipe.type.text(LocalContext.current),
                         style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.sharedElement(
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            state = rememberSharedContentState(
-                                key = "${recipe.id}_recipe_type"
-                            )
-                        )
+                        modifier = modifier(animatedVisibilityScope, "${recipe.id}_recipe_type")
                     )
                     Text(
-                        recipe.name, modifier = Modifier
+                        recipe.name,
+                        modifier = modifier(animatedVisibilityScope, "${recipe.id}_recipe_name")
                             .padding(top = 8.dp)
-                            .sharedElement(
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                state = rememberSharedContentState(
-                                    key = "${recipe.id}_recipe_name"
-                                )
-                            )
                     )
                 }
             }
         }
     }
 }
+
+
+@Composable
+fun SharedTransitionScope?.modifier(
+    animatedVisibilityScope: AnimatedVisibilityScope?,
+    key: String,
+) = if (this != null && animatedVisibilityScope != null)
+    Modifier.sharedElement(
+        animatedVisibilityScope = animatedVisibilityScope,
+        state = rememberSharedContentState(
+            key = key
+        )
+    )
+else Modifier
 
 @Preview
 @Composable

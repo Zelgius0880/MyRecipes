@@ -102,9 +102,10 @@ class IngredientRepository(
      * @return Int                              the number of rows affected
      */
     suspend fun deleteAllButThem(
-        ingredients: List<Ingredient>
+        ingredients: List<Ingredient>,
+        recipeId: Long
     ): Int =
-        dao.deleteJoin(*ingredients.map { it.id!! }.toLongArray())
+        dao.deleteJoin(recipeId = recipeId, *ingredients.map { it.id }.filterNotNull().toLongArray())
 
 
 }

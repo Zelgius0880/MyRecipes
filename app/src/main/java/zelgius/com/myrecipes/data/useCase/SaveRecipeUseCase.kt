@@ -23,6 +23,8 @@ class SaveRecipeUseCase @Inject constructor(
             toSave
         }.copy(ingredients = toSave.ingredients.mapIndexed { index, i -> i.copy(sortOrder = index + 1) })
 
+        val recipeId = recipe.id?: return@withTransaction -1L
+
         val ingredients = mutableListOf<Ingredient>()
 
         recipe = recipe.copy(steps = recipe.steps.mapIndexed {index, s ->
@@ -50,10 +52,10 @@ class SaveRecipeUseCase @Inject constructor(
             insertIngredient(it, recipe)
         })
 
-        ingredientRepository.deleteAllButThem(ingredients)
+        ingredientRepository.deleteAllButThem(ingredients, recipeId)
         stepRepository.deleteAllButThem(recipe, recipe.steps)
 
-        recipe.id!!
+        recipeId
     }
 
     private suspend fun insertIngredient(

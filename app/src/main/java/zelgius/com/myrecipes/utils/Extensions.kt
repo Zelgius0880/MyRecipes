@@ -5,7 +5,11 @@ import android.graphics.Color
 import android.util.TypedValue
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.viewbinding.ViewBinding
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.android.material.textfield.TextInputLayout
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -56,3 +60,16 @@ fun ByteArray.unzip(): ByteArray {
 
     return result
 }
+
+
+fun Modifier.conditional(condition : Boolean, modifier : Modifier.() -> Modifier) : Modifier {
+    return if (condition) {
+        then(modifier(Modifier))
+    } else {
+        this
+    }
+}
+
+@Composable
+fun isTwoPanes(): Boolean =
+    currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
