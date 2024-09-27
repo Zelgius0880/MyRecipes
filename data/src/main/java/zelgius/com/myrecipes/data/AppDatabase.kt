@@ -30,13 +30,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val recipeDao: RecipeDao
     abstract val stepDao: StepDao
 
-    /*val workerState:
-            LiveData<ListenableFuture<Operation.State.SUCCESS>>
-        get() = _workerState
-
-    private val _workerState:
-            MutableLiveData<ListenableFuture<Operation.State.SUCCESS>> = MutableLiveData()
-*/
     companion object {
         private var instance: AppDatabase? = null
         fun getInstance(context: Context, test: Boolean = false): AppDatabase {

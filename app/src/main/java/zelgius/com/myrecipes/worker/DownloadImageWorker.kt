@@ -5,23 +5,28 @@ import android.os.Environment.DIRECTORY_PICTURES
 import android.webkit.URLUtil
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.work.CoroutineWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.data.AppDatabase
 import java.io.File
 import java.net.URL
 
-class DownloadImageWorker(val appContext: Context, workerParams: WorkerParameters) :
-    Worker(appContext, workerParams) {
-    override fun doWork(): Result {
+class DownloadImageWorker(private val appContext: Context, workerParams: WorkerParameters) :
+    CoroutineWorker(appContext, workerParams) {
+    override suspend fun doWork(): Result {
         try {
             val dao = AppDatabase.getInstance(appContext).recipeDao
 
             val url = inputData.getString("URL")
             val input = if (URLUtil.isHttpUrl(url) || URLUtil.isHttpsUrl(url)) {
                 // Download Image from URL
-                URL(url).openStream()
+                withContext(Dispatchers.IO) {
+                    URL(url).openStream()
+                }
             } else if (URLUtil.isContentUrl(url)) {
                 // Get image from content resolver
                 url?.toUri()?.let {
@@ -45,14 +50,15 @@ class DownloadImageWorker(val appContext: Context, workerParams: WorkerParameter
             if (input != null && output != null) {
                 input.copyTo(output)
 
-                dao.blockingGet(recipeId)?.copy(
+                dao.get(recipeId)?.copy(
                     imageURL = targetFile.toString()
                 )?.let {
-                    dao.blockingUpdate(it)
+                    dao.update(it)
                 }
 
-
-                input.close()
+                withContext(Dispatchers.IO) {
+                    input.close()
+                }
             }
 
             return Result.success()

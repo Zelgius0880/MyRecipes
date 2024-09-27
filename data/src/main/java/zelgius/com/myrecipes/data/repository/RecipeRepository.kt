@@ -19,7 +19,7 @@ class RecipeRepository (
     suspend fun get() = recipeDao.getAll()
 
     suspend fun getFull(id: Long): Recipe? =
-        recipeDao.coroutineGet(id)?.apply {
+        recipeDao.get(id)?.apply {
             steps.addAll(stepDao.get(id))
             ingredients.addAll(ingredientDao.getForRecipe(id))
             ingredients.forEach {
@@ -29,6 +29,8 @@ class RecipeRepository (
                 }
             }
         }?.asModel()
+
+    suspend fun getAllWithoutImages() = recipeDao.getAllWithoutImages()
 
 
     fun getFullFlow(id: Long): Flow<Recipe?> =

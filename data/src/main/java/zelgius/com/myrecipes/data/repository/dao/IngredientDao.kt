@@ -24,6 +24,9 @@ interface IngredientDao {
     @Query("SELECT * FROM ingredient ORDER BY name")
     suspend fun get(): List<IngredientEntity>
 
+    @Query("SELECT * FROM ingredient WHERE image_url IS NULL OR image_url = '' ORDER BY name")
+    suspend fun getAllWithoutImage(): List<IngredientEntity>
+
     @Query("SELECT * FROM ingredient ORDER BY name")
     fun getFlow(): Flow<List<IngredientEntity>>
 

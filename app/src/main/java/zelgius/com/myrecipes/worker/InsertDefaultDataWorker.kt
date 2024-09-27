@@ -106,7 +106,7 @@ class InsertDefaultDataWorker @AssistedInject constructor(
                 recipe = recipe.copy(
                     imageURL = targetFile.toString()
                 )
-                dao.blockingUpdate(recipe)
+                dao.update(recipe)
 
                 input.close()
             }

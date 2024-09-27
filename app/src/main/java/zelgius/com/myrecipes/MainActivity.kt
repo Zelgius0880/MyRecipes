@@ -12,14 +12,20 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -35,7 +43,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.window.core.layout.WindowWidthSizeClass
 import dagger.hilt.android.AndroidEntryPoint
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.ui.AppTheme
@@ -44,6 +51,7 @@ import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.edit.EditRecipe
 import zelgius.com.myrecipes.ui.edit.viewModel.EditRecipeViewModel
 import zelgius.com.myrecipes.ui.home.Home
+import zelgius.com.myrecipes.ui.settings.Settings
 import zelgius.com.myrecipes.utils.isTwoPanes
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -52,6 +60,7 @@ import java.net.URLEncoder
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -110,11 +119,28 @@ class MainActivity : AppCompatActivity() {
                             composable(
                                 "no_selection",
                             ) {
-                                Box(modifier = Modifier.fillMaxSize()) {
-                                    Text(
-                                        "Nothing to display",
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
+                                Scaffold (topBar = {
+                                    TopAppBar(title = {}, actions = {
+                                        IconButton(onClick = {
+                                            mainNavController.navigate("settings")
+                                        }) {
+                                            Icon(
+                                                Icons.TwoTone.Settings,
+                                                modifier = Modifier.padding(8.dp),
+                                                contentDescription = stringResource(
+                                                    id = R.string.scan_recipe,
+                                                )
+                                            )
+                                        }
+                                    })
+                                }){ padding ->
+
+                                    Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+                                        Text(
+                                            "Nothing to display",
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                    }
                                 }
                             }
                             composable(
@@ -176,6 +202,12 @@ class MainActivity : AppCompatActivity() {
                                     viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
                                         factory.create(it)
                                     }),
+                                )
+                            }
+
+                            composable("settings") {
+                                Settings(
+                                    onBack = { mainNavController.popBackStack() }
                                 )
                             }
 
