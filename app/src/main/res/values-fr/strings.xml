@@ -122,6 +122,11 @@
     <string name="license">Licences</string>
     <string name="welcome">Welcome</string>
 
+    <string name="settings">Paramètres</string>
+    <string name="ia_generation">Activer la génération d\'image par IA</string>
+    <string name="ia_generation_disabled">Aucun modèle d\IA détécté. Suivez <a href="https://ai.google.dev/edge/mediapipe/solutions/vision/image_generator/android#model">ce lien</a> ajouter un modèle de génération d\'image</string>
+
+
     <string name="default_1">
         UEsDBBQACAgIAA+CaVEAAAAAAAAAAAAAAAAAAAAAxdNNSgMxFAfwTjv9sAuts5JZPbuxLcVWupFu
 rAoFoUWkJ8jUN+NozAxJXkWv4QkEFXsLYS7iETyCaWtxuhcmqxDey//HC6mWzyMKRESOLYjzPav+

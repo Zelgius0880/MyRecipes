@@ -15,43 +15,18 @@ interface RecipeDao {
     @Update
     suspend fun update(vararg recipe: RecipeEntity): Int
 
-    @Update
-    fun blockingUpdate(vararg recipe: RecipeEntity): Int
-
     @Delete
     suspend fun delete(vararg recipe: RecipeEntity): Int
 
     @Query("SELECT * FROM recipe ORDER BY name")
     suspend fun getAll(): List<RecipeEntity>
 
-
-    @Query("SELECT * FROM recipe WHERE type = 'MEAL' ORDER BY name")
-    suspend fun getMeal(): List<RecipeEntity>
-
-    @Query("SELECT * FROM recipe WHERE type = 'MEAL' ORDER BY name")
-    fun getMealPagingSource(): PagingSource<Int, RecipeEntity>
-
-
-    @Query("SELECT * FROM recipe WHERE type = 'DESSERT' ORDER BY name")
-    suspend fun getDessert(): List<RecipeEntity>
-
-
-    @Query("SELECT * FROM recipe WHERE type = 'DESSERT' ORDER BY name")
-    fun getDessertPagingSource(): PagingSource<Int, RecipeEntity>
-
-    @Query("SELECT * FROM recipe WHERE type = 'OTHER' ORDER BY name")
-    suspend fun getOther(): List<RecipeEntity>
-
-    @Query("SELECT * FROM recipe WHERE type = 'OTHER' ORDER BY name")
-    fun getOtherPagingSource(): PagingSource<Int, RecipeEntity>
-
-    // Blocking get
-    @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
-    fun blockingGet(id: Long): RecipeEntity?
+    @Query("SELECT * FROM recipe WHERE image_url IS NULL OR image_url == '' ORDER BY name")
+    suspend fun getAllWithoutImages(): List<RecipeEntity>
 
     // Coroutine get
     @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
-    suspend fun coroutineGet(id: Long): RecipeEntity?
+    suspend fun get(id: Long): RecipeEntity?
 
     @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
     fun getFlow(id: Long): Flow<RecipeEntity?>

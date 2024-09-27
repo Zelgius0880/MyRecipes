@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.twotone.Add
+import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -44,9 +46,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
@@ -63,6 +64,7 @@ import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.VisionBarcodeReaderActivity
 import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.common.recipe.RecipeList
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummyModel
@@ -151,7 +153,17 @@ private fun HomeView(
                     actions = {
                         IconButton(onClick = onScanClicked) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_qr_code_white),
+                                Icons.Filled.QrCodeScanner,
+                                modifier = Modifier.padding(8.dp),
+                                contentDescription = stringResource(
+                                    id = R.string.scan_recipe,
+                                )
+                            )
+                        }
+
+                        IconButton(onClick = onScanClicked) {
+                            Icon(
+                                Icons.TwoTone.Settings,
                                 modifier = Modifier.padding(8.dp),
                                 contentDescription = stringResource(
                                     id = R.string.scan_recipe,
@@ -163,7 +175,7 @@ private fun HomeView(
         },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
-                if (isTwoPanes())
+                if (isTwoPanes()) {
                     SmallFloatingActionButton(
                         modifier = Modifier.padding(bottom = 4.dp),
                         containerColor = MaterialTheme.colorScheme.tertiaryContainer,
@@ -171,13 +183,13 @@ private fun HomeView(
                             onScanClicked()
                         }) {
                         Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(id = R.drawable.ic_qr_code_white),
+                            Icons.Filled.QrCodeScanner,
                             contentDescription = stringResource(
                                 id = R.string.scan_recipe,
                             )
                         )
                     }
+                }
 
                 FloatingActionButton(onClick = {
                     onClick(null)
@@ -279,7 +291,7 @@ private fun HomeView(
 }
 
 @Composable
-@Preview
+@PreviewScreenSizes
 fun HomePreview() {
     fun createSample(index: Int) =
         flowOf(
@@ -288,14 +300,16 @@ fun HomePreview() {
             })
         )
 
-    SharedElementPreview { animatedVisibilityScope, sharedTransitionScope ->
-        HomeView(
-            animatedVisibilityScope = animatedVisibilityScope,
-            sharedTransitionScope = sharedTransitionScope,
-            pageMeals = createSample(0),
-            pageDesserts = createSample(1),
-            pageOther = createSample(2),
-        )
+    AppTheme {
+        SharedElementPreview { animatedVisibilityScope, sharedTransitionScope ->
+            HomeView(
+                animatedVisibilityScope = animatedVisibilityScope,
+                sharedTransitionScope = sharedTransitionScope,
+                pageMeals = createSample(0),
+                pageDesserts = createSample(1),
+                pageOther = createSample(2),
+            )
+        }
     }
 }
 
