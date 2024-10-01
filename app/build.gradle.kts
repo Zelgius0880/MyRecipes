@@ -4,7 +4,6 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("androidx.navigation.safeargs")
     id("com.google.gms.google-services")
     id("com.google.android.gms.oss-licenses-plugin")
     id("com.google.firebase.crashlytics")
@@ -125,7 +124,7 @@ dependencies {
     val lifecycleVersion = "2.8.6"
     val workVersion = "2.9.1"
     val cameraxVersion = "1.3.4"
-    val coroutinesVersion = "1.7.3"
+    val coroutinesVersion = "1.9.0-RC.2"
 
     implementation(project(":data"))
 
