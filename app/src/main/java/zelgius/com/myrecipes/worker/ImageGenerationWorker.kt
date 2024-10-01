@@ -35,7 +35,7 @@ class ImageGenerationWorker @AssistedInject constructor(
 
 
     override suspend fun doWork(): Result {
-        val options = ImageGenerator.ImageGeneratorOptions.builder()
+        /*val options = ImageGenerator.ImageGeneratorOptions.builder()
             .setImageGeneratorModelDirectory(MODEL_PATH)
             .build()
         setForeground(createForegroundInfo())
@@ -66,41 +66,41 @@ class ImageGenerationWorker @AssistedInject constructor(
 
             output?.close()
         }
-
+*/
         return Result.success()
     }
 
-    private fun createForegroundInfo(): ForegroundInfo {
-        val id = context.getString(R.string.notification_channel_id)
-        val title = context.getString(R.string.notification_title)
-        val cancel = context.getString(R.string.cancel_download)
-        // This PendingIntent can be used to cancel the worker
-        val intent = WorkManager.getInstance(context)
-            .createCancelPendingIntent(getId())
+/*private fun createForegroundInfo(): ForegroundInfo {
+    val id = context.getString(R.string.notification_channel_id)
+    val title = context.getString(R.string.notification_title)
+    val cancel = context.getString(R.string.cancel_download)
+    // This PendingIntent can be used to cancel the worker
+    val intent = WorkManager.getInstance(context)
+        .createCancelPendingIntent(getId())
 
-        createChannel()
+    createChannel()
 
 
-        val notification = NotificationCompat.Builder(applicationContext, id)
-            .setContentTitle(title)
-            .setTicker(title)
-            .setContentText(progress)
-            .setSmallIcon(R.drawable.art_track_24px)
-            .setOngoing(true)
-            // Add the cancel action to the notification which can
-            // be used to cancel the worker
-            .addAction(android.R.drawable.ic_delete, cancel, intent)
-            .build()
+    val notification = NotificationCompat.Builder(applicationContext, id)
+        .setContentTitle(title)
+        .setTicker(title)
+        .setContentText(progress)
+        .setSmallIcon(R.drawable.art_track_24px)
+        .setOngoing(true)
+        // Add the cancel action to the notification which can
+        // be used to cancel the worker
+        .addAction(android.R.drawable.ic_delete, cancel, intent)
+        .build()
 
-        return ForegroundInfo(NOTIFICATION_ID, notification)
-    }
+    return ForegroundInfo(NOTIFICATION_ID, notification)
+}*/
 
-    private fun createChannel() {
-        // TODO Create a Notification channel
-    }
+private fun createChannel() {
+    // TODO Create a Notification channel
+}
 
-    companion object {
-        const val MODEL_PATH = "/data/local/tmp/image_generator/bins/"
-        private const val NOTIFICATION_ID = 42
-    }
+companion object {
+    const val MODEL_PATH = "/data/local/tmp/image_generator/bins/"
+    private const val NOTIFICATION_ID = 42
+}
 }
