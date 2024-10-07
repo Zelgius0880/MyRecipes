@@ -108,5 +108,5 @@ class IngredientRepository(
         dao.deleteJoin(recipeId = recipeId, *ingredients.map { it.id }.filterNotNull().toLongArray())
 
 
-    suspend fun getAllWithoutImage() = dao.getAllWithoutImage()
+    suspend fun getAllWithoutImage() = dao.getAllWithoutImages()
 }

@@ -2,13 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-feature android:name="android.hardware.touchscreen"
-            android:required="false" />
-    <uses-feature
-            android:name="android.hardware.camera"
-            android:required="false" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
@@ -25,22 +19,21 @@
         <uses-native-library android:name="libOpenCL-car.so" android:required="false"/>
         <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
 
-        <meta-data
-                android:name="com.google.mlkit.vision.DEPENDENCIES"
-                android:value="barcode" />
-
         <activity
                 android:name=".MainActivity"
                 android:exported="true"
                 android:launchMode="singleTop"
                 android:resizeableActivity="true"
+                tools:node="remove"
+                android:theme="@style/AppTheme.NoActionBar"/>
+
+        <activity
+                android:name=".GenerationActivity"
+                android:exported="true"
+                android:launchMode="singleTop"
+                android:resizeableActivity="true"
                 android:theme="@style/AppTheme.NoActionBar">
 
-            <!--
-                <meta-data
-                    android:name="android.app.default_searchable"
-                    android:value="zelgius.com.myrecipes.SearchResultsActivity" />
-            -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -50,8 +43,6 @@
 
             </intent-filter>
         </activity>
-        <activity android:name=".CreditActivity" />
-        <activity android:name="zelgius.com.myrecipes.VisionBarcodeReaderActivity"/>
 
         <provider
                 android:name="androidx.core.content.FileProvider"
@@ -68,11 +59,6 @@
                 android:authorities="${applicationId}.androidx-startup"
                 tools:node="remove">
         </provider>
-
-        <service
-                android:name="androidx.work.impl.foreground.SystemForegroundService"
-                android:foregroundServiceType="dataSync"
-                tools:node="merge" />
     </application>
 
 </manifest>

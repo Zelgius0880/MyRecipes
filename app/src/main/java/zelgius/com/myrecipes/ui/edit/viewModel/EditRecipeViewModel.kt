@@ -146,7 +146,7 @@ class EditRecipeViewModel @AssistedInject constructor(
         )
     }
 
-    suspend fun save() {
+    fun save() {
         viewModelScope.launch {
             val recipe = recipeFlow.value
             saveRecipeUseCase.execute(toSave = recipe)

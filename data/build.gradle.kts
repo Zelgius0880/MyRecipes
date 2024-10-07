@@ -28,7 +28,7 @@ android {
             )
         }
 
-
+        create("generationTest") {}
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

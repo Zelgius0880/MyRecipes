@@ -21,6 +21,10 @@ android {
         }
     }
 
+    buildTypes {
+        create("generationTest") {}
+    }
+
     dependencies {
         //implementation (fileTree("libs", include: ["*.jar"]))
         api ("com.google.protobuf:protobuf-javalite:4.26.1")

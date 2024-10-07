@@ -32,7 +32,7 @@ android {
         targetSdk = 35
         versionCode = 5
         versionName = "2.0-beta01"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "zelgius.com.myrecipes.utils.HiltTestRunner"
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -84,6 +84,12 @@ android {
 
             buildConfigField(type = "String", name = "EMAIL", value = getProps("app.email"))
         }
+
+        create("generationTest") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".debug"
+        }
+
     }
 
 
@@ -115,11 +121,11 @@ android {
 }
 
 
-val composeVersion = "1.7.2"
+val composeVersion = "1.7.3"
 
 dependencies {
-    implementation("com.google.firebase:firebase-crashlytics:19.1.0")
-    implementation("com.google.firebase:firebase-analytics:22.1.0")
+    implementation("com.google.firebase:firebase-crashlytics:19.2.0")
+    implementation("com.google.firebase:firebase-analytics:22.1.2")
     val pagingVersion = "3.3.2"
     val lifecycleVersion = "2.8.6"
     val workVersion = "2.9.1"
@@ -143,6 +149,10 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.work:work-testing:$workVersion")
 
+    kspTest("com.google.dagger:hilt-android-compiler:2.51.1")
+    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.51.1")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.51.1")
+
     androidTestImplementation("com.google.code.gson:gson:2.10.1")
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
@@ -155,8 +165,8 @@ dependencies {
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     //Android X
-    implementation("androidx.fragment:fragment:1.8.3")
-    implementation("androidx.fragment:fragment-ktx:1.8.3")
+    implementation("androidx.fragment:fragment:1.8.4")
+    implementation("androidx.fragment:fragment-ktx:1.8.4")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
@@ -192,17 +202,17 @@ dependencies {
 
     //Compose
     implementation("androidx.activity:activity-compose:1.9.2")
-    implementation("androidx.navigation:navigation-compose:2.8.1")
+    implementation("androidx.navigation:navigation-compose:2.8.2")
     implementation("androidx.compose.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.ui:ui:$composeVersion")
     implementation("androidx.compose.animation:animation:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
-    implementation("androidx.compose.material:material-icons-extended:1.7.2")
+    implementation("androidx.compose.material:material-icons-extended:1.7.3")
     implementation("androidx.compose.material3:material3:1.3.0")
     implementation("androidx.compose.material3:material3-window-size-class:1.3.0")
-    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha03")
-    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha03")
-    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha03")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha04")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha04")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha04")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.0")
 
 
