@@ -15,6 +15,9 @@ interface IngredientDao {
     @Insert
     suspend fun insert(ingredient: IngredientEntity): Long
 
+    @Update
+    suspend fun update(join: IngredientEntity): Int
+
     @Insert
     suspend fun insert(join: RecipeIngredient): Long
 
@@ -25,7 +28,7 @@ interface IngredientDao {
     suspend fun get(): List<IngredientEntity>
 
     @Query("SELECT * FROM ingredient WHERE image_url IS NULL OR image_url = '' ORDER BY name")
-    suspend fun getAllWithoutImage(): List<IngredientEntity>
+    suspend fun getAllWithoutImages(): List<IngredientEntity>
 
     @Query("SELECT * FROM ingredient ORDER BY name")
     fun getFlow(): Flow<List<IngredientEntity>>

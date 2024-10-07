@@ -1,6 +1,11 @@
 package zelgius.com.myrecipes.utils
 
+import android.app.Application
+import android.content.Context
 import android.util.Base64
+import androidx.test.runner.AndroidJUnitRunner
+import dagger.hilt.android.testing.CustomTestApplication
+import dagger.hilt.android.testing.HiltTestApplication
 import org.junit.Assert
 import org.junit.Assert.assertArrayEquals
 import zelgius.com.myrecipes.data.entities.RecipeEntity
@@ -9,7 +14,7 @@ import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.protobuff.RecipeProto
 
 object TestHelper {
-    fun getFromQr(base64: String): Recipe {
+    fun getFromQr(base64: String = DEFAULT_BASE_64): Recipe {
         val bytes = Base64.decode(base64, Base64.NO_PADDING).unzip()
         val proto = RecipeProto.Recipe.parseFrom(bytes)
 
@@ -61,4 +66,11 @@ fun Recipe.assertEquals(other: Recipe) {
     Assert.assertEquals(name, other.name)
     Assert.assertEquals(type, other.type)
     Assert.assertEquals(imageUrl, other.imageUrl)
+}
+
+class HiltTestRunner : AndroidJUnitRunner() {
+
+    override fun newApplication(cl: ClassLoader?, name: String?, context: Context?): Application {
+        return super.newApplication(cl, HiltTestApplication::class.java.name, context)
+    }
 }
