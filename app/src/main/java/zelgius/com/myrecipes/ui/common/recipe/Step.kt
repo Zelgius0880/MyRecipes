@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,29 +24,34 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
 import zelgius.com.myrecipes.ui.AppTheme
+import zelgius.com.myrecipes.ui.common.LocalStepCardValues
 import zelgius.com.myrecipes.ui.md_cyan_A700
 
 @Composable
 fun Step(step: Step, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier, verticalAlignment = CenterVertically) {
         StepContent(step = step)
     }
 }
 
+
+
 @Composable
 private fun StepContent(step: Step) {
+    val values = LocalStepCardValues.current
+    val textStyle = LocalTextStyle.current
 
     Row {
         Box(
             Modifier
-                .size(36.dp)
+                .size(values.iconSize)
                 .clip(CircleShape)
-                .background(md_cyan_A700), contentAlignment = Alignment.Center
+                .background(values.avatarColor), contentAlignment = Alignment.Center
         ) {
-            Text("${step.order}")
+            Text("${step.order}", style = textStyle)
         }
 
-        Text(text = step.text, Modifier.padding(horizontal = 8.dp))
+        Text(text = step.text, Modifier.padding(horizontal = 8.dp), style = textStyle)
     }
 }
 
