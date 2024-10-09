@@ -9,14 +9,14 @@ import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.utils.round
 
 
-fun Ingredient.text(context: Context): String {
-    val abrv = unit.abrv(context)
+fun Ingredient.text(context: Context, abrv: Boolean =  true): String {
+    val unit = if(abrv) this.unit.abrv(context) else this.unit.string(context)
 
-    return if (unit != Ingredient.Unit.Cup) {
+    return if (this.unit != Ingredient.Unit.Cup) {
         String.format(
             "%s %s %s",
             DecimalFormat("#0.##").format(quantity),
-            abrv,
+            unit,
             name
         )
     } else {
@@ -32,7 +32,7 @@ fun Ingredient.text(context: Context): String {
             else -> "${DecimalFormat("#0.##").format(quantity - quantity.toInt())} "
         }
 
-        return String.format("%s%s%s %s", part1, part2, abrv, name)
+        return String.format("%s%s%s %s", part1, part2, unit, name)
     }
 }
 

@@ -23,9 +23,11 @@ import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +57,7 @@ import zelgius.com.myrecipes.ui.settings.Settings
 import zelgius.com.myrecipes.utils.isTwoPanes
 import java.net.URLDecoder
 import java.net.URLEncoder
+import kotlin.collections.listOf
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
@@ -79,37 +82,35 @@ class MainActivity : AppCompatActivity() {
                         animatedVisibilityScope: AnimatedVisibilityScope? = null,
                         sharedTransitionScope: SharedTransitionScope? = null
                     ) {
-                        Home(
-                            animatedVisibilityScope = animatedVisibilityScope,
+                        Home(animatedVisibilityScope = animatedVisibilityScope,
                             sharedTransitionScope = sharedTransitionScope,
                             onTypeChanged = {
                                 selectedType = it
                             },
+                            onSettingsClicked = {
+                                mainNavController.navigate("settings")
+                            },
                             onClick = {
-                                if (it == null)
-                                    mainNavController.navigate("edit?type=${selectedType.name}") {
-                                        popUpTo(mainNavController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
+                                if (it == null) mainNavController.navigate("edit?type=${selectedType.name}") {
+                                    popUpTo(mainNavController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
-                                else
-                                    mainNavController.navigate("details?${it.urlParams}") {
-                                        popUpTo(mainNavController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
+                                }
+                                else mainNavController.navigate("details?${it.urlParams}") {
+                                    popUpTo(mainNavController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
-                            }
-                        )
+                                }
+                            })
                     }
 
                     val startDestination = if (!twoPanes) "home" else "no_selection"
 
                     Row {
                         val navHostModifier = if (twoPanes) Modifier.weight(2f) else Modifier
-                        if (twoPanes)
-                            AnimatedVisibility(true, modifier = Modifier.weight(1f)) {
-                                home()
-                            }
+                        if (twoPanes) AnimatedVisibility(true, modifier = Modifier.weight(1f)) {
+                            home()
+                        }
 
                         NavHost(
                             navController = mainNavController,
@@ -119,23 +120,30 @@ class MainActivity : AppCompatActivity() {
                             composable(
                                 "no_selection",
                             ) {
-                                Scaffold (topBar = {
-                                    TopAppBar(title = {}, actions = {
-                                        IconButton(onClick = {
-                                            mainNavController.navigate("settings")
-                                        }) {
-                                            Icon(
-                                                Icons.TwoTone.Settings,
-                                                modifier = Modifier.padding(8.dp),
-                                                contentDescription = stringResource(
-                                                    id = R.string.scan_recipe,
+                                Scaffold(topBar = {
+                                    TopAppBar(
+                                        title = {},
+                                        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                                        actions = {
+                                            IconButton(onClick = {
+                                                mainNavController.navigate("settings")
+                                            }) {
+                                                Icon(
+                                                    Icons.TwoTone.Settings,
+                                                    modifier = Modifier.padding(8.dp),
+                                                    contentDescription = stringResource(
+                                                        id = R.string.scan_recipe,
+                                                    )
                                                 )
-                                            )
-                                        }
-                                    })
-                                }){ padding ->
+                                            }
+                                        })
+                                }) { padding ->
 
-                                    Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(padding)
+                                            .fillMaxSize()
+                                    ) {
                                         Text(
                                             "Nothing to display",
                                             modifier = Modifier.align(Alignment.Center)
@@ -169,8 +177,7 @@ class MainActivity : AppCompatActivity() {
                                 },
                                 route = "details",
                             ) {
-                                RecipeDetails(
-                                    animatedVisibilityScope = this,
+                                RecipeDetails(animatedVisibilityScope = this,
                                     sharedTransitionScope = this@SharedTransitionLayout,
                                     navigateBack = { mainNavController.popBackStack() },
                                     viewModel = hiltViewModel(creationCallback = { factory: RecipeDetailsViewModel.Factory ->
@@ -182,21 +189,20 @@ class MainActivity : AppCompatActivity() {
                                                 saveState = true
                                             }
                                         }
-                                    }
-                                )
+                                    },
+                                    playRecipe = {
+                                        PlayRecipeActivity.start(this@MainActivity, it.id ?: -1)
+                                    })
                             }
-                            recipeComposable("edit",
-                                enterTransition = {
-                                    slideIntoContainer(
-                                        AnimatedContentTransitionScope.SlideDirection.Start,
-                                    )
-                                },
-                                exitTransition = {
-                                    slideOutOfContainer(
-                                        AnimatedContentTransitionScope.SlideDirection.End,
-                                    )
-                                }
-                            ) {
+                            recipeComposable("edit", enterTransition = {
+                                slideIntoContainer(
+                                    AnimatedContentTransitionScope.SlideDirection.Start,
+                                )
+                            }, exitTransition = {
+                                slideOutOfContainer(
+                                    AnimatedContentTransitionScope.SlideDirection.End,
+                                )
+                            }) {
                                 EditRecipe(
                                     navigateBack = { mainNavController.popBackStack() },
                                     viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
@@ -206,11 +212,8 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             composable("settings") {
-                                Settings(
-                                    onBack = { mainNavController.popBackStack() }
-                                )
+                                Settings(onBack = { mainNavController.popBackStack() })
                             }
-
                         }
                     }
                 }
@@ -219,29 +222,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     val Recipe.urlParams
-        get() = "id=${id}" +
-                "&name=${
-                    URLEncoder.encode(
-                        name,
-                        Charsets.UTF_8.name()
-                    )
-                }" +
-                (if (imageUrl?.takeIf { s -> s != "null" }
-                        .isNullOrBlank()) "" else "&url=${imageUrl}") +
-                "&type=${type.name}"
+        get() = "id=${id}" + "&name=${
+            URLEncoder.encode(
+                name, Charsets.UTF_8.name()
+            )
+        }" + (if (imageUrl?.takeIf { s -> s != "null" }
+                .isNullOrBlank()) "" else "&url=${imageUrl}") + "&type=${type.name}"
 
     private fun NavGraphBuilder.recipeComposable(
         route: String,
-        enterTransition: (@JvmSuppressWildcards
-        AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-        exitTransition: (@JvmSuppressWildcards
-        AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
-        popEnterTransition: (@JvmSuppressWildcards
-        AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
-            enterTransition,
-        popExitTransition: (@JvmSuppressWildcards
-        AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
-            exitTransition,
+        enterTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+        exitTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+        popEnterTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = enterTransition,
+        popExitTransition: (@JvmSuppressWildcards AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = exitTransition,
         content: @Composable AnimatedContentScope.(Recipe) -> Unit
     ) {
         composable(
@@ -264,15 +257,11 @@ class MainActivity : AppCompatActivity() {
 
             if (id == null || type == null) return@composable
 
-            content(
-                Recipe(
-                    if (id == -1L) null else id,
-                    type = type,
-                    name = it.arguments?.getString("name")
-                        ?.let { s -> URLDecoder.decode(s, Charsets.UTF_8.name()) } ?: "",
-                    imageUrl = it.arguments?.getString("url")
-                )
-            )
+            content(Recipe(if (id == -1L) null else id,
+                type = type,
+                name = it.arguments?.getString("name")
+                    ?.let { s -> URLDecoder.decode(s, Charsets.UTF_8.name()) } ?: "",
+                imageUrl = it.arguments?.getString("url")))
         }
     }
 }

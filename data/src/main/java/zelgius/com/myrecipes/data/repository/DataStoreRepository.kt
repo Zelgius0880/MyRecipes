@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 class DataStoreRepository(context: Context) {
     private val dataStore = context.dataStore
     private val iaGenerationKey = booleanPreferencesKey("isIAGenerationChecked")
+    private val textReadingKey = booleanPreferencesKey("isTextReadingChecked")
 
     suspend fun unit(name: String) =
         dataStore.data.first()[stringPreferencesKey(name)]
@@ -25,12 +26,22 @@ class DataStoreRepository(context: Context) {
     }
 
     val isIAGenerationChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
-        preferences[iaGenerationKey] ?: false
+        preferences[iaGenerationKey] == true
+    }
+
+    val isTextReadingChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
+        preferences[textReadingKey] != false
     }
 
     suspend fun setIAGenerationChecked(checked: Boolean) {
         dataStore.edit { preferences ->
             preferences[iaGenerationKey] = checked
+        }
+    }
+
+    suspend fun setTextReadingChecked(checked: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[textReadingKey] = checked
         }
     }
 

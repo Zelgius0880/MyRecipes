@@ -15,14 +15,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Edit
+import androidx.compose.material.icons.twotone.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -41,15 +44,15 @@ import coil.compose.rememberAsyncImagePainter
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
-import zelgius.com.myrecipes.ui.preview.SharedElementPreview
-import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.ExpandableList
-import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
-import zelgius.com.myrecipes.ui.home.string
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.common.recipe.IngredientChip
 import zelgius.com.myrecipes.ui.common.recipe.Step
+import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
+import zelgius.com.myrecipes.ui.home.string
+import zelgius.com.myrecipes.ui.preview.SharedElementPreview
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.utils.isTwoPanes
 
 
@@ -59,6 +62,7 @@ fun RecipeDetails(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: RecipeDetailsViewModel,
     navigateBack: () -> Unit = {},
+    playRecipe: (recipe: Recipe) -> Unit = {},
     onEdit: (Recipe) -> Unit = {}
 ) {
     val recipe by viewModel.recipeFlow.collectAsState(null)
@@ -71,7 +75,8 @@ fun RecipeDetails(
             navigateBack,
             onEdit,
             it,
-            items
+            items,
+            playRecipe
         )
     }
 }
@@ -84,6 +89,7 @@ private fun RecipeDetailsView(
     onEdit: (Recipe) -> Unit = {},
     recipe: Recipe,
     items: List<StepItem>,
+    playRecipe: (recipe: Recipe) -> Unit = {},
 ) = with(sharedTransitionScope) {
     Scaffold(topBar = {
         if (!isTwoPanes())
@@ -111,6 +117,12 @@ private fun RecipeDetailsView(
                             contentDescription = ""
                         )
                     }
+                    IconButton(onClick = { playRecipe(recipe) }) {
+                        Icon(
+                            imageVector = Icons.TwoTone.PlayArrow,
+                            contentDescription = ""
+                        )
+                    }
                 }
             )
     }, content = { padding ->
@@ -124,6 +136,7 @@ private fun RecipeDetailsView(
                     animatedVisibilityScope = animatedVisibilityScope,
                     recipe = recipe,
                     onEdit = onEdit,
+                    onPlay = playRecipe,
                     modifier = Modifier.fillMaxWidth()
                 )
             },
@@ -175,9 +188,10 @@ private fun RecipeDetailsView(
 fun RecipeDetailsHeader(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onEdit: (Recipe) -> Unit = {},
+    modifier: Modifier = Modifier,
     recipe: Recipe,
-    modifier: Modifier = Modifier
+    onEdit: (Recipe) -> Unit = {},
+    onPlay: (Recipe) -> Unit = {},
 ) = with(sharedTransitionScope) {
     Card(
         modifier = modifier
@@ -194,19 +208,32 @@ fun RecipeDetailsHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Image(
-                painter = rememberAsyncImagePainter(
-                    recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
-                ), contentDescription = null, modifier = Modifier
-                    .size(128.dp)
-                    .clip(
-                        shape = MaterialTheme.shapes.extraLarge
-                    ), contentScale = ContentScale.Crop
-            )
+            Box {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
+                    ), contentDescription = null, modifier = Modifier
+                        .size(128.dp)
+                        .clip(
+                            shape = MaterialTheme.shapes.extraLarge
+                        ), contentScale = ContentScale.Crop
+                )
+
+
+                if(isTwoPanes()) {
+                    FilledIconButton (modifier = Modifier.align(Alignment.BottomEnd), onClick = { onPlay(recipe) }) {
+                        Icon(
+                            imageVector = Icons.TwoTone.PlayArrow,
+                            contentDescription = ""
+                        )
+                    }
+                }
+            }
 
             Text(
                 recipe.name, modifier = Modifier
                     .padding(16.dp)
+                    .weight(1f)
                     .sharedElement(
                         animatedVisibilityScope = animatedVisibilityScope,
                         state = rememberSharedContentState(
@@ -224,6 +251,7 @@ fun RecipeDetailsHeader(
         }
     }
 }
+
 
 @Preview
 @Composable

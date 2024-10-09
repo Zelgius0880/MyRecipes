@@ -78,6 +78,7 @@ fun Home(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
     onTypeChanged: (Recipe.Type) -> Unit = {},
+    onSettingsClicked: () -> Unit,
     onClick: (Recipe?) -> Unit = {},
 ) {
     val scanQrLauncher =
@@ -99,6 +100,7 @@ fun Home(
         onScanClicked = {
             scanQrLauncher.launch(Intent(context, VisionBarcodeReaderActivity::class.java))
         },
+        onSettingsClicked = onSettingsClicked,
         onRemove = {
             viewModel.removeRecipe(it)
         },
@@ -117,6 +119,7 @@ private fun HomeView(
     onRemove: (Recipe) -> Flow<Recipe> = { emptyFlow() },
     onRestore: (Recipe) -> Unit = {},
     onScanClicked: () -> Unit = {},
+    onSettingsClicked: () -> Unit = {},
     onTypeChanged: (Recipe.Type) -> Unit = {},
     pageMeals: Flow<PagingData<Recipe>>,
     pageDesserts: Flow<PagingData<Recipe>>,
@@ -161,12 +164,12 @@ private fun HomeView(
                             )
                         }
 
-                        IconButton(onClick = onScanClicked) {
+                        IconButton(onClick = onSettingsClicked) {
                             Icon(
                                 Icons.TwoTone.Settings,
                                 modifier = Modifier.padding(8.dp),
                                 contentDescription = stringResource(
-                                    id = R.string.scan_recipe,
+                                    id = R.string.settings,
                                 )
                             )
                         }

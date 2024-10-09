@@ -89,6 +89,7 @@
     <string name="channel_description">Indicates the progress of the image generation</string>
     <string name="play">Play</string>
     <string name="next">Next</string>
+    <string name="previous">Previous</string>
     <string name="edit_recipe">Edit Recipe</string>
     <string name="recipe_details">Recipe Details</string>
     <string name="qrcode_explanation">If you scan the QRCode with the application, you will be able to import the recipe in your application of the app.</string>
