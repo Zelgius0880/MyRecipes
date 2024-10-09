@@ -11,8 +11,8 @@
     <string name="butter_name">Beurre</string>
     <string name="cancel">Annuler</string>
     <string name="cancel_button_label">Annuler</string>
-    <string name="channel_description">Suivi de le recette étape par étape</string>
-    <string name="channel_name">Recette</string>
+    <string name="channel_description">Indique la progression de la génération d\'image</string>
+    <string name="channel_name">Génération d\'image</string>
     <string name="cheese_name">Fromage</string>
     <string name="chocolate_name">Chocolat</string>
     <string name="choose_button_label">Choisir</string>
@@ -125,7 +125,6 @@
     <string name="settings">Paramètres</string>
     <string name="ia_generation">Activer la génération d\'image par IA</string>
     <string name="ia_generation_disabled">Aucun modèle d\IA détécté. Suivez <a href="https://ai.google.dev/edge/mediapipe/solutions/vision/image_generator/android#model">ce lien</a> ajouter un modèle de génération d\'image</string>
-
 
     <string name="default_1">
         UEsDBBQACAgIAA+CaVEAAAAAAAAAAAAAAAAAAAAAxdNNSgMxFAfwTjv9sAuts5JZPbuxLcVWupFu
