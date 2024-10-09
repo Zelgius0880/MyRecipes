@@ -58,6 +58,7 @@
     <string name="new_ingredient">Nouvel ingrédient</string>
     <string name="new_recipe">Nouvelle recette</string>
     <string name="next">Suivant</string>
+    <string name="previous">Précedent</string>
     <string name="no_selection">Aucun élément sélectionné</string>
     <string name="no_viewer_found">Aucun viewer trouvé</string>
     <string name="nuts_name">Noix</string>

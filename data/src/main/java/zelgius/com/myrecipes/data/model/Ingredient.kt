@@ -1,13 +1,9 @@
 package zelgius.com.myrecipes.data.model
 
-import android.content.Context
 import android.os.Parcelable
-import androidx.annotation.DrawableRes
-import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
-import kotlinx.parcelize.Parcelize
-import java.text.DecimalFormat
 
 @Parcelize
 data class Ingredient(

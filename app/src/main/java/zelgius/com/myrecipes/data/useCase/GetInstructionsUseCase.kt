@@ -4,8 +4,9 @@ import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
 import zelgius.com.myrecipes.data.repository.RecipeRepository
+import javax.inject.Inject
 
-class GetInstructionsUseCase(private val recipeRepository: RecipeRepository) {
+class GetInstructionsUseCase @Inject constructor(private val recipeRepository: RecipeRepository) {
     suspend fun execute(id: Long): List<InstructionItem> {
         val recipe = recipeRepository.getFull(id) ?: return emptyList()
 

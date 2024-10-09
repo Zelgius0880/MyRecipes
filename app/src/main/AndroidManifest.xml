@@ -4,26 +4,40 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-feature android:name="android.hardware.touchscreen"
+
+    <uses-feature
+            android:name="android.hardware.touchscreen"
             android:required="false" />
     <uses-feature
             android:name="android.hardware.camera"
             android:required="false" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
+            android:name=".App"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
+            android:resizeableActivity="true"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:name=".App"
-            android:resizeableActivity="true"
             android:theme="@style/AppTheme">
 
-        <uses-native-library android:name="libOpenCL.so" android:required="false" />
-        <uses-native-library android:name="libOpenCL-car.so" android:required="false"/>
-        <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
+        <uses-native-library
+                android:name="libOpenCL.so"
+                android:required="false" />
+        <uses-native-library
+                android:name="libOpenCL-car.so"
+                android:required="false" />
+        <uses-native-library
+                android:name="libOpenCL-pixel.so"
+                android:required="false" />
 
         <meta-data
                 android:name="com.google.mlkit.vision.DEPENDENCIES"
@@ -36,11 +50,6 @@
                 android:resizeableActivity="true"
                 android:theme="@style/AppTheme.NoActionBar">
 
-            <!--
-                <meta-data
-                    android:name="android.app.default_searchable"
-                    android:value="zelgius.com.myrecipes.SearchResultsActivity" />
-            -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -51,7 +60,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".CreditActivity" />
-        <activity android:name="zelgius.com.myrecipes.VisionBarcodeReaderActivity"/>
+        <activity android:name="zelgius.com.myrecipes.VisionBarcodeReaderActivity" />
+        <activity
+                android:name="zelgius.com.myrecipes.PlayRecipeActivity"
+                android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+                android:theme="@style/AppTheme.NoActionBar"
+                android:supportsPictureInPicture="true" />
 
         <provider
                 android:name="androidx.core.content.FileProvider"
@@ -66,8 +80,7 @@
         <provider
                 android:name="androidx.startup.InitializationProvider"
                 android:authorities="${applicationId}.androidx-startup"
-                tools:node="remove">
-        </provider>
+                tools:node="remove"/>
 
         <service
                 android:name="androidx.work.impl.foreground.SystemForegroundService"

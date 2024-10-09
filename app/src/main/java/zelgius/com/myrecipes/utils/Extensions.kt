@@ -1,22 +1,19 @@
 package zelgius.com.myrecipes.utils
 
 import android.content.Context
-import android.graphics.Color
+import android.content.ContextWrapper
 import android.util.TypedValue
-import androidx.annotation.ColorInt
-import androidx.annotation.ColorRes
+import androidx.activity.ComponentActivity
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.viewbinding.ViewBinding
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.google.android.material.textfield.TextInputLayout
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import kotlin.math.round
-import kotlin.math.roundToInt
 
 val ViewBinding.context: Context
     get() = root.context
