@@ -1,7 +1,6 @@
 package zelgius.com.myrecipes.worker
 
 import android.Manifest
-import android.app.Application
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -31,6 +30,7 @@ import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.dao.IngredientDao
 import zelgius.com.myrecipes.data.repository.dao.RecipeDao
 import java.io.File
@@ -42,7 +42,8 @@ open class ImageGenerationWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted private val params: WorkerParameters,
     private val recipeDao: RecipeDao,
-    private val ingredientDao: IngredientDao
+    private val ingredientDao: IngredientDao,
+    private val dataStoreRepository: DataStoreRepository,
 ) : CoroutineWorker(context, params) {
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as
@@ -66,7 +67,7 @@ open class ImageGenerationWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val options = ImageGenerator.ImageGeneratorOptions.builder()
-            .setImageGeneratorModelDirectory(MODEL_PATH)
+            .setImageGeneratorModelDirectory(IA_MODEL_PATH)
             .build()
 
         setForeground(createForegroundInfo(createNotification("",0, 100, true, null)))
@@ -82,6 +83,8 @@ open class ImageGenerationWorker @AssistedInject constructor(
         try {
             generateRecipes(recipes, imageGenerator, maxProgress)
             generateIngredients(ingredients, imageGenerator, maxProgress)
+
+            dataStoreRepository.setStillNeedToGenerate(false)
         } catch (e: Exception) {
             e.printStackTrace()
             return Result.failure()
@@ -264,13 +267,14 @@ open class ImageGenerationWorker @AssistedInject constructor(
     }
 
     companion object {
-        const val MODEL_PATH = "/data/local/tmp/image_generator/bins/"
+        const val IA_MODEL_PATH = "/data/local/tmp/image_generator/bins/"
         private const val NOTIFICATION_ID = 42
         private const val CHANNEL_ID = "Generation"
         private const val ITERATION_COUNT = 20
 
         private const val TAG = "ImageGenerationWorker"
         const val RESULT_KEY = "results"
+
 
         val BLANK_BITMAP
             get() = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
@@ -280,5 +284,7 @@ open class ImageGenerationWorker @AssistedInject constructor(
                     paint.color = Color.WHITE
                     canvas.drawPaint(paint)
                 }
+
+        val modelExists get() = File(IA_MODEL_PATH).exists()
     }
 }

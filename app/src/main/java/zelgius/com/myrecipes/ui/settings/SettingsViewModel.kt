@@ -7,8 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
-import java.io.File
+import zelgius.com.myrecipes.worker.ImageGenerationWorker
 import javax.inject.Inject
+
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -20,7 +21,7 @@ class SettingsViewModel @Inject constructor(
     val isIAGenerationChecked get() = dataStoreRepository.isIAGenerationChecked
 
     init {
-        _isIAGenerationEnabled.value = File("/data/local/tmp/image_generator/").exists()
+        _isIAGenerationEnabled.value = ImageGenerationWorker.modelExists
     }
 
     fun setIsIAGenerationChecked(checked: Boolean) {

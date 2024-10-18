@@ -15,6 +15,7 @@ class DataStoreRepository(context: Context) {
     private val dataStore = context.dataStore
     private val iaGenerationKey = booleanPreferencesKey("isIAGenerationChecked")
     private val textReadingKey = booleanPreferencesKey("isTextReadingChecked")
+    private val stillNeedToGenerateKey = booleanPreferencesKey("stillNeedToGenerate")
 
     suspend fun unit(name: String) =
         dataStore.data.first()[stringPreferencesKey(name)]
@@ -33,6 +34,10 @@ class DataStoreRepository(context: Context) {
         preferences[textReadingKey] != false
     }
 
+    val stillNeedToGenerate: Flow<Boolean> get() = dataStore.data.map { preferences ->
+        preferences[stillNeedToGenerateKey] == true
+    }
+
     suspend fun setIAGenerationChecked(checked: Boolean) {
         dataStore.edit { preferences ->
             preferences[iaGenerationKey] = checked
@@ -42,6 +47,12 @@ class DataStoreRepository(context: Context) {
     suspend fun setTextReadingChecked(checked: Boolean) {
         dataStore.edit { preferences ->
             preferences[textReadingKey] = checked
+        }
+    }
+
+    suspend fun setStillNeedToGenerate(b: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[stillNeedToGenerateKey] = b
         }
     }
 
