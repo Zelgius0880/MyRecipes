@@ -1,18 +1,20 @@
 package zelgius.com.myrecipes.data.useCase
 
 import androidx.room.withTransaction
+import zelgius.com.myrecipes.data.AppDatabase
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.data.AppDatabase
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.repository.StepRepository
+import zelgius.com.myrecipes.worker.WorkerRepository
 import javax.inject.Inject
 
 class SaveRecipeUseCase @Inject constructor(
     private val recipeRepository: RecipeRepository,
     private val stepRepository: StepRepository,
     private val ingredientRepository: IngredientRepository,
+    private val workRepository: WorkerRepository,
     private val database: AppDatabase,
 ) {
     suspend fun execute(toSave: Recipe): Long = database.withTransaction {
@@ -54,6 +56,8 @@ class SaveRecipeUseCase @Inject constructor(
 
         ingredientRepository.deleteAllButThem(ingredients, recipeId)
         stepRepository.deleteAllButThem(recipe, recipe.steps)
+
+        workRepository.startIaGenerationWorker(true)
 
         recipeId
     }

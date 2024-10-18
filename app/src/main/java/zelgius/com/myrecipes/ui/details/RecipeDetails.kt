@@ -21,11 +21,9 @@ import androidx.compose.material.icons.twotone.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -220,8 +218,10 @@ fun RecipeDetailsHeader(
                 )
 
 
-                if(isTwoPanes()) {
-                    FilledIconButton (modifier = Modifier.align(Alignment.BottomEnd), onClick = { onPlay(recipe) }) {
+                if (isTwoPanes()) {
+                    FilledIconButton(
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                        onClick = { onPlay(recipe) }) {
                         Icon(
                             imageVector = Icons.TwoTone.PlayArrow,
                             contentDescription = ""
@@ -242,11 +242,13 @@ fun RecipeDetailsHeader(
                     ), style = MaterialTheme.typography.headlineLarge
             )
 
-            IconButton(onClick = { onEdit(recipe) }) {
-                Icon(
-                    imageVector = Icons.TwoTone.Edit,
-                    contentDescription = ""
-                )
+            if (isTwoPanes()) {
+                IconButton(onClick = { onEdit(recipe) }) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Edit,
+                        contentDescription = ""
+                    )
+                }
             }
         }
     }
