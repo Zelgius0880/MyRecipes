@@ -1,93 +1,50 @@
 package zelgius.com.myrecipes.ui.play
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
-import androidx.compose.material.icons.twotone.RecordVoiceOver
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.rememberAsyncImagePainter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.BuildConfig
 import zelgius.com.myrecipes.data.model.Recipe
-import zelgius.com.myrecipes.data.useCase.IngredientInstruction
 import zelgius.com.myrecipes.data.useCase.InstructionItem
-import zelgius.com.myrecipes.data.useCase.StepInstruction
 import zelgius.com.myrecipes.data.useCase.instructions
 import zelgius.com.myrecipes.ui.AppTheme
-import zelgius.com.myrecipes.ui.common.LocalStepCardValues
-import zelgius.com.myrecipes.ui.common.recipe.Ingredient
-import zelgius.com.myrecipes.ui.common.recipe.Step
 import zelgius.com.myrecipes.ui.play.viewModel.PlayRecipeViewModel
 import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.utils.rememberIsInPipMode
-import kotlin.math.absoluteValue
 
 // Constant for broadcast receiver
 const val ACTION_BROADCAST_CONTROL = "broadcast_control"
@@ -106,23 +63,72 @@ fun PlayRecipe(
     val instructions by viewModel.instructions.collectAsStateWithLifecycle()
     val recipe by viewModel.recipe.collectAsStateWithLifecycle()
     val isTextReadingChecked by viewModel.readingEnabled.collectAsStateWithLifecycle(true)
+    val isGestureRecognitionChecked by viewModel.gestureRecognitionEnabled.collectAsStateWithLifecycle(true)
     val isInPipMode = rememberIsInPipMode()
+    val currentItemPosition by viewModel.currentInstructionPosition.collectAsStateWithLifecycle()
+
+    val root = LocalView.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val context = LocalContext.current
+    val previewView = remember {
+        PreviewView(context)
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted && isGestureRecognitionChecked) {
+            viewModel.startGestureRecognition(lifecycleOwner, previewView, root.display.rotation)
+        }
+    }
+
+
+    LaunchedEffect(isGestureRecognitionChecked) {
+        if(!isGestureRecognitionChecked ) {
+            viewModel.cancelRecognition()
+            return@LaunchedEffect
+        }
+
+        if(ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED){
+            launcher.launch(android.Manifest.permission.CAMERA)
+        } else {
+            viewModel.startGestureRecognition(lifecycleOwner, previewView, root.display.rotation)
+        }
+    }
 
     recipe?.let {
-        PlayRecipe(
-            recipe = it,
-            instructions = instructions,
-            isTextReadingChecked = isTextReadingChecked,
-            isPipMode = isInPipMode,
-            modifier = modifier,
-            onInstructionSelected = {
-                viewModel.onInstructionSelected(it)
-            },
-            onTextReadingChecked = {
-                viewModel.onReadingEnabled(it)
-            },
-            onBack = onBack,
-        )
+        Box {
+
+            PlayRecipe(
+                recipe = it,
+                instructions = instructions,
+                isTextReadingChecked = isTextReadingChecked,
+                isGestureRecognitionChecked = isGestureRecognitionChecked,
+                isPipMode = isInPipMode,
+                modifier = modifier,
+                currentItemPosition = currentItemPosition,
+                onIndexChanged = {
+                    viewModel.onInstructionSelected(it)
+                },
+                onNext = {
+                    viewModel.onNext()
+                },
+                onPrevious = {
+                    viewModel.onPreview()
+                },
+                onTextReadingChecked = {
+                    viewModel.onReadingEnabled(it)
+                },
+                onGestureRecognitionChecked = {
+                    viewModel.onGestureRecognitionEnabled(it)
+                },
+                onBack = onBack,
+            )
+
+            if(isGestureRecognitionChecked&& BuildConfig.DEBUG)
+                AndroidView(factory = { previewView }, modifier = Modifier.size(64.dp).align(Alignment.TopEnd))
+        }
     }
 }
 
@@ -132,60 +138,33 @@ fun PlayRecipe(
     recipe: Recipe,
     instructions: List<InstructionItem>,
     modifier: Modifier = Modifier,
+    currentItemPosition: Int = 0,
     isTextReadingChecked: Boolean = false,
+    isGestureRecognitionChecked: Boolean = false,
     isPipMode: Boolean = false,
-    onInstructionSelected: (InstructionItem) -> Unit = {},
+    onNext: () -> Unit = {},
+    onPrevious: () -> Unit = {},
+    onIndexChanged: (index: Int) -> Unit = {},
     onTextReadingChecked: (checked: Boolean) -> Unit = {},
+    onGestureRecognitionChecked: (checked: Boolean) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-    var currentItemPosition by remember { mutableIntStateOf(0) }
     val lazyListState = rememberLazyListState()
 
-    val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(isPipMode) {
-        if(!isPipMode) {
-            lazyListState.animateScrollToItem(currentItemPosition, -256)
-        }
-    }
-
-    fun next(): Boolean {
-        if (currentItemPosition < instructions.lastIndex) {
-            ++currentItemPosition
-            onInstructionSelected(instructions[currentItemPosition])
-
-            if (!isPipMode)
-                coroutineScope.launch {
-                    lazyListState.animateScrollToItem(currentItemPosition, -256)
-                }
-            return true
-        }
-
-        return false
-    }
-
-    fun previous(): Boolean {
-        if (currentItemPosition >= 1) {
-            --currentItemPosition
-            onInstructionSelected(instructions[currentItemPosition])
-
-            if (!isPipMode)
-                coroutineScope.launch {
-                    lazyListState.animateScrollToItem(currentItemPosition, -256)
-                }
-
-            return true
-        }
-
-        return false
+    LaunchedEffect(isPipMode, currentItemPosition) {
+        if (!isPipMode) lazyListState.animateScrollToItem(currentItemPosition, -256)
     }
 
     if (isPipMode) {
-        PipView(recipe, instructions[currentItemPosition], modifier, onNext = {
-            next()
-        }, onPrevious = {
-            previous()
-        })
+        PipView(
+            recipe,
+            lazyListState = lazyListState,
+            currentItemPosition = currentItemPosition,
+            instructions = instructions,
+            modifier = modifier,
+            onNext = onNext,
+            onPrevious = onPrevious
+        )
     } else {
         Scaffold(
             modifier = modifier,
@@ -206,22 +185,26 @@ fun PlayRecipe(
                 RecipeHeader(
                     recipe,
                     modifier = Modifier.padding(horizontal = 8.dp),
-                    isTextReadingChecked,
-                    onTextReadingChecked
+                    isTextReadingChecked = isTextReadingChecked,
+                    onTextReadingChecked = onTextReadingChecked,
+                    isGestureDetectionChecked = isGestureRecognitionChecked,
+                    onGestureDetectionChecked = onGestureRecognitionChecked,
                 )
 
                 ButtonRow(
-                    onPrevious = { previous() },
-                    onNext = { next() }
+                    onPrevious = onPrevious,
+                    onNext = onNext
                 )
 
                 InstructionList(
-                    lazyListState,
-                    instructions,
-                    currentItemPosition
-                ) { index, instruction ->
-                    currentItemPosition = index
-                    onInstructionSelected(instruction)
+                    lazyListState = lazyListState,
+                    instructions = instructions,
+                    modifier = Modifier
+                        .weight(2f)
+                        .padding(bottom = 8.dp),
+                    currentItemPosition = currentItemPosition
+                ) { index ->
+                    onIndexChanged(index)
                 }
 
             }
@@ -243,197 +226,6 @@ private fun ButtonRow(
 
         Button(onClick = onNext) {
             Icon(Icons.AutoMirrored.Default.ArrowForward, contentDescription = null)
-        }
-    }
-}
-
-@Composable
-private fun PipView(
-    recipe: Recipe,
-    item: InstructionItem,
-    modifier: Modifier = Modifier,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-) {
-    val context = LocalContext.current
-
-    DisposableEffect(recipe) {
-        val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if ((intent == null) || (intent.action != ACTION_BROADCAST_CONTROL)) {
-                    return
-                }
-
-                when (intent.getIntExtra(EXTRA_CONTROL_TYPE, 0)) {
-                    EXTRA_CONTROL_NEXT -> onNext()
-                    EXTRA_CONTROL_PREVIOUS -> onPrevious()
-                }
-            }
-        }
-        ContextCompat.registerReceiver(
-            context,
-            broadcastReceiver,
-            IntentFilter(ACTION_BROADCAST_CONTROL),
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
-        onDispose {
-            context.unregisterReceiver(broadcastReceiver)
-        }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(recipe.name, style = MaterialTheme.typography.titleMedium
-            .copy(color = MaterialTheme.colorScheme.onSurface ))
-
-        CompositionLocalProvider(LocalTextStyle provides
-                MaterialTheme.typography.bodyLarge
-                    .copy(color = MaterialTheme.colorScheme.onSurface )) {
-            when (item) {
-                is IngredientInstruction -> Ingredient(
-                    item.ingredient,
-                    modifier = Modifier.weight(1f)
-                )
-
-                is StepInstruction -> Step(
-                    item.step,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ColumnScope.InstructionList(
-    lazyListState: LazyListState,
-    instructions: List<InstructionItem>,
-    currentItemPosition: Int,
-    onInstructionSelected: (index: Int, InstructionItem) -> Unit
-) {
-    LazyColumn(
-        state = lazyListState,
-        modifier = Modifier
-            .weight(2f)
-            .padding(bottom = 8.dp),
-    ) {
-        itemsIndexed(instructions) { index, item ->
-            val ratio by animateFloatAsState(
-                if (currentItemPosition == index) 1f else (1f / ((currentItemPosition - index).absoluteValue + 1)) * 1.6f,
-                label = "ration"
-            )
-
-            val modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .alpha(ratio)
-                .graphicsLayer(
-                    ratio,
-                    ratio,
-                    transformOrigin = TransformOrigin(0f, 0.5f)
-                )
-                .fillMaxWidth()
-
-            val cardColor by animateColorAsState(
-                if (currentItemPosition == index) MaterialTheme.colorScheme.surfaceVariant
-                else MaterialTheme.colorScheme.background
-            )
-
-            Card(
-                shape = RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50),
-                modifier = Modifier.padding(end = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = cardColor,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSurface,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                onClick = {
-                    onInstructionSelected(index, item)
-                }
-            ) {
-                CompositionLocalProvider(LocalTextStyle provides TextStyle(fontSize = 36.sp)) {
-                    CompositionLocalProvider(
-                        LocalStepCardValues provides LocalStepCardValues.current.copy(
-                            iconSize = 56.dp,
-                            iconPadding = 8.dp,
-                        )
-                    ) {
-
-                        when (item) {
-                            is IngredientInstruction -> Ingredient(
-                                item.ingredient,
-                                modifier
-                            )
-
-                            is StepInstruction -> Step(item.step, modifier)
-                        }
-                    }
-                }
-            }
-
-        }
-
-        item {
-            Box(modifier = Modifier.height(512.dp))
-        }
-    }
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-fun RecipeHeader(
-    recipe: Recipe,
-    modifier: Modifier = Modifier,
-    isTextReadingChecked: Boolean = false,
-    onTextReadingChecked: (checked: Boolean) -> Unit = {},
-) {
-    Card(
-        modifier = modifier
-            .padding(top = 8.dp), shape = MaterialTheme.shapes.extraLarge
-    ) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Image(
-                painter = rememberAsyncImagePainter(
-                    recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
-                ), contentDescription = null, modifier = Modifier
-                    .size(128.dp)
-                    .clip(
-                        shape = MaterialTheme.shapes.extraLarge
-                    ), contentScale = ContentScale.Crop
-            )
-
-            Column {
-                Text(
-                    recipe.name, modifier = Modifier
-                        .padding(16.dp),
-                    style = MaterialTheme.typography.headlineLarge
-                )
-
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(vertical = 4.dp, horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.TwoTone.RecordVoiceOver,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Switch(
-                        checked = isTextReadingChecked,
-                        onCheckedChange = onTextReadingChecked
-                    )
-                }
-            }
-
         }
     }
 }

@@ -15,6 +15,7 @@ class DataStoreRepository(context: Context) {
     private val dataStore = context.dataStore
     private val iaGenerationKey = booleanPreferencesKey("isIAGenerationChecked")
     private val textReadingKey = booleanPreferencesKey("isTextReadingChecked")
+    private val gestureRecognitionKey = booleanPreferencesKey("isGestureRecognitionChecked")
     private val stillNeedToGenerateKey = booleanPreferencesKey("stillNeedToGenerate")
 
     suspend fun unit(name: String) =
@@ -33,6 +34,12 @@ class DataStoreRepository(context: Context) {
     val isTextReadingChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
         preferences[textReadingKey] != false
     }
+
+
+    val isGestureRecognitionChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
+        preferences[gestureRecognitionKey] != false
+    }
+
 
     val stillNeedToGenerate: Flow<Boolean> get() = dataStore.data.map { preferences ->
         preferences[stillNeedToGenerateKey] == true
@@ -53,6 +60,12 @@ class DataStoreRepository(context: Context) {
     suspend fun setStillNeedToGenerate(b: Boolean) {
         dataStore.edit { preferences ->
             preferences[stillNeedToGenerateKey] = b
+        }
+    }
+
+    suspend fun setGestureRecognitionChecked(checked: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[gestureRecognitionKey] = checked
         }
     }
 

@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="Projects.MyRecipes.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-10-14T12:43:49.208365Z">
+        <DropdownSelection timestamp="2024-10-21T15:49:36.257746500Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Florian\.android\avd\Pixel_8_Pro_API_34.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=11181FDD4003UN" />
             </handle>
           </Target>
         </DropdownSelection>

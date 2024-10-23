@@ -145,6 +145,10 @@
     <string name="ingrient_prompt_generation" translatable="false">a colorful cartoon %s on a plain  green background, animated, painting</string>
     <string name="recipe_prompt_generation" translatable="false">a realistic %s freshly cooked on a kitchen table, animated, photo</string>
 
+    <string name="play_recipe_enable_text_reading">Enable text reading</string>
+    <string name="play_recipe_enable_gesture_detection">Enable gesture detection\n👍 for next\n👎 for previous\n☝️ for repeating </string>
+
+
     <string name="default_1">
 UEsDBBQACAgIAAJxalEAAAAAAAAAAAAAAAAAAAAAxdNNTgIxFAfwGRg+ZKHIyszqyQoIAQwb40bi
 V2IiK0yMyw7z6FRLh/RD5QIeQY2n8SgewSNYRpFhb4aumtem/1/eSyul09hQEZs9ty4qd0P2BPiA
