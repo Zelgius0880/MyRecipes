@@ -127,7 +127,7 @@ private fun RecipeDetailsView(
         ExpandableList(
             reversed = true,
             initiallyExpanded = mapOf(0 to true),
-            radius = 64f,
+            radius = 32f,
             header = {
                 RecipeDetailsHeader(
                     sharedTransitionScope = sharedTransitionScope,

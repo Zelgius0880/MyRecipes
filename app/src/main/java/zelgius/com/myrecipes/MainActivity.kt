@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,6 +85,18 @@ class MainActivity : AppCompatActivity() {
                     }
                     val mainNavController = rememberNavController()
                     val twoPanes = isTwoPanes()
+
+                    LaunchedEffect(twoPanes) {
+                        if (!twoPanes) {
+                            mainNavController.navigate("home"){
+                                popUpTo(0)
+                            }
+                        } else {
+                            mainNavController.navigate("no_selection") {
+                                popUpTo(0)
+                            }
+                        }
+                    }
 
                     @Composable
                     fun AnimatedVisibilityScope.home(
@@ -285,7 +298,7 @@ class MainViewModel @Inject constructor(
 
     fun startWorkerIfNeeded() {
         viewModelScope.launch {
-           workerRepository.startIaGenerationWorker()
+            workerRepository.startIaGenerationWorker()
         }
     }
 }

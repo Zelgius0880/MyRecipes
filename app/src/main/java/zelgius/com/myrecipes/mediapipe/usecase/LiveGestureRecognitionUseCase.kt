@@ -38,7 +38,7 @@ class LiveGestureRecognitionUseCase @Inject constructor(
         targetRotation: Int,
         previewView: PreviewView?,
         lifecycleOwner: LifecycleOwner
-    ) {
+    )  {
         val cameraProvider = setUpCamera()
         this.cameraProvider = cameraProvider
 

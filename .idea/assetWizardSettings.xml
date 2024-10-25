@@ -312,7 +312,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$PROJECT_DIR$/../../android-sdk/icons/material/materialiconsround/arrow_forward/round_arrow_forward_24.xml" />
+                                      <entry key="url" value="file:/$PROJECT_DIR$/../../android-sdk/icons/material/materialiconstwotone/cameraswitch/twotone_cameraswitch_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -323,7 +323,7 @@
                         <option name="values">
                           <map>
                             <entry key="color" value="ffffff" />
-                            <entry key="outputName" value="round_arrow_forward_24" />
+                            <entry key="outputName" value="twotone_cameraswitch_24" />
                             <entry key="sourceFile" value="C:\Users\Florian\Downloads\honey.svg" />
                           </map>
                         </option>
