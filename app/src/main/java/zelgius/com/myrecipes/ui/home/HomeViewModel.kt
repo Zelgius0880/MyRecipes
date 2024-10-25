@@ -1,6 +1,5 @@
 package zelgius.com.myrecipes.ui.home
 
-import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -8,15 +7,11 @@ import androidx.paging.PagingConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import zelgius.com.myrecipes.data.entities.RecipeEntity
-import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.useCase.DecodeRecipeFromQR
 import zelgius.com.myrecipes.data.useCase.DeleteRecipeUseCase
 import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
-import zelgius.com.myrecipes.utils.unzip
-import zelgius.com.protobuff.RecipeProto
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,7 +22,7 @@ open class HomeViewModel @Inject constructor(
     private val recipeRepository: RecipeRepository,
 ) : ViewModel() {
 
-    fun addRecipeFromQr(base64: String) {
+    suspend fun addRecipeFromQr(base64: String) {
         viewModelScope.launch {
             val recipe = decodeRecipeFromQR.execute(base64)
             saveRecipeUseCase.execute(recipe)

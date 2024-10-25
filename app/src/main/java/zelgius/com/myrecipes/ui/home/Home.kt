@@ -14,7 +14,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.twotone.Add
@@ -81,17 +80,23 @@ fun Home(
     onSettingsClicked: () -> Unit,
     onClick: (Recipe?) -> Unit = {},
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val scanQrLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             it.data?.getStringExtra("BASE64")?.let { s ->
-                viewModel.addRecipeFromQr(s)
+                coroutineScope.launch {
+                    viewModel.addRecipeFromQr(s)
+                    snackbarHostState.showSnackbar(context.getString(R.string.recipe_saved))
+                }
             }
         }
-    val context = LocalContext.current
 
     HomeView(
         sharedTransitionScope = sharedTransitionScope,
         animatedVisibilityScope = animatedVisibilityScope,
+        snackbarHostState = snackbarHostState,
         pageMeals = viewModel.mealsPage,
         pageDesserts = viewModel.dessertPage,
         pageOther = viewModel.otherPage,
@@ -115,6 +120,7 @@ fun Home(
 private fun HomeView(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onClick: (Recipe?) -> Unit = {},
     onRemove: (Recipe) -> Flow<Recipe> = { emptyFlow() },
     onRestore: (Recipe) -> Unit = {},
@@ -126,7 +132,6 @@ private fun HomeView(
     pageOther: Flow<PagingData<Recipe>>,
 ) {
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
 
     val context = LocalContext.current
     val removeRecipe: (Recipe) -> Unit = {
