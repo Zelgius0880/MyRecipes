@@ -17,9 +17,12 @@ import androidx.compose.material.icons.twotone.RecordVoiceOver
 import androidx.compose.material.icons.twotone.SignLanguage
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +47,7 @@ fun RecipeHeader(
     isTextReadingChecked: Boolean = false,
     onTextReadingChecked: (checked: Boolean) -> Unit = {},
     isGestureDetectionChecked: Boolean = false,
+    isGestureDetectionError: Boolean = false,
     onGestureDetectionChecked: (checked: Boolean) -> Unit = {},
 ) {
     if (isTwoPanes()) RecipeHeaderTwoPanes(
@@ -52,6 +56,7 @@ fun RecipeHeader(
         isTextReadingChecked,
         onTextReadingChecked,
         isGestureDetectionChecked,
+        isGestureDetectionError,
         onGestureDetectionChecked
     ) else RecipeHeaderOnePane(
         recipe,
@@ -59,6 +64,7 @@ fun RecipeHeader(
         isTextReadingChecked,
         onTextReadingChecked,
         isGestureDetectionChecked,
+        isGestureDetectionError,
         onGestureDetectionChecked
     )
 }
@@ -110,6 +116,7 @@ private fun RecipeHeaderOnePane(
     isTextReadingChecked: Boolean = false,
     onTextReadingChecked: (checked: Boolean) -> Unit = {},
     isGestureDetectionChecked: Boolean = false,
+    isGestureDetectionError: Boolean = false,
     onGestureDetectionChecked: (checked: Boolean) -> Unit = {},
 ) {
     MainCard(
@@ -120,10 +127,17 @@ private fun RecipeHeaderOnePane(
             modifier = Modifier
                 .align(Alignment.End)
         ) {
-            GestureDetectionSwitch(
-                isGestureDetectionChecked, onGestureDetectionChecked, Modifier
-                    .padding(vertical = 4.dp)
-            )
+
+            CompositionLocalProvider(
+                LocalTextStyle provides MaterialTheme.typography.bodyMedium.copy(
+                    color = if (isGestureDetectionError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                )
+            ) {
+                GestureDetectionSwitch(
+                    isGestureDetectionChecked, onGestureDetectionChecked, Modifier
+                        .padding(vertical = 4.dp)
+                )
+            }
             TextReadingSwitch(
                 isTextReadingChecked, onTextReadingChecked, Modifier
                     .padding(vertical = 4.dp, horizontal = 16.dp)
@@ -139,9 +153,10 @@ fun RecipeHeaderTwoPanes(
     isTextReadingChecked: Boolean = false,
     onTextReadingChecked: (checked: Boolean) -> Unit = {},
     isGestureDetectionChecked: Boolean = false,
+    isGestureDetectionError: Boolean = false,
     onGestureDetectionChecked: (checked: Boolean) -> Unit = {},
 ) {
-    Row (modifier = Modifier.height(IntrinsicSize.Min)){
+    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
         MainCard(
             recipe,
             modifier
@@ -149,12 +164,25 @@ fun RecipeHeaderTwoPanes(
 
         Spacer(modifier.weight(1f))
 
-        Card (modifier = Modifier.fillMaxHeight().padding(end = 16.dp), shape = MaterialTheme.shapes.extraLarge){
+        Card(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(end = 16.dp),
+            shape = MaterialTheme.shapes.extraLarge
+        ) {
             Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight()) {
-                GestureDetectionSwitch(isGestureDetectionChecked, onGestureDetectionChecked, Modifier
-                    .padding(vertical = 4.dp, horizontal = 16.dp))
-                TextReadingSwitch(isTextReadingChecked, onTextReadingChecked, Modifier
-                    .padding(vertical = 4.dp, horizontal = 16.dp))
+                CompositionLocalProvider(
+                    LocalContentColor provides if (isGestureDetectionError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                ) {
+                    GestureDetectionSwitch(
+                        isGestureDetectionChecked, onGestureDetectionChecked, Modifier
+                            .padding(vertical = 4.dp, horizontal = 16.dp)
+                    )
+                }
+                TextReadingSwitch(
+                    isTextReadingChecked, onTextReadingChecked, Modifier
+                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                )
             }
         }
     }
