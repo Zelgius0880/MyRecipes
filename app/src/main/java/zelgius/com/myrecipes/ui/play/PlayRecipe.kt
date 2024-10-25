@@ -64,6 +64,7 @@ fun PlayRecipe(
     val recipe by viewModel.recipe.collectAsStateWithLifecycle()
     val isTextReadingChecked by viewModel.readingEnabled.collectAsStateWithLifecycle(true)
     val isGestureRecognitionChecked by viewModel.gestureRecognitionEnabled.collectAsStateWithLifecycle(true)
+    val isGestureRecognitionError by viewModel.gestureRecognitionError.collectAsStateWithLifecycle(false)
     val isInPipMode = rememberIsInPipMode()
     val currentItemPosition by viewModel.currentInstructionPosition.collectAsStateWithLifecycle()
 
@@ -104,7 +105,8 @@ fun PlayRecipe(
                 recipe = it,
                 instructions = instructions,
                 isTextReadingChecked = isTextReadingChecked,
-                isGestureRecognitionChecked = isGestureRecognitionChecked,
+                isGestureRecognitionChecked = isGestureRecognitionChecked && !isGestureRecognitionError,
+                isGestureRecognitionError = isGestureRecognitionError ,
                 isPipMode = isInPipMode,
                 modifier = modifier,
                 currentItemPosition = currentItemPosition,
@@ -141,6 +143,7 @@ fun PlayRecipe(
     currentItemPosition: Int = 0,
     isTextReadingChecked: Boolean = false,
     isGestureRecognitionChecked: Boolean = false,
+    isGestureRecognitionError: Boolean = false,
     isPipMode: Boolean = false,
     onNext: () -> Unit = {},
     onPrevious: () -> Unit = {},
@@ -188,6 +191,7 @@ fun PlayRecipe(
                     isTextReadingChecked = isTextReadingChecked,
                     onTextReadingChecked = onTextReadingChecked,
                     isGestureDetectionChecked = isGestureRecognitionChecked,
+                    isGestureDetectionError = isGestureRecognitionError,
                     onGestureDetectionChecked = onGestureRecognitionChecked,
                 )
 

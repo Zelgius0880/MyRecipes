@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -39,6 +40,8 @@ class PlayRecipeViewModel @Inject constructor(
 
     val readingEnabled get() = dataStoreRepository.isTextReadingChecked
     val gestureRecognitionEnabled get() = dataStoreRepository.isGestureRecognitionChecked
+    private val _gestureRecognitionError = MutableStateFlow(false)
+    val gestureRecognitionError get() = _gestureRecognitionError.asStateFlow()
 
     private val _recipe = MutableStateFlow<Recipe?>(null)
     val recipe = _recipe.asStateFlow()
@@ -72,7 +75,12 @@ class PlayRecipeViewModel @Inject constructor(
     }
 
     fun startGestureRecognition(lifecycleOwner: LifecycleOwner, preview: PreviewView?, orientation: Int) {
-        viewModelScope.launch {
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
+            exception.printStackTrace()
+            gestureRecognitionUseCase.clear()
+            _gestureRecognitionError.value = true
+        }
+        viewModelScope.launch(coroutineExceptionHandler) {
             gestureRecognitionUseCase.execute(orientation, preview , lifecycleOwner)
         }
     }
