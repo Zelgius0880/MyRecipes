@@ -1,9 +1,7 @@
 package zelgius.com.myrecipes.utils
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.util.TypedValue
-import androidx.activity.ComponentActivity
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -62,6 +60,15 @@ fun ByteArray.unzip(): ByteArray {
 fun Modifier.conditional(condition : Boolean, modifier : Modifier.() -> Modifier) : Modifier {
     return if (condition) {
         then(modifier(Modifier))
+    } else {
+        this
+    }
+}
+
+
+fun<T> Modifier.ifNotNull (item: T?, modifier : Modifier.(T) -> Modifier) : Modifier {
+    return if (item != null)  {
+        then(modifier(item))
     } else {
         this
     }

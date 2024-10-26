@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -35,7 +36,7 @@ fun PipView(
     val context = LocalContext.current
 
     LaunchedEffect(currentItemPosition) {
-        lazyListState.animateScrollToItem(currentItemPosition,0 )
+        lazyListState.animateScrollToItem(currentItemPosition, 0)
     }
 
     DisposableEffect(recipe) {
@@ -73,16 +74,22 @@ fun PipView(
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp)
         )
 
-        InstructionList(
-            instructions = instructions,
-            currentItemPosition = currentItemPosition,
-            lazyListState = lazyListState,
-            textStyle = MaterialTheme.typography.bodyMedium
-                .copy(color = MaterialTheme.colorScheme.onSurface),
-            stepCardValues = LocalStepCardValues.current.copy(
-                iconSize = 32.dp,
-                iconPadding = 4.dp,
+        BoxWithConstraints {
+            val boxWithConstraintsScope = this
+
+            InstructionList(
+                instructions = instructions,
+                currentItemPosition = currentItemPosition,
+                lazyListState = lazyListState,
+                maxHeight = boxWithConstraintsScope.maxHeight,
+                textStyle = MaterialTheme.typography.bodyMedium
+                    .copy(color = MaterialTheme.colorScheme.onSurface),
+                stepCardValues = LocalStepCardValues.current.copy(
+                    iconSize = 32.dp,
+                    iconPadding = 4.dp,
+                    autoResize = true
+                )
             )
-        )
+        }
     }
 }
