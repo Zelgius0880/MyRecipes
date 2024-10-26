@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import zelgius.com.myrecipes.data.useCase.IngredientInstruction
@@ -31,6 +33,7 @@ import zelgius.com.myrecipes.ui.common.LocalStepCardValues
 import zelgius.com.myrecipes.ui.common.StepCardValues
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.common.recipe.Step
+import zelgius.com.myrecipes.utils.ifNotNull
 import kotlin.math.absoluteValue
 
 
@@ -41,11 +44,12 @@ fun InstructionList(
     currentItemPosition: Int,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = TextStyle(fontSize = 28.sp),
+    maxHeight: Dp? = null,
     stepCardValues: StepCardValues = LocalStepCardValues.current.copy(
         iconSize = 56.dp,
         iconPadding = 8.dp,
     ),
-    onInstructionSelected: (index: Int) -> Unit = {  }
+    onInstructionSelected: (index: Int) -> Unit = { }
 ) {
     LazyColumn(
         state = lazyListState,
@@ -77,7 +81,11 @@ fun InstructionList(
                     topStart = ZeroCornerSize,
                     bottomStart = ZeroCornerSize
                 ),
-                modifier = Modifier.padding(end = 8.dp),
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .ifNotNull(maxHeight) {
+                        Modifier.heightIn(max = it)
+                    },
                 colors = CardDefaults.cardColors(
                     containerColor = cardColor,
                     disabledContainerColor = MaterialTheme.colorScheme.onSurface,

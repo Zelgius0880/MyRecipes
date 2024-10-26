@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material.icons.twotone.Check
+import androidx.compose.material.icons.twotone.InsertPhoto
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -312,7 +313,7 @@ private fun EditRecipeHeader(
                         )
                     }) {
                         Icon(
-                            painter = painterResource(R.drawable.twotone_insert_photo_24),
+                            Icons.TwoTone.InsertPhoto,
                             contentDescription = ""
                         )
                     }
@@ -440,7 +441,7 @@ private fun LazyItemScope.AddIngredientButton(
         Button(
             onClick = onAddIngredient,
             modifier = Modifier
-                .padding(end = 8.dp, bottom = 8.dp, top = if(isFirst) 8.dp else 0.dp)
+                .padding(end = 8.dp, bottom = 8.dp, top = if (isFirst) 8.dp else 0.dp)
                 .align(Alignment.End),
             contentPadding = PaddingValues(horizontal = 16.dp),
         ) {

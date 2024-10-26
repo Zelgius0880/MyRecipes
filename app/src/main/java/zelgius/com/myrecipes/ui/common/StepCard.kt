@@ -27,6 +27,7 @@ data class StepCardValues(
     val iconSize: Dp,
     val iconPadding: Dp,
     val avatarColor: Color,
+    val autoResize: Boolean = false,
 )
 
 val LocalStepCardValues = compositionLocalOf {
@@ -42,7 +43,7 @@ fun StepCard(
     letter: String,
     text: String,
     modifier: Modifier = Modifier,
-    ) {
+) {
     StepCard(
         avatar = Avatar.Letter(letter),
         text = text,
