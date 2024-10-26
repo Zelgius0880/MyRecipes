@@ -27,10 +27,10 @@ android {
 
     defaultConfig {
         applicationId = "zelgius.com.myrecipes"
-        minSdk = 30
+        minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "2.0-beta02"
+        versionCode = 7
+        versionName = "2.0-beta03"
         testInstrumentationRunner = "zelgius.com.myrecipes.utils.HiltTestRunner"
 
         javaCompileOptions {
