@@ -109,4 +109,8 @@ class IngredientRepository(
 
 
     suspend fun getAllWithoutImage() = dao.getAllWithoutImages()
+
+    fun getSimpleIngredients() = dao.getSimpleIngredients().map { it.map { it.asModel() }}
+
+    suspend fun deleteIngredient(id: Long) = dao.delete(id)
 }

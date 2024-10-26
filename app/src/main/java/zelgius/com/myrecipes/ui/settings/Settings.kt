@@ -1,13 +1,18 @@
 package zelgius.com.myrecipes.ui.settings
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
+import androidx.compose.material.icons.twotone.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -16,7 +21,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,20 +29,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import zelgius.com.myrecipes.ui.common.LinkableText
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.data.model.SimpleIngredient
+import zelgius.com.myrecipes.data.model.asIngredient
 import zelgius.com.myrecipes.ui.AppTheme
+import zelgius.com.myrecipes.ui.common.LinkableText
+import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.utils.isTwoPanes
 
 @Composable
 fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit) {
-    val isIAGenerationChecked by viewModel.isIAGenerationChecked.collectAsState(false)
-    val isIAGenerationEnabled by viewModel.isIAGenerationEnabled.collectAsState()
+    val isIAGenerationChecked by viewModel.isIAGenerationChecked.collectAsStateWithLifecycle(false)
+    val isIAGenerationEnabled by viewModel.isIAGenerationEnabled.collectAsStateWithLifecycle()
+    val ingredients by viewModel.ingredients.collectAsStateWithLifecycle(emptyList())
 
     Settings(
         isIAGenerationChecked = isIAGenerationChecked,
         isIAGenerationEnabled = isIAGenerationEnabled,
         onIAGenerationChanged = viewModel::setIsIAGenerationChecked,
+        ingredients = ingredients,
+        onDeleteIngredient = viewModel::deleteIngredient,
         onBack = onBack
     )
 }
@@ -49,6 +60,8 @@ private fun Settings(
     isIAGenerationChecked: Boolean = false,
     isIAGenerationEnabled: Boolean = false,
     onIAGenerationChanged: (Boolean) -> Unit = {},
+    ingredients: List<SimpleIngredient> = emptyList(),
+    onDeleteIngredient: (SimpleIngredient) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
     Scaffold(
@@ -69,15 +82,38 @@ private fun Settings(
         },
 
         ) {
-        LazyColumn(modifier = Modifier
-            .padding(it)
-            .padding(vertical = 8.dp, horizontal = 16.dp)) {
+        LazyColumn(
+            modifier = Modifier
+                .padding(it)
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             item {
                 IAGenerationSwitch(
                     isIAGenerationChecked,
                     isIAGenerationEnabled,
                     onIAGenerationChanged
                 )
+            }
+
+            item {
+                Text(
+                    text = stringResource(id = R.string.ingredients),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            itemsIndexed(ingredients, key = { _, item -> item.id }) { index, item ->
+                Column(modifier = Modifier.animateItem()) {
+                    SettingsIngredient(ingredient = item, onDeleteIngredient = onDeleteIngredient)
+
+                    if (index < ingredients.lastIndex)
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .padding(horizontal = 16.dp)
+                        )
+                }
             }
         }
     }
@@ -117,12 +153,46 @@ private fun IAGenerationSwitch(
     }
 }
 
+@Composable
+private fun SettingsIngredient(
+    ingredient: SimpleIngredient,
+    modifier: Modifier = Modifier,
+    onDeleteIngredient: (SimpleIngredient) -> Unit = {}
+) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        Ingredient(
+            modifier = Modifier
+                .weight(1f)
+                .heightIn(min = 48.dp),
+            ingredient = ingredient.asIngredient(),
+            text = ingredient.name
+        )
+
+        if (ingredient.removable) {
+            IconButton(onClick = { onDeleteIngredient(ingredient) }) {
+                Icon(
+                    imageVector = Icons.TwoTone.Delete,
+                    contentDescription = ""
+                )
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun SettingsPreview() {
     AppTheme {
         Settings(
-            isIAGenerationEnabled = false
+            isIAGenerationEnabled = false,
+            ingredients = List(5) {
+                SimpleIngredient(
+                    it.toLong(),
+                    "Ingredient $it",
+                    null,
+                    it % 2 == 0
+                )
+            }
         )
     }
 }
