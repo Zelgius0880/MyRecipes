@@ -142,7 +142,7 @@
     <string name="ia_generation">Enable IA image generation</string>
     <string name="ia_generation_disabled">No IA model found, follow <a href="https://ai.google.dev/edge/mediapipe/solutions/vision/image_generator/android#model">this link</a> to add an IA generative model</string>
 
-    <string name="ingrient_prompt_generation" translatable="false">a colorful cartoon %s on a plain  green background, animated, painting</string>
+    <string name="ingrient_prompt_generation" translatable="false">a hand drawn %s on a plain green background, drawing</string>
     <string name="recipe_prompt_generation" translatable="false">a realistic %s freshly cooked on a kitchen table, animated, photo</string>
 
     <string name="play_recipe_enable_text_reading">Enable text reading</string>
@@ -177,6 +177,10 @@ DB/shdhc09M1ijWl+JCUpqanKzAbMCMZmQ800i0nvxTVyWkgEQUWsJEyCCO5nTKTE4uS8vOAPlJg
 NWAByoojWQgMF2AYKbCBJABQSwcIZqudsNcAAABLAQAAUEsBAhQAFAAICAgALnFqUWarnbDXAAAA
 SwEAAAAAAAAAAAAAAAAAAAAAAAAAAFBLBQYAAAAAAQABAC4AAAAFAQAAAAA
     </string>
+    <string name="generate_image">Generate image</string>
+    <string name="custom_prompt">Custom prompt</string>
+    <string name="update_ingredient">Update ingredient</string>
+    <string name="reset_image">Reset image</string>
 </resources>
 
 

@@ -39,7 +39,8 @@ fun Ingredient(
         else StepCard(
             "${ingredient.name.uppercase().first()}",
             text = text,
-            modifier = modifier
+            modifier = modifier,
+            imageUrl = ingredient.imageUrl
         )
     }
 }
@@ -65,7 +66,8 @@ fun Ingredient(
         else StepCard(
             "${ingredient.name.uppercase().first()}",
             text = text,
-            modifier = modifier
+            modifier = modifier,
+            imageUrl = ingredient.imageUrl
         )
     }
 }

@@ -19,7 +19,6 @@ SOFTWARE.
 */
 package zelgius.com.myrecipes.ui.common.autosizetext
 
-import android.util.Log
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -62,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastFilter
 import zelgius.com.myrecipes.ui.common.autosizetext.SuggestedFontSizesStatus.Companion.validSuggestedFontSizes
+import zelgius.com.myrecipes.utils.Logger
 import kotlin.math.min
 
 private const val TAG = "AutoSizeText"
@@ -276,7 +276,7 @@ fun AutoSizeText(
             }
 
             if (electedFontSize == 0.sp)
-                Log.w(
+                Logger.w(
                     TAG,
                     """The text cannot be displayed. Please consider the following options:
                       |  1. Providing 'suggestedFontSizes' with smaller values that can be utilized.

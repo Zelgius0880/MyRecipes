@@ -1,6 +1,7 @@
 package zelgius.com.myrecipes.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -21,7 +22,9 @@ import zelgius.com.myrecipes.data.repository.dao.StepDao
 @Database(
     entities = [IngredientEntity::class, RecipeEntity::class, StepEntity::class, RecipeIngredient::class],
     views = [IngredientForRecipe::class],
-    version = 5
+    exportSchema = true,
+    autoMigrations = [AutoMigration(from = 5, to = 6)],
+    version = 6
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

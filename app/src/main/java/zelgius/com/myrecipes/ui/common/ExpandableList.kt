@@ -140,19 +140,19 @@ private fun <H> Header(
         label = "header"
     )
     val shape = RoundedCornerShape(
-        topStart = if (!isReversed || !isExpanded || onExpand == null) CornerSize(radius) else CornerSize(
+        topStart = if (!isReversed || !isExpanded || onExpand == null) CornerSize(radius.dp) else CornerSize(
             animatedRadius
         ),
-        topEnd = if (!isReversed || !isExpanded || onExpand == null) CornerSize(radius) else CornerSize(
-            animatedRadius
+        topEnd = if (!isReversed || !isExpanded || onExpand == null) CornerSize(radius.dp) else CornerSize(
+            animatedRadius.dp
         ),
         bottomStart = if ((!isReversed || !isExpanded) && onExpand != null) CornerSize(
-            animatedRadius
+            animatedRadius.dp
         ) else CornerSize(
-            radius
+            radius.dp
         ),
-        bottomEnd = if ((!isReversed || !isExpanded) && onExpand != null) CornerSize(animatedRadius) else CornerSize(
-            radius
+        bottomEnd = if ((!isReversed || !isExpanded) && onExpand != null) CornerSize(animatedRadius.dp) else CornerSize(
+            radius.dp
         )
     )
     Card(
@@ -188,10 +188,10 @@ private fun <H, C> Child(
                 onExpand?.invoke()
             },
             shape = if (showRadius) RoundedCornerShape(
-                bottomStart = if (!isReversed) CornerSize(radius) else ZeroCornerSize,
-                bottomEnd = if (!isReversed) CornerSize(radius) else ZeroCornerSize,
-                topStart = if (!isReversed) ZeroCornerSize else CornerSize(radius),
-                topEnd = if (!isReversed) ZeroCornerSize else CornerSize(radius)
+                bottomStart = if (!isReversed) CornerSize(radius.dp) else ZeroCornerSize,
+                bottomEnd = if (!isReversed) CornerSize(radius.dp) else ZeroCornerSize,
+                topStart = if (!isReversed) ZeroCornerSize else CornerSize(radius.dp),
+                topEnd = if (!isReversed) ZeroCornerSize else CornerSize(radius.dp)
             ) else RectangleShape
         ) {
             childContent(section, child)

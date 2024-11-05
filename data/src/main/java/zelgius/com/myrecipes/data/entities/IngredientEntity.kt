@@ -1,14 +1,11 @@
 package zelgius.com.myrecipes.data.entities
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import zelgius.com.myrecipes.data.model.Ingredient
-import zelgius.com.myrecipes.data.model.Recipe
 
 @Entity(
     foreignKeys = [
@@ -38,15 +35,17 @@ data class RecipeIngredient(
     @ColumnInfo(name = "sort_order") var sortOrder: Int,
     @ColumnInfo(name = "ref_ingredient") var refIngredient: Long?,
     @ColumnInfo(name = "ref_recipe") var refRecipe: Long?,
-    @ColumnInfo(name = "ref_step") var refStep: Long?
+    @ColumnInfo(name = "ref_step") var refStep: Long?,
 )
 
 @Entity(tableName = "Ingredient")
 data class IngredientEntity(
     @PrimaryKey(autoGenerate = true) var id: Long?,
     var name: String,
-    @ColumnInfo(name = "image_url") var imageURL: String?
-
+    @ColumnInfo(name = "image_url") var imageURL: String?,
+    var seed: Int? = null,
+    var prompt: String? = null,
+    @ColumnInfo(name = "generation_enabled", defaultValue = "1") var generationEnabled: Boolean = true,
 ) {
 
     //constructor() : this (null, "", null)

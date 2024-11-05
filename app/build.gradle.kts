@@ -29,19 +29,16 @@ android {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
+        versionCode = 8
         versionName = "2.0-beta03"
         testInstrumentationRunner = "zelgius.com.myrecipes.utils.HiltTestRunner"
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments(mutableMapOf("room.schemaLocation" to "$projectDir/schemas"))
-            }
+        ksp {
+            arg("room.schemaLocation" , "$projectDir/schemas")
         }
     }
 
     buildFeatures {
-        viewBinding = true
         compose = true
         buildConfig = true
     }
@@ -63,10 +60,12 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
+            isDebuggable = false
+            //isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             buildConfigField(type = "String", name = "EMAIL", value = getProps("app.email"))
             signingConfig = signingConfigs.getByName("release")
@@ -120,16 +119,16 @@ android {
 }
 
 
-val composeVersion = "1.7.4"
+val composeVersion = "1.7.5"
+val pagingVersion = "3.3.2"
+val lifecycleVersion = "2.8.7"
+val workVersion = "2.10.0"
+val cameraxVersion = "1.4.0"
+val coroutinesVersion = "1.9.0-RC.2"
 
 dependencies {
     implementation("com.google.firebase:firebase-crashlytics:19.2.1")
     implementation("com.google.firebase:firebase-analytics:22.1.2")
-    val pagingVersion = "3.3.2"
-    val lifecycleVersion = "2.8.6"
-    val workVersion = "2.9.1"
-    val cameraxVersion = "1.3.4"
-    val coroutinesVersion = "1.9.0-RC.2"
 
     implementation(project(":data"))
 
@@ -164,10 +163,10 @@ dependencies {
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     //Android X
-    implementation("androidx.fragment:fragment:1.8.4")
-    implementation("androidx.fragment:fragment-ktx:1.8.4")
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.fragment:fragment:1.8.5")
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
+    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
@@ -177,7 +176,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
 
     //KTX & coroutines
-    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.core:core-ktx:1.15.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
 
@@ -197,7 +196,7 @@ dependencies {
     //CameraX
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-camera2:${cameraxVersion}")
-    implementation("androidx.camera:camera-view:1.3.4")
+    implementation("androidx.camera:camera-view:1.4.0")
 
     //Compose
     implementation("androidx.activity:activity-compose:1.9.3")
@@ -206,13 +205,13 @@ dependencies {
     implementation("androidx.compose.ui:ui:$composeVersion")
     implementation("androidx.compose.animation:animation:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
-    implementation("androidx.compose.material:material-icons-extended:1.7.4")
-    implementation("androidx.compose.material3:material3:1.3.0")
-    implementation("androidx.compose.material3:material3-window-size-class:1.3.0")
-    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha05")
-    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha05")
-    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha05")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.0")
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
+    implementation("androidx.compose.material3:material3:1.3.1")
+    implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha06")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha06")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha06")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.1")
 
 
     // Mediapipe

@@ -127,7 +127,7 @@ private fun RecipeDetailsView(
         ExpandableList(
             reversed = true,
             initiallyExpanded = mapOf(0 to true),
-            radius = 32f,
+            radius = 28f,
             header = {
                 RecipeDetailsHeader(
                     sharedTransitionScope = sharedTransitionScope,
@@ -212,6 +212,10 @@ fun RecipeDetailsHeader(
                         recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
                     ), contentDescription = null, modifier = Modifier
                         .size(128.dp)
+                        .sharedElement(
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            state = rememberSharedContentState(key = "${recipe.id}_recipe_image")
+                        )
                         .clip(
                             shape = MaterialTheme.shapes.extraLarge
                         ), contentScale = ContentScale.Crop

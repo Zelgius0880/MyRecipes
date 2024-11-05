@@ -11,7 +11,10 @@ data class Recipe(
     val imageUrl: String? = null,
     val type: Type,
     val steps: List<Step> = mutableListOf(),
-    val ingredients: List<Ingredient> = mutableListOf()
+    val ingredients: List<Ingredient> = mutableListOf(),
+    val seed: Int? = null,
+    val prompt: String? = null,
+    val generationEnabled: Boolean = true,
 ) : Parcelable{
     enum class Type {
         Dessert,

@@ -26,3 +26,32 @@
 -dontwarn javax.lang.**
 -dontwarn javax.tools.**
 -dontwarn com.squareup.javapoet.**
+-dontwarn com.google.mediapipe.proto.CalculatorProfileProto$CalculatorProfile
+-dontwarn com.google.mediapipe.proto.GraphTemplateProto$CalculatorGraphTemplate
+
+-keep public class zelgius.com.protobuff.** { *; }
+-keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite { *; }
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
+
+
+-keep public class com.google.mediapipe.** { *; }
+-keep public class com.google.protobuf.** { *; }
+-keep public class com.google.mediapipe.framework.Graph { *; }
+-keep public class com.google.common.** { *; }
+-keep public interface com.google.common.** { *; }
+-keep public class com.google.mediapipe.** { *; }
+-keep public interface com.google.mediapipe.framework.* {
+  public *;
+}
+-keep public class com.google.mediapipe.framework.Packet {
+  public static *** create(***);
+  public long getNativeHandle();
+  public void release();
+}
+-keep public class com.google.mediapipe.framework.PacketCreator {
+  *** releaseWithSyncToken(...);
+}
+-keep public class com.google.mediapipe.framework.MediaPipeException {
+  <init>(int, byte[]);
+}
+-keep class com.google.mediapipe.framework.ProtoUtil$SerializedMessage { *; }

@@ -13,7 +13,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.os.Build
 import android.os.Environment.DIRECTORY_PICTURES
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import androidx.hilt.work.HiltWorker
@@ -33,6 +32,7 @@ import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.dao.IngredientDao
 import zelgius.com.myrecipes.data.repository.dao.RecipeDao
+import zelgius.com.myrecipes.utils.Logger
 import java.io.File
 import kotlin.math.abs
 import kotlin.random.Random
@@ -70,17 +70,18 @@ open class ImageGenerationWorker @AssistedInject constructor(
             .setImageGeneratorModelDirectory(IA_MODEL_PATH)
             .build()
 
-        setForeground(createForegroundInfo(createNotification("",0, 100, true, null)))
+        setForeground(createForegroundInfo(createNotification("", 0, 100, true, null)))
 
         val recipes = recipeDao.getAllWithoutImages()
         val ingredients = ingredientDao.getAllWithoutImages()
 
-        val imageGenerator = ImageGenerator.createFromOptions(context, options)
-
-        val maxProgress = ITERATION_COUNT * (recipes.size + ingredients.size)
-
+        var imageGenerator: ImageGenerator? = null
 
         try {
+            imageGenerator = ImageGenerator.createFromOptions(context, options)
+
+            val maxProgress = ITERATION_COUNT * (recipes.size + ingredients.size)
+
             generateRecipes(recipes, imageGenerator, maxProgress)
             generateIngredients(ingredients, imageGenerator, maxProgress)
 
@@ -89,7 +90,7 @@ open class ImageGenerationWorker @AssistedInject constructor(
             e.printStackTrace()
             return Result.failure()
         } finally {
-            imageGenerator.close()
+            imageGenerator?.close()
         }
 
         return Result.success(
@@ -105,23 +106,20 @@ open class ImageGenerationWorker @AssistedInject constructor(
         maxProgress: Int,
     ) {
         recipes.forEachIndexed { index, r ->
-            Log.i(TAG, "Generating image for ${r.name}")
+            Logger.i("Generating image for ${r.name}")
+            val seed = abs(Random.nextInt())
             generate(
                 imageGenerator, context.getString(
                     R.string.recipe_prompt_generation,
-                    r.name
-                )
+                    r.name.lowercase()
+                ), seed
             ) { iteration, bitmap ->
                 val progress = ITERATION_COUNT * index + iteration
-                if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
-                    notificationManager.notify(
-                        NOTIFICATION_ID,
-                        createNotification(r.name, progress, maxProgress, false, bitmap)
-                    )
-                Log.i(TAG, "Progress $progress / $maxProgress")
+                notify(r.name, progress, maxProgress, bitmap)
+                Logger.i("Progress $progress / $maxProgress")
             }?.let {
                 val fileName = save(it, "R_${r.id}")
-                recipeDao.update(r.copy(imageURL = fileName))
+                recipeDao.update(r.copy(imageURL = fileName, seed = seed))
                 results.add(fileName)
                 setProgress(
                     Data.Builder()
@@ -141,23 +139,20 @@ open class ImageGenerationWorker @AssistedInject constructor(
         val recipeSize = maxProgress - ingredients.size * ITERATION_COUNT
 
         ingredients.forEachIndexed { index, i ->
-            Log.i(TAG, "Generating image for ${i.name}")
+            Logger.i("Generating image for ${i.name}")
+            val seed = abs(Random.nextInt())
             generate(
                 imageGenerator, context.getString(
                     R.string.ingrient_prompt_generation,
-                    i.name
-                )
+                    i.prompt?.takeIf { it.isNotBlank() } ?: i.name.lowercase()
+                ), seed
             ) { iteration, bitmap ->
                 val progress = recipeSize + index * ITERATION_COUNT + iteration
-                if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
-                    notificationManager.notify(
-                        NOTIFICATION_ID,
-                        createNotification(i.name, progress, maxProgress, false, bitmap)
-                    )
-                Log.i(TAG, "Progress $progress / $maxProgress")
+                notify(i.name, progress, maxProgress, bitmap)
+                Logger.i("Progress $progress / $maxProgress")
             }?.let {
-                val fileName = save(it, "R_${i.id}")
-                ingredientDao.update(i.copy(imageURL = fileName))
+                val fileName = save(it, "I_${i.id}")
+                ingredientDao.update(i.copy(imageURL = fileName, seed = seed))
                 results.add(fileName)
                 setProgress(
                     Data.Builder()
@@ -176,12 +171,12 @@ open class ImageGenerationWorker @AssistedInject constructor(
     ): Bitmap? {
         var bitmap: Bitmap? = null
         var displayedBmp: Bitmap? = null
-        Log.i(TAG, "Prompt: $prompt")
+        Logger.i("Prompt: $prompt")
 
         imageGenerator.setInputs(prompt, ITERATION_COUNT, seed)
 
         for (i in 0 until ITERATION_COUNT) {
-            Log.i(TAG, "Iteration $i/$ITERATION_COUNT")
+            Logger.i("Iteration $i/$ITERATION_COUNT")
             val result = imageGenerator.execute(true)
 
             bitmap = result?.generatedImage()?.let {
@@ -218,7 +213,7 @@ open class ImageGenerationWorker @AssistedInject constructor(
 
         output?.close()
 
-        Log.i(TAG, "Saved image to $targetFile")
+        Logger.i("Saved image to $targetFile")
         return targetFile.toString()
     }
 
@@ -227,7 +222,7 @@ open class ImageGenerationWorker @AssistedInject constructor(
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             ForegroundInfo(
                 NOTIFICATION_ID,
-                notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
             )
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ForegroundInfo(
@@ -266,13 +261,26 @@ open class ImageGenerationWorker @AssistedInject constructor(
         notificationManager.createNotificationChannel(mChannel)
     }
 
+    private fun notify(
+        name: String,
+        progress: Int,
+        maxProgress: Int,
+        bitmap: Bitmap?
+    ) {
+        if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+            notificationManager.notify(
+                NOTIFICATION_ID,
+                createNotification(name, progress, maxProgress, false, bitmap)
+            )
+    }
+
     companion object {
         const val IA_MODEL_PATH = "/data/local/tmp/image_generator/bins/"
         private const val NOTIFICATION_ID = 42
         private const val CHANNEL_ID = "Generation"
         private const val ITERATION_COUNT = 20
 
-        private const val TAG = "ImageGenerationWorker"
+        const val TAG = "ImageGenerationWorker"
         const val RESULT_KEY = "results"
 
 

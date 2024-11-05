@@ -8,32 +8,29 @@ import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.protobuff.RecipeProto
 import java.io.File
 
-/**
- * Represent a recipe. Can be a meal, a dessert or something else (other)
- *
- *
- * @property id Long?                                          the id of the recipe. Null if it's a new recipe
- * @property name String                                       the name of the recipe
- * @property imageURL String?                                  the imageURL -> probably a FireStore URL. Can be null
- * @property type Type                                         the type of the recipe. MEAL, DESSERT or OTHER
- * @property steps MutableList<Step>                           the list of the different steps of the recipe
- * @property ingredients MutableList<IngredientForRecipe>      the list of the ingredients used in the recipe
- * @property image File?                                       temporary file for containing the image when loaded from the device. Before being sent to Firestore
- * @constructor  Create a new recipe with no image file, no ingredients and no steps
- */
+
 @Entity(tableName = "Recipe")
 data class RecipeEntity(
     @PrimaryKey(autoGenerate = true) val id: Long? = null,
     val name: String,
     @ColumnInfo(name = "image_url") val imageURL: String? = null,
     val type: Type = Type.MEAL,
+    @ColumnInfo(name = "seed") var seed: Int? = null,
+    @ColumnInfo(name = "prompt") var prompt: String? = null,
+    @ColumnInfo(name = "generation_enabled", defaultValue = "1") var generationEnabled: Boolean = true,
     @Ignore
     val steps: MutableList<StepEntity> = mutableListOf(),
     @Ignore
-    val ingredients: MutableList<IngredientForRecipe> = mutableListOf()
+    val ingredients: MutableList<IngredientForRecipe> = mutableListOf(),
 ) {
 
-    constructor(id: Long?, name: String, imageURL: String?, type: Type) : this(id, name, imageURL, type, mutableListOf(), mutableListOf())
+    constructor(id: Long?, name: String, imageURL: String?, type: Type) : this(
+        id = id,
+        name = name,
+        imageURL = imageURL,
+        type = type,
+        steps = mutableListOf(),
+    )
 
     @Ignore
     constructor() : this(null, "", "", Type.OTHER)
@@ -58,10 +55,10 @@ data class RecipeEntity(
         if (recipe.hasImageUrl()) recipe.imageUrl else null,
         Type.valueOf(recipe.type.name)
     ) {
-        for(i in 0 until recipe.stepsCount)
+        for (i in 0 until recipe.stepsCount)
             steps.add(StepEntity(recipe.getSteps(i)))
 
-        for(i in 0 until recipe.ingredientsCount)
+        for (i in 0 until recipe.ingredientsCount)
             ingredients.add(IngredientForRecipe(recipe.getIngredients(i)))
     }
 
@@ -70,15 +67,15 @@ data class RecipeEntity(
         RecipeProto.Recipe.newBuilder()
             .setName(name)
             .setType(RecipeProto.Recipe.Type.valueOf(type.name))
-            .addAllSteps(steps.map {it.toProtoBuff()})
-            .addAllIngredients(ingredients.map {it.toProtoBuff()}).also {
-                if(imageURL != null) it.imageUrl = imageURL
+            .addAllSteps(steps.map { it.toProtoBuff() })
+            .addAllIngredients(ingredients.map { it.toProtoBuff() }).also {
+                if (imageURL != null) it.imageUrl = imageURL
             }
             .build()!!
 }
 
 
-fun RecipeEntity.Type.asModel() = when(this) {
+fun RecipeEntity.Type.asModel() = when (this) {
     RecipeEntity.Type.DESSERT -> Recipe.Type.Dessert
     RecipeEntity.Type.MEAL -> Recipe.Type.Meal
     RecipeEntity.Type.OTHER -> Recipe.Type.Other
@@ -86,9 +83,11 @@ fun RecipeEntity.Type.asModel() = when(this) {
 
 fun RecipeEntity.asModel(): Recipe {
     val steps = steps.map { it.asModel() }
-    val ingredients = ingredients.map { it.asModel(
-        step = steps.find { s -> s.id == it.refStep }
-    ) }
+    val ingredients = ingredients.map {
+        it.asModel(
+            step = steps.find { s -> s.id == it.refStep }
+        )
+    }
 
     return Recipe(
         name = name,
@@ -96,6 +95,9 @@ fun RecipeEntity.asModel(): Recipe {
         imageUrl = imageURL,
         type = type.asModel(),
         steps = steps,
-        ingredients = ingredients
+        ingredients = ingredients,
+        seed = seed,
+        prompt = prompt,
+        generationEnabled = generationEnabled
     )
 }

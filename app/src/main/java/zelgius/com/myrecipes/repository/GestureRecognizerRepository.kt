@@ -4,17 +4,18 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.os.SystemClock
-import android.util.Log
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.core.ErrorListener
 import com.google.mediapipe.tasks.core.OutputHandler
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 import dagger.hilt.android.qualifiers.ApplicationContext
+import zelgius.com.myrecipes.utils.Logger
 import java.lang.RuntimeException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,7 +43,7 @@ class GestureRecognizerRepository @Inject constructor(
     fun setup() {
         val baseOptionBuilder = BaseOptions.builder()
         baseOptionBuilder.setModelAssetPath(MP_RECOGNIZER_TASK)
-        val baseOptions = baseOptionBuilder.build()
+        val baseOptions = baseOptionBuilder.setDelegate(Delegate.GPU).build()
         val optionsBuilder =
             GestureRecognizer.GestureRecognizerOptions.builder()
                 .setBaseOptions(baseOptions)
@@ -65,7 +66,7 @@ class GestureRecognizerRepository @Inject constructor(
         val category = result.gestures().flatMap { it }.maxByOrNull { it.score() }
         if(category == null) return
 
-        Log.i("GestureRecognizerRepository", "Category: ${category.categoryName()}")
+        Logger.i( "Category: ${category.categoryName()}")
 
         val gesture = when (category.categoryName().uppercase()) {
             "THUMB_UP" -> Gesture.ThumbUp

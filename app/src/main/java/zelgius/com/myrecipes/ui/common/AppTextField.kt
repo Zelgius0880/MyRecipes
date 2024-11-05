@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -47,13 +48,14 @@ fun AppTextField(
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier,
         visualTransformation = visualTransformation,
         interactionSource = interactionSource,
+        modifier = modifier,
         enabled = enabled,
         readOnly = readOnly,
         maxLines = maxLines,
         singleLine = singleLine,
+        cursorBrush = SolidColor( MaterialTheme.colorScheme.onSurfaceVariant),
         keyboardOptions = keyboardOptions,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, textAlign = textAlign)
     ) { innerTextField ->
@@ -67,10 +69,12 @@ fun AppTextField(
             enabled = enabled,
             trailingIcon = trailingIcon,
             leadingIcon = leadingIcon,
+            colors = OutlinedTextFieldDefaults.colors(cursorColor =MaterialTheme.colorScheme.onSurfaceVariant),
             container = {
                 OutlinedTextFieldDefaults.Container(
                     enabled = enabled,
                     isError = isError,
+                    colors = OutlinedTextFieldDefaults.colors(cursorColor = MaterialTheme.colorScheme.onSurfaceVariant),
                     interactionSource = interactionSource,
                     shape = shape,
                 )
@@ -107,6 +111,7 @@ fun AppTextField(
         interactionSource = interactionSource,
         enabled = enabled,
         readOnly = readOnly,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
         keyboardOptions = keyboardOptions,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, textAlign = textAlign),
         singleLine = singleLine,
@@ -120,10 +125,12 @@ fun AppTextField(
             singleLine = singleLine,
             enabled = enabled,
             trailingIcon = trailingIcon,
+            colors = OutlinedTextFieldDefaults.colors(cursorColor = MaterialTheme.colorScheme.onSurfaceVariant),
             container = {
                 OutlinedTextFieldDefaults.Container(
                     enabled = enabled,
                     isError = isError,
+                    colors = OutlinedTextFieldDefaults.colors(cursorColor = MaterialTheme.colorScheme.onSurfaceVariant),
                     interactionSource = interactionSource,
                     shape = RoundedCornerShape(50),
                 )

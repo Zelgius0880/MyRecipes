@@ -126,6 +126,7 @@
     <string name="settings">Paramètres</string>
     <string name="ia_generation">Activer la génération d\'image par IA</string>
     <string name="ia_generation_disabled">Aucun modèle d\IA détécté. Suivez <a href="https://ai.google.dev/edge/mediapipe/solutions/vision/image_generator/android#model">ce lien</a> ajouter un modèle de génération d\'image</string>
+    <!--<string name="ingrient_prompt_generation" translatable="false">un dessin à la main de %s sur un fond uni gris, dessin</string>-->
 
     <string name="play_recipe_enable_text_reading">Activer la lecture du texte</string>
     <string name="play_recipe_enable_gesture_detection">Activer la detection de la main\n👍 pour suivant\n👎 pour precédent\n☝️ pour répéter</string>
@@ -162,4 +163,8 @@ J27oWnP4VymjwLsHxQT+K814uV+7Kt2tS5dvWAIqlsJuRBbDtqWbNfVu4JWJnHgV2P4DThR0bkEI
 CAgIAFmCaVGakz86WQEAAAMCAAAAAAAAAAAAAAAAAAAAAAAAAABQSwUGAAAAAAEAAQAuAAAAhwEA
 AAAA
     </string>
+    <string name="generate_image">Générer l\'image</string>
+    <string name="custom_prompt">Prompt personnalisé</string>
+    <string name="update_ingredient">Modifier l\'ingredient</string>
+    <string name="reset_image">Regénerer</string>
 </resources>

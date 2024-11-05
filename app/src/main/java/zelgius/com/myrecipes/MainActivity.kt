@@ -1,6 +1,5 @@
 package zelgius.com.myrecipes
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -40,8 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
@@ -50,9 +47,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.details.RecipeDetails
@@ -60,12 +54,11 @@ import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.edit.EditRecipe
 import zelgius.com.myrecipes.ui.edit.viewModel.EditRecipeViewModel
 import zelgius.com.myrecipes.ui.home.Home
+import zelgius.com.myrecipes.ui.play.PlayRecipeActivity
 import zelgius.com.myrecipes.ui.settings.Settings
 import zelgius.com.myrecipes.utils.isTwoPanes
-import zelgius.com.myrecipes.worker.WorkerRepository
 import java.net.URLDecoder
 import java.net.URLEncoder
-import javax.inject.Inject
 import kotlin.collections.listOf
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -289,7 +282,7 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-
+/*
 @HiltViewModel
 class MainViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -297,8 +290,20 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     fun startWorkerIfNeeded() {
-        viewModelScope.launch {
-            workerRepository.startIaGenerationWorker()
+        val worker = OneTimeWorkRequestBuilder<ImageGenerationWorker>()
+            .setInputData(
+                Data.Builder().build()
+            )
+            .addTag(ImageGenerationWorker.TAG)
+            .setConstraints(
+                Constraints.Builder()
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(context).apply {
+            cancelAllWorkByTag(ImageGenerationWorker.TAG)
+            enqueue(worker)
         }
     }
-}
+}*/

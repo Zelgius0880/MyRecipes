@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes
+package zelgius.com.myrecipes.ui.play
 
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
@@ -16,12 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import dagger.hilt.android.AndroidEntryPoint
+import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.ui.AppTheme
-import zelgius.com.myrecipes.ui.play.ACTION_BROADCAST_CONTROL
-import zelgius.com.myrecipes.ui.play.EXTRA_CONTROL_NEXT
-import zelgius.com.myrecipes.ui.play.EXTRA_CONTROL_PREVIOUS
-import zelgius.com.myrecipes.ui.play.EXTRA_CONTROL_TYPE
-import zelgius.com.myrecipes.ui.play.PlayRecipe
 import zelgius.com.myrecipes.ui.play.viewModel.PlayRecipeViewModel
 import zelgius.com.myrecipes.utils.findActivity
 import kotlin.getValue
@@ -42,7 +38,6 @@ class PlayRecipeActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContent {
             val context = LocalContext.current
             val pipModifier = Modifier.onGloballyPositioned { layoutCoordinates ->
@@ -108,8 +103,13 @@ class PlayRecipeActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStart() {
+        super.onStart()
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    override fun onStop() {
+        super.onStop()
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 }

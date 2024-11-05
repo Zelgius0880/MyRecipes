@@ -6,16 +6,16 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
-import org.junit.Assert.*
 import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import zelgius.com.myrecipes.data.AppDatabase
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Ingredient.Unit
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
-import zelgius.com.myrecipes.data.AppDatabase
+import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.repository.StepRepository
@@ -23,6 +23,7 @@ import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
 import zelgius.com.myrecipes.utils.DEFAULT_BASE_64
 import zelgius.com.myrecipes.utils.TestHelper
 import zelgius.com.myrecipes.utils.assertEquals
+import zelgius.com.myrecipes.worker.WorkerRepository
 import java.io.IOException
 import kotlin.random.Random
 
@@ -35,6 +36,10 @@ class SaveRecipeUseCaseTest {
     private val ingredientDao by lazy { db.ingredientDao }
 
     private val recipeRepository by lazy { RecipeRepository(recipeDao, stepDao, ingredientDao) }
+    private val workerRepository = WorkerRepository(
+        context, DataStoreRepository(
+           context
+        ))
 
     private val saveRecipeUseCase by lazy {
         SaveRecipeUseCase(
@@ -42,6 +47,7 @@ class SaveRecipeUseCaseTest {
             stepRepository = StepRepository(stepDao),
             ingredientRepository = IngredientRepository(ingredientDao),
             database = db,
+            workRepository = workerRepository
         )
     }
 

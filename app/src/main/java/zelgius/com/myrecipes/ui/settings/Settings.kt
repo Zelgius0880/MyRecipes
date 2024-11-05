@@ -1,6 +1,7 @@
 package zelgius.com.myrecipes.ui.settings
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -36,6 +40,7 @@ import zelgius.com.myrecipes.data.model.asIngredient
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.common.LinkableText
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
+import zelgius.com.myrecipes.ui.ingredients.UpdateIngredient
 import zelgius.com.myrecipes.utils.isTwoPanes
 
 @Composable
@@ -43,6 +48,9 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
     val isIAGenerationChecked by viewModel.isIAGenerationChecked.collectAsStateWithLifecycle(false)
     val isIAGenerationEnabled by viewModel.isIAGenerationEnabled.collectAsStateWithLifecycle()
     val ingredients by viewModel.ingredients.collectAsStateWithLifecycle(emptyList())
+    var selectedIngredient by remember {
+        mutableStateOf<SimpleIngredient?>(null)
+    }
 
     Settings(
         isIAGenerationChecked = isIAGenerationChecked,
@@ -50,8 +58,22 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
         onIAGenerationChanged = viewModel::setIsIAGenerationChecked,
         ingredients = ingredients,
         onDeleteIngredient = viewModel::deleteIngredient,
+        onUpdateIngredient = {
+            selectedIngredient = it
+        },
         onBack = onBack
     )
+
+    AnimatedVisibility(selectedIngredient != null) {
+        selectedIngredient?.let {
+            UpdateIngredient(
+                ingredient = it,
+                onDismiss = {
+                    selectedIngredient = null
+                }
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,7 +84,8 @@ private fun Settings(
     onIAGenerationChanged: (Boolean) -> Unit = {},
     ingredients: List<SimpleIngredient> = emptyList(),
     onDeleteIngredient: (SimpleIngredient) -> Unit = {},
-    onBack: () -> Unit = {}
+    onUpdateIngredient: (SimpleIngredient) -> Unit = {},
+    onBack: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -85,8 +108,7 @@ private fun Settings(
         LazyColumn(
             modifier = Modifier
                 .padding(it)
-                .padding(vertical = 8.dp, horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(vertical = 8.dp),
         ) {
             item {
                 IAGenerationSwitch(
@@ -99,12 +121,19 @@ private fun Settings(
             item {
                 Text(
                     text = stringResource(id = R.string.ingredients),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)
                 )
             }
 
             itemsIndexed(ingredients, key = { _, item -> item.id }) { index, item ->
-                Column(modifier = Modifier.animateItem()) {
+                Column(
+                    modifier = Modifier
+                        .animateItem()
+                        .clickable { onUpdateIngredient(item) }
+                        .padding(top = 8.dp)
+                    ,
+                ) {
                     SettingsIngredient(ingredient = item, onDeleteIngredient = onDeleteIngredient)
 
                     if (index < ingredients.lastIndex)
@@ -130,6 +159,8 @@ private fun IAGenerationSwitch(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(top = 8.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
@@ -157,12 +188,13 @@ private fun IAGenerationSwitch(
 private fun SettingsIngredient(
     ingredient: SimpleIngredient,
     modifier: Modifier = Modifier,
-    onDeleteIngredient: (SimpleIngredient) -> Unit = {}
+    onDeleteIngredient: (SimpleIngredient) -> Unit = {},
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Ingredient(
             modifier = Modifier
                 .weight(1f)
+                .padding(horizontal = 16.dp)
                 .heightIn(min = 48.dp),
             ingredient = ingredient.asIngredient(),
             text = ingredient.name
