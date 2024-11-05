@@ -13,6 +13,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import zelgius.com.myrecipes.data.AppDatabase
+import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.repository.StepRepository
@@ -21,6 +22,7 @@ import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
 import zelgius.com.myrecipes.utils.DEFAULT_BASE_64
 import zelgius.com.myrecipes.utils.TestHelper
 import zelgius.com.myrecipes.utils.assertEquals
+import zelgius.com.myrecipes.worker.WorkerRepository
 import java.io.IOException
 
 
@@ -34,6 +36,7 @@ class RestoreRecipeTest {
     private val ingredientDao by lazy { db.ingredientDao }
 
     private val recipeRepository by lazy { RecipeRepository(recipeDao, stepDao, ingredientDao) }
+    private val workerRepository = WorkerRepository(context, DataStoreRepository(context))
 
     private val saveRecipeUseCase by lazy {
         SaveRecipeUseCase(
@@ -41,6 +44,7 @@ class RestoreRecipeTest {
             stepRepository = StepRepository(stepDao),
             ingredientRepository = IngredientRepository(ingredientDao),
             database = db,
+            workRepository = workerRepository
         )
     }
 

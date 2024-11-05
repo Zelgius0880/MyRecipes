@@ -17,7 +17,6 @@ class WorkerRepository @Inject constructor(
     private val dataStoreRepository: DataStoreRepository
 ) {
 
-
     suspend fun startIaGenerationWorker(resetStatus: Boolean = false) {
         val isIaGenerationEnabled = dataStoreRepository.isIAGenerationChecked.first()
         val stillNeedToGenerate = if(resetStatus) {
@@ -31,6 +30,7 @@ class WorkerRepository @Inject constructor(
             .setInputData(
                 Data.Builder().build()
             )
+            .addTag(ImageGenerationWorker.TAG)
             .setConstraints(
                 Constraints.Builder()
                     .setRequiresCharging(true)
@@ -40,7 +40,7 @@ class WorkerRepository @Inject constructor(
             .build()
 
         WorkManager.getInstance(context).apply {
-            cancelAllWork()
+            cancelAllWorkByTag(ImageGenerationWorker.TAG)
             enqueue(worker)
         }
     }

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.twotone.Cameraswitch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
@@ -92,14 +93,16 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
             }
 
             // Request camera permissions
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                previewView.post { startCamera(previewView) }
-            } else {
-                launcher.launch(Manifest.permission.CAMERA)
+            LaunchedEffect(Unit) {
+                if (ActivityCompat.checkSelfPermission(
+                        this@VisionBarcodeReaderActivity,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    previewView.post { startCamera(previewView) }
+                } else {
+                    launcher.launch(Manifest.permission.CAMERA)
+                }
             }
 
 
@@ -116,7 +119,7 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
                         .align(TopEnd)
                         .padding(top = 16.dp, end = 16.dp),
                     onClick = {
-                        if(cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA)
+                        if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA)
                             cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
                         else
                             cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA

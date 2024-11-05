@@ -6,6 +6,7 @@ import zelgius.com.myrecipes.data.entities.RecipeIngredient
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.data.model.asEntity
 import zelgius.com.myrecipes.data.repository.dao.IngredientDao
 
@@ -113,4 +114,5 @@ class IngredientRepository(
     fun getSimpleIngredients() = dao.getSimpleIngredients().map { it.map { it.asModel() }}
 
     suspend fun deleteIngredient(id: Long) = dao.delete(id)
+    suspend fun update(ingredient: SimpleIngredient) = dao.update(ingredient.asEntity())
 }

@@ -22,6 +22,9 @@ message Recipe {
 
     repeated Step steps = 4;
     repeated Ingredient ingredients = 5;
+    optional int64 seed = 6;
+    optional string prompt = 7;
+    optional bool generationEnabled = 8;
 }
 
 message Step {
@@ -51,5 +54,7 @@ message Ingredient {
 
     required Unit unit = 6;
     optional bool isOptional = 7;
-
+    optional int64 seed = 8;
+    optional string prompt = 9;
+    optional bool generationEnabled = 10;
 }

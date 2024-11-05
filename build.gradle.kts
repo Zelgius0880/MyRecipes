@@ -7,9 +7,8 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.7.1")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-
+        classpath("com.android.tools.build:gradle:8.7.2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
         classpath("com.google.gms:google-services:4.4.2")
         classpath("com.google.protobuf:protobuf-gradle-plugin:$protobufVersion")
         classpath("com.google.android.gms:oss-licenses-plugin:0.10.6")
