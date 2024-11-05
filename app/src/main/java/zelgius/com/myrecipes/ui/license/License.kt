@@ -92,7 +92,7 @@ fun DrawIconLicense(s: List<String>, modifier: Modifier = Modifier) {
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(
                     id =
-                    when (s[0].toUpperCase(Locale.getDefault())) {
+                    when (s[0].uppercase(Locale.getDefault())) {
                         "EGG" -> R.drawable.ic_eggs
                         "FLOUR" -> R.drawable.ic_flour
                         "SUGAR" -> R.drawable.ic_suggar

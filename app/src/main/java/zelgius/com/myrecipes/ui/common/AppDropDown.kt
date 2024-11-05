@@ -15,11 +15,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -33,6 +35,13 @@ fun <T> AppDropDown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember { mutableStateOf(selectedItem) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(expanded) {
+        if(expanded)
+            keyboardController?.hide()
+    }
+
     ExposedDropdownMenuBox(
         expanded = expanded,
         modifier = modifier,
@@ -40,7 +49,7 @@ fun <T> AppDropDown(
             expanded = it
         }
     ) {
-        Box(modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable)) {
+        Box(modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)) {
             selection(selectedOption)
         }
 

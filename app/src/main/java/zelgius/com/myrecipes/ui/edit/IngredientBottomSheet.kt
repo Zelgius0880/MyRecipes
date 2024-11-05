@@ -30,9 +30,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +45,6 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,19 +54,18 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.abrv
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
+import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.string
-import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.AppDropDown
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 import java.text.DecimalFormat
 import javax.inject.Inject
 
@@ -139,7 +135,7 @@ private fun IngredientBottomSheet(
     LaunchedEffect(Unit) {
         onChangeName(null)
         name = null
-        quantity = if(showAdd) "" else decimalFormat.format(ingredient.quantity)
+        quantity = if (showAdd) "" else decimalFormat.format(ingredient.quantity)
     }
 
     Column(modifier = Modifier.padding(8.dp)) {
@@ -173,7 +169,8 @@ private fun IngredientBottomSheet(
             onClick = {
                 val q = quantity.toDoubleOrNull()
                 isQuantityError = q == null || q <= 0
-                isNameError = (name == null && ingredient.name.isEmpty()) || (name != null && name.isNullOrEmpty())
+                isNameError =
+                    (name == null && ingredient.name.isEmpty()) || (name != null && name.isNullOrEmpty())
 
                 if (!isQuantityError && !isNameError) {
                     onChanged(ingredient.copy(quantity = q!!))
@@ -398,7 +395,8 @@ class IngredientBottomSheetViewModel @Inject constructor(
 
     fun setIngredient(ingredient: Ingredient) {
         viewModelScope.launch {
-            val i = if(ingredient == Ingredient.Empty) ingredientsFlow.first().first() else ingredient
+            val i =
+                if (ingredient == Ingredient.Empty) ingredientsFlow.first().first() else ingredient
             val unit: Ingredient.Unit =
                 if (i.name != _ingredientFlow.value.name) dataStoreRepository.unit(
                     i.name

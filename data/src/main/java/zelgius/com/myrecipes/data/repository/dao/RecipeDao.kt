@@ -1,7 +1,6 @@
 package zelgius.com.myrecipes.data.repository.dao
 
 import androidx.paging.DataSource
-import androidx.paging.PagingSource
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import zelgius.com.myrecipes.data.entities.RecipeEntity
@@ -21,7 +20,7 @@ interface RecipeDao {
     @Query("SELECT * FROM recipe ORDER BY name")
     suspend fun getAll(): List<RecipeEntity>
 
-    @Query("SELECT * FROM recipe WHERE image_url IS NULL OR image_url == '' ORDER BY name")
+    @Query("SELECT * FROM recipe WHERE image_url IS NULL OR image_url == '' OR image_url = 'null' ORDER BY name")
     suspend fun getAllWithoutImages(): List<RecipeEntity>
 
     // Coroutine get

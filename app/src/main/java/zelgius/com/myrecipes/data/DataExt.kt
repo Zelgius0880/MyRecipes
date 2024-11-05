@@ -2,11 +2,12 @@ package zelgius.com.myrecipes.data
 
 import android.content.Context
 import androidx.annotation.DrawableRes
-import zelgius.com.myrecipes.data.model.Ingredient
-import java.text.DecimalFormat
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.utils.round
+import java.text.DecimalFormat
 
 
 fun Ingredient.text(context: Context, abrv: Boolean =  true): String {
@@ -37,6 +38,10 @@ fun Ingredient.text(context: Context, abrv: Boolean =  true): String {
 }
 
 val Ingredient.drawable: Int?
+    @DrawableRes
+    get() = DefaultIngredients.entries.firstOrNull { it.url == imageUrl }?.drawable
+
+val SimpleIngredient.drawable: Int?
     @DrawableRes
     get() = DefaultIngredients.entries.firstOrNull { it.url == imageUrl }?.drawable
 

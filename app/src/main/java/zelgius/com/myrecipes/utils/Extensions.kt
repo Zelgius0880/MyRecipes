@@ -1,20 +1,18 @@
 package zelgius.com.myrecipes.utils
 
 import android.content.Context
+import android.util.Log
 import android.util.TypedValue
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.viewbinding.ViewBinding
 import androidx.window.core.layout.WindowWidthSizeClass
+import zelgius.com.myrecipes.BuildConfig
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import kotlin.math.round
-
-val ViewBinding.context: Context
-    get() = root.context
 
 fun Double.round(decimals: Int): Double {
     var multiplier = 1.0
@@ -77,3 +75,22 @@ fun<T> Modifier.ifNotNull (item: T?, modifier : Modifier.(T) -> Modifier) : Modi
 @Composable
 fun isTwoPanes(): Boolean =
     currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
+
+object Logger {
+    val TAG = Logger::class.simpleName?:"Logger"
+    fun i(tag:String, message: String) {
+        if(BuildConfig.DEBUG) Log.i(tag, message)
+    }
+
+    fun i(message: String) {
+        i(TAG, message)
+    }
+
+    fun w(tag:String, message: String) {
+        if(BuildConfig.DEBUG) Log.w(tag, message)
+    }
+
+    fun w(message: String) {
+        w(TAG, message)
+    }
+}

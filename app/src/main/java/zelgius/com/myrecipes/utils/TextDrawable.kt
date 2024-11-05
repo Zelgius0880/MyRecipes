@@ -32,6 +32,7 @@ class TextDrawable(res: Resources, private val mText: CharSequence) : Drawable()
         )
     }
 
+    @Deprecated("")
     override fun getOpacity(): Int {
         return mPaint.alpha
     }

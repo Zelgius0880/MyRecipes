@@ -28,7 +28,7 @@ interface IngredientDao {
     @Query("SELECT * FROM ingredient ORDER BY name")
     suspend fun get(): List<IngredientEntity>
 
-    @Query("SELECT * FROM ingredient WHERE image_url IS NULL OR image_url = '' ORDER BY name")
+    @Query("SELECT * FROM ingredient WHERE (image_url IS NULL OR image_url = '' OR image_url = 'null') AND generation_enabled ORDER BY name")
     suspend fun getAllWithoutImages(): List<IngredientEntity>
 
     @Query("SELECT * FROM ingredient ORDER BY name")
@@ -46,12 +46,6 @@ interface IngredientDao {
     @Query("DELETE FROM RecipeIngredient WHERE ref_ingredient = :ingredientId AND ref_recipe = :recipeId")
     suspend fun deleteJoin(ingredientId: Long, recipeId: Long): Int
 
-    /**
-     * Remove all RecipeIngredient for the given recipe where ref_ingredient are not in ingredientIds
-     * @param recipeId Long             the id of the recipe
-     * @param ingredientIds LongArray   a list of ids of ingredients to keep
-     * @return Int                      The number of rows affected
-     */
     @Query("DELETE FROM RecipeIngredient WHERE id NOT IN (:ids) AND ref_recipe = :recipeId")
     suspend fun deleteJoin(recipeId: Long, vararg ids: Long): Int
 
@@ -62,7 +56,7 @@ interface IngredientDao {
     @Query("DELETE FROM Ingredient WHERE id = :id")
     suspend fun delete(id: Long): Int
 
-    @Query("SELECT DISTINCT i.id, i.name, i.image_url,  ri.ref_recipe IS NULL AS removable FROM Ingredient i " +
+    @Query("SELECT DISTINCT i.id, i.name, i.image_url, i.seed, i.prompt, i.generation_enabled, ri.ref_recipe IS NULL AS removable FROM Ingredient i " +
             "LEFT OUTER JOIN RecipeIngredient ri ON i.id = ri.ref_ingredient " +
             "ORDER BY removable DESC, i.name")
     fun getSimpleIngredients(): Flow<List<SimpleIngredientEntity>>

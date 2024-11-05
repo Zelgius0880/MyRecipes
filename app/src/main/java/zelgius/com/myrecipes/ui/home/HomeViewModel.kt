@@ -22,7 +22,7 @@ open class HomeViewModel @Inject constructor(
     private val recipeRepository: RecipeRepository,
 ) : ViewModel() {
 
-    suspend fun addRecipeFromQr(base64: String) {
+    fun addRecipeFromQr(base64: String) {
         viewModelScope.launch {
             val recipe = decodeRecipeFromQR.execute(base64)
             saveRecipeUseCase.execute(recipe)

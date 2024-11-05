@@ -8,11 +8,17 @@ data class SimpleIngredientEntity(
     val name: String,
     @ColumnInfo(name = "image_url") val imageUrl: String?,
     val removable: Boolean,
+    val seed: Int? = null,
+    val prompt: String? = null,
+    @ColumnInfo(name = "generation_enabled") val generationEnabled: Boolean = true,
 )
 
 fun SimpleIngredientEntity.asModel() = SimpleIngredient(
     id = id,
     name = name,
     imageUrl = imageUrl,
-    removable = removable
+    removable = removable,
+    seed = seed,
+    prompt = prompt,
+    generationEnabled = generationEnabled
 )

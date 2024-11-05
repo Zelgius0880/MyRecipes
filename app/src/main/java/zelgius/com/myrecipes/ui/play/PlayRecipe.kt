@@ -70,6 +70,7 @@ fun PlayRecipe(
 
     val root = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val showPreview = isGestureRecognitionChecked&& BuildConfig.DEBUG
 
     val context = LocalContext.current
     val previewView = remember {
@@ -80,7 +81,7 @@ fun PlayRecipe(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted && isGestureRecognitionChecked) {
-            viewModel.startGestureRecognition(lifecycleOwner, previewView, root.display.rotation)
+            viewModel.startGestureRecognition(lifecycleOwner, if(showPreview) previewView else null, root.display.rotation)
         }
     }
 
@@ -94,7 +95,7 @@ fun PlayRecipe(
         if(ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED){
             launcher.launch(android.Manifest.permission.CAMERA)
         } else {
-            viewModel.startGestureRecognition(lifecycleOwner, previewView, root.display.rotation)
+            viewModel.startGestureRecognition(lifecycleOwner,  if(showPreview) previewView else null, root.display.rotation)
         }
     }
 
@@ -128,7 +129,7 @@ fun PlayRecipe(
                 onBack = onBack,
             )
 
-            if(isGestureRecognitionChecked&& BuildConfig.DEBUG)
+            if(showPreview)
                 AndroidView(factory = { previewView }, modifier = Modifier.size(64.dp).align(Alignment.TopEnd))
         }
     }
