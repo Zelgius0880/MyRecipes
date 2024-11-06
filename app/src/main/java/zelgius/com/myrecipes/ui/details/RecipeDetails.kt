@@ -51,13 +51,14 @@ import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
 import zelgius.com.myrecipes.ui.home.string
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummyModel
-import zelgius.com.myrecipes.utils.isTwoPanes
+import zelgius.com.myrecipes.utils.hasNavigationRail
+import zelgius.com.myrecipes.utils.ifNotNull
 
 
 @Composable
 fun RecipeDetails(
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     viewModel: RecipeDetailsViewModel,
     navigateBack: () -> Unit = {},
     playRecipe: (recipe: Recipe) -> Unit = {},
@@ -82,7 +83,7 @@ fun RecipeDetails(
 @Composable
 private fun RecipeDetailsView(
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     navigateBack: () -> Unit = {},
     onEdit: (Recipe) -> Unit = {},
     recipe: Recipe,
@@ -90,15 +91,18 @@ private fun RecipeDetailsView(
     playRecipe: (recipe: Recipe) -> Unit = {},
 ) = with(sharedTransitionScope) {
     Scaffold(topBar = {
-        if (!isTwoPanes())
+        if (!hasNavigationRail())
             TopAppBar(title = {
                 Text(
-                    recipe.type.string(), modifier = Modifier.sharedElement(
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        state = rememberSharedContentState(
-                            key = "${recipe.id}_recipe_type"
+                    recipe.type.string(),
+                    modifier = Modifier.ifNotNull(animatedVisibilityScope) {
+                        sharedElement(
+                            animatedVisibilityScope = it,
+                            state = rememberSharedContentState(
+                                key = "${recipe.id}_recipe_type"
+                            )
                         )
-                    )
+                    }
                 )
             }, navigationIcon = {
                 IconButton(onClick = navigateBack) {
@@ -185,7 +189,7 @@ private fun RecipeDetailsView(
 @Composable
 fun RecipeDetailsHeader(
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     modifier: Modifier = Modifier,
     recipe: Recipe,
     onEdit: (Recipe) -> Unit = {},
@@ -193,12 +197,14 @@ fun RecipeDetailsHeader(
 ) = with(sharedTransitionScope) {
     Card(
         modifier = modifier
-            .sharedElement(
-                animatedVisibilityScope = animatedVisibilityScope,
-                state = rememberSharedContentState(
-                    key = "${recipe.id}_recipe_container"
+            .ifNotNull(animatedVisibilityScope) {
+                sharedElement(
+                    animatedVisibilityScope = it,
+                    state = rememberSharedContentState(
+                        key = "${recipe.id}_recipe_container"
+                    )
                 )
-            )
+            }
             .padding(top = 8.dp), shape = MaterialTheme.shapes.extraLarge
     ) {
         Row(
@@ -212,17 +218,19 @@ fun RecipeDetailsHeader(
                         recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
                     ), contentDescription = null, modifier = Modifier
                         .size(128.dp)
-                        .sharedElement(
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            state = rememberSharedContentState(key = "${recipe.id}_recipe_image")
-                        )
+                        .ifNotNull(animatedVisibilityScope) {
+                            sharedElement(
+                                animatedVisibilityScope = it,
+                                state = rememberSharedContentState(key = "${recipe.id}_recipe_image")
+                            )
+                        }
                         .clip(
                             shape = MaterialTheme.shapes.extraLarge
                         ), contentScale = ContentScale.Crop
                 )
 
 
-                if (isTwoPanes()) {
+                if (hasNavigationRail()) {
                     FilledIconButton(
                         modifier = Modifier.align(Alignment.BottomEnd),
                         onClick = { onPlay(recipe) }) {
@@ -238,15 +246,17 @@ fun RecipeDetailsHeader(
                 recipe.name, modifier = Modifier
                     .padding(16.dp)
                     .weight(1f)
-                    .sharedElement(
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        state = rememberSharedContentState(
-                            key = "${recipe.id}_recipe_name"
+                    .ifNotNull(animatedVisibilityScope) {
+                        sharedElement(
+                            animatedVisibilityScope = it,
+                            state = rememberSharedContentState(
+                                key = "${recipe.id}_recipe_name"
+                            )
                         )
-                    ), style = MaterialTheme.typography.headlineLarge
+                    }, style = MaterialTheme.typography.headlineLarge
             )
 
-            if (isTwoPanes()) {
+            if (hasNavigationRail()) {
                 IconButton(onClick = { onEdit(recipe) }) {
                     Icon(
                         imageVector = Icons.TwoTone.Edit,

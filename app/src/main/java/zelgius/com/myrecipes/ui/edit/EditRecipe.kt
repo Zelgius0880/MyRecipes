@@ -85,15 +85,20 @@ import zelgius.com.myrecipes.ui.preview.createDummyModel
 
 
 @Composable
-fun EditRecipe(viewModel: EditRecipeViewModel, navigateBack: () -> Unit = {}) {
+fun EditRecipe(
+    viewModel: EditRecipeViewModel,
+    displayBack: Boolean = true,
+    navigateBack: () -> Unit = {}
+) {
 
     val recipe by viewModel.recipeFlow.collectAsState()
     val items by viewModel.itemsFlow.collectAsState(emptyList())
     val coroutineScope = rememberCoroutineScope()
 
     EditRecipeView(recipe,
-        items,
-        navigateBack,
+        items = items,
+        navigateBack = navigateBack,
+        displayBack = displayBack,
         onNameChanged = viewModel::changeName,
         onImageUrlChanged = {
             viewModel.changeImageUrl(it.toString())
@@ -131,6 +136,7 @@ private sealed interface Action<T> {
 private fun EditRecipeView(
     recipe: Recipe,
     items: List<ListItem>,
+    displayBack: Boolean = true,
     navigateBack: () -> Unit = {},
     onNameChanged: (String) -> Unit = {},
     onImageUrlChanged: (Uri) -> Unit = {},
@@ -147,11 +153,13 @@ private fun EditRecipeView(
                     else stringResource(R.string.edit_recipe)
                 )
             }, navigationIcon = {
-                IconButton(onClick = navigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.TwoTone.ArrowBack, contentDescription = ""
-                    )
-                }
+                if (displayBack)
+                    IconButton(onClick = navigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
+                            contentDescription = ""
+                        )
+                    }
             }, actions = {
                 IconButton(onClick = onSaved) {
                     Icon(

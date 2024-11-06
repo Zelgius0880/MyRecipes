@@ -4,9 +4,10 @@ import android.content.Context
 import android.util.Log
 import android.util.TypedValue
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.window.core.layout.WindowWidthSizeClass
 import zelgius.com.myrecipes.BuildConfig
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -63,8 +64,8 @@ fun Modifier.conditional(condition : Boolean, modifier : Modifier.() -> Modifier
     }
 }
 
-
-fun<T> Modifier.ifNotNull (item: T?, modifier : Modifier.(T) -> Modifier) : Modifier {
+@Composable
+fun<T> Modifier.ifNotNull (item: T?, modifier : @Composable Modifier.(T) -> Modifier) : Modifier {
     return if (item != null)  {
         then(modifier(item))
     } else {
@@ -73,8 +74,12 @@ fun<T> Modifier.ifNotNull (item: T?, modifier : Modifier.(T) -> Modifier) : Modi
 }
 
 @Composable
-fun isTwoPanes(): Boolean =
-    currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
+fun hasNavigationRail(): Boolean =
+    NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo()) == NavigationSuiteType.NavigationRail
+
+@Composable
+fun hasNavigationBar(): Boolean =
+    NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo()) == NavigationSuiteType.NavigationBar
 
 object Logger {
     val TAG = Logger::class.simpleName?:"Logger"

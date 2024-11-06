@@ -3,45 +3,45 @@
 package zelgius.com.myrecipes.ui.home
 
 import android.content.Intent
+import android.os.Parcelable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BakeryDining
+import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.LunchDining
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.twotone.Add
+import androidx.compose.material.icons.twotone.BakeryDining
+import androidx.compose.material.icons.twotone.Cake
+import androidx.compose.material.icons.twotone.LunchDining
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -49,17 +49,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.VisionBarcodeReaderActivity
 import zelgius.com.myrecipes.data.model.Recipe
@@ -67,18 +63,25 @@ import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.common.recipe.RecipeList
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummyModel
-import zelgius.com.myrecipes.utils.isTwoPanes
+import zelgius.com.myrecipes.utils.hasNavigationBar
+import zelgius.com.myrecipes.utils.hasNavigationRail
 
-val tabs = listOf(Recipe.Type.Meal, Recipe.Type.Dessert, Recipe.Type.Other)
+val tabs = listOf(
+    HomeNavigation.Recipe(Recipe.Type.Meal),
+    HomeNavigation.Recipe(Recipe.Type.Dessert),
+    HomeNavigation.Recipe(Recipe.Type.Other),
+)
 
 @Composable
 fun Home(
-    viewModel: HomeViewModel = hiltViewModel(),
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
-    onTypeChanged: (Recipe.Type) -> Unit = {},
+    modifier: Modifier = Modifier,
+    selectedItem: HomeNavigation = tabs.first(),
+    onNavigate: (HomeNavigation) -> Unit = {},
     onSettingsClicked: () -> Unit,
     onClick: (Recipe?) -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -94,13 +97,15 @@ fun Home(
         }
 
     HomeView(
+        modifier = modifier,
         sharedTransitionScope = sharedTransitionScope,
         animatedVisibilityScope = animatedVisibilityScope,
         snackbarHostState = snackbarHostState,
         pageMeals = viewModel.mealsPage,
         pageDesserts = viewModel.dessertPage,
         pageOther = viewModel.otherPage,
-        onTypeChanged = onTypeChanged,
+        onNavigate = onNavigate,
+        selectedItem = selectedItem,
         onClick = onClick,
         onScanClicked = {
             scanQrLauncher.launch(Intent(context, VisionBarcodeReaderActivity::class.java))
@@ -120,13 +125,15 @@ fun Home(
 private fun HomeView(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
+    modifier: Modifier = Modifier,
+    selectedItem: HomeNavigation = tabs.first(),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onClick: (Recipe?) -> Unit = {},
     onRemove: (Recipe) -> Flow<Recipe> = { emptyFlow() },
     onRestore: (Recipe) -> Unit = {},
     onScanClicked: () -> Unit = {},
     onSettingsClicked: () -> Unit = {},
-    onTypeChanged: (Recipe.Type) -> Unit = {},
+    onNavigate: (HomeNavigation) -> Unit = {},
     pageMeals: Flow<PagingData<Recipe>>,
     pageDesserts: Flow<PagingData<Recipe>>,
     pageOther: Flow<PagingData<Recipe>>,
@@ -150,153 +157,202 @@ private fun HomeView(
         }
     }
 
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
-        topBar = {
-            if (!isTwoPanes())
-                TopAppBar(
-                    title = { Text(text = stringResource(id = R.string.recipe_list)) },
-                    actions = {
-                        IconButton(onClick = onScanClicked) {
-                            Icon(
-                                Icons.Filled.QrCodeScanner,
-                                modifier = Modifier.padding(8.dp),
-                                contentDescription = stringResource(
-                                    id = R.string.scan_recipe,
-                                )
-                            )
-                        }
+    val hasNavigationRail = hasNavigationRail()
 
-                        IconButton(onClick = onSettingsClicked) {
-                            Icon(
-                                Icons.TwoTone.Settings,
-                                modifier = Modifier.padding(8.dp),
-                                contentDescription = stringResource(
-                                    id = R.string.settings,
-                                )
-                            )
+    NavigationSuiteScaffold(
+        modifier = modifier,
+        navigationSuiteItems = {
+            if (hasNavigationRail) {
+                item(
+                    icon = {
+                        FloatingActionButton(
+                            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
+                            onClick = {
+                                onClick(null)
+                            }) {
+                            Icon(Icons.TwoTone.Add, "Add")
                         }
+                    },
+                    selected = false,
+                    enabled = false,
+                    alwaysShowLabel = true,
+                    onClick = {
+                        onClick(null)
                     }
                 )
-        },
-        floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End) {
-                if (isTwoPanes()) {
-                    SmallFloatingActionButton(
-                        modifier = Modifier.padding(bottom = 4.dp),
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        onClick = {
-                            onScanClicked()
-                        }) {
+
+                spacerItem()
+            }
+
+            tabs.forEach {
+                item(
+                    icon = {
+                        AnimatedContent(it == selectedItem) { selected ->
+                            Icon(
+                                it.icon(selected),
+                                contentDescription = it.string()
+                            )
+                        }
+                    },
+                    label = { Text(it.string()) },
+                    selected = it == selectedItem,
+                    onClick = {
+                        onNavigate(it)
+                    }
+                )
+            }
+
+            if (hasNavigationRail) {
+                spacerItem()
+
+                item(
+                    icon = {
+                        Icon(
+                            Icons.TwoTone.Settings,
+                            modifier = Modifier.padding(8.dp),
+                            contentDescription = stringResource(
+                                id = R.string.settings,
+                            )
+                        )
+                    },
+                    selected = false,
+                    label = { Text(stringResource(id = R.string.settings)) },
+                    onClick = onSettingsClicked
+                )
+
+                item(
+                    icon = {
                         Icon(
                             Icons.Filled.QrCodeScanner,
-                            contentDescription = stringResource(
-                                id = R.string.scan_recipe,
-                            )
+                            contentDescription = stringResource(R.string.scan_recipe)
                         )
+                    },
+                    selected = false,
+                    label = { Text(stringResource(id = R.string.scan_recipe)) },
+                    onClick = {
+                        onScanClicked()
                     }
-                }
+                )
 
-                FloatingActionButton(onClick = {
-                    onClick(null)
-                }) {
-                    Icon(Icons.TwoTone.Add, "Add")
-                }
             }
-
         },
-        content = { padding ->
-            val navController = rememberNavController()
-            var selectedTabIndex by rememberSaveable {
-                mutableIntStateOf(0)
-            }
-            var oldTabIndex by remember {
-                mutableIntStateOf(0)
-            }
-            Column(modifier = Modifier.padding(padding)) {
-                TabRow(selectedTabIndex = selectedTabIndex, indicator = {
-                    TabRowDefaults.PrimaryIndicator(Modifier.tabIndicatorOffset(it[selectedTabIndex]))
-                }, divider = {}) {
-                    tabs.forEachIndexed { index, tab ->
-                        Tab(selected = index == selectedTabIndex, onClick = {
-                            if (selectedTabIndex == index) return@Tab
+    ) {
 
-                            oldTabIndex = selectedTabIndex
-                            selectedTabIndex = index
-
-                            onTypeChanged(tab)
-                            navController.navigate(tab.route) {
-                                popUpTo(0)
+        Scaffold(
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
+            },
+            topBar = {
+                if (hasNavigationBar())
+                    TopAppBar(
+                        title = { Text(text = stringResource(id = R.string.recipe_list)) },
+                        actions = {
+                            IconButton(onClick = onScanClicked) {
+                                Icon(
+                                    Icons.Filled.QrCodeScanner,
+                                    modifier = Modifier.padding(8.dp),
+                                    contentDescription = stringResource(
+                                        id = R.string.scan_recipe,
+                                    )
+                                )
                             }
-                        }) {
-                            Text(
-                                text = tab.string(),
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
 
-                NavHost(navController = navController, startDestination = "meals") {
-                    fun NavGraphBuilder.tabComposable(
-                        route: String,
-                        content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
-                    ) = composable(
-                        route = route,
-                        content = content,
-                        enterTransition = {
-                            slideIntoContainer(
-                                if (oldTabIndex < selectedTabIndex) AnimatedContentTransitionScope.SlideDirection.End
-                                else AnimatedContentTransitionScope.SlideDirection.Start,
-                                animationSpec = tween(500)
-                            )
-                        },
-                        exitTransition = {
-                            slideOutOfContainer(
-                                if (oldTabIndex < selectedTabIndex) AnimatedContentTransitionScope.SlideDirection.End
-                                else AnimatedContentTransitionScope.SlideDirection.Start,
-                                animationSpec = tween(500)
-                            )
+                            IconButton(onClick = onSettingsClicked) {
+                                Icon(
+                                    Icons.TwoTone.Settings,
+                                    modifier = Modifier.padding(8.dp),
+                                    contentDescription = stringResource(
+                                        id = R.string.settings,
+                                    )
+                                )
+                            }
                         }
                     )
-
-                    tabComposable("meals") {
-                        RecipeList(
-                            onClick = onClick,
-                            onRemove = removeRecipe,
-                            list = pageMeals,
-                            modifier = Modifier.fillMaxSize(),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            sharedTransitionScope = sharedTransitionScope
-                        )
-                    }
-                    tabComposable("desserts") {
-                        RecipeList(
-                            onClick = onClick,
-                            onRemove = removeRecipe,
-                            list = pageDesserts,
-                            modifier = Modifier.fillMaxSize(),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            sharedTransitionScope = sharedTransitionScope
-                        )
-                    }
-                    tabComposable("other") {
-                        RecipeList(
-                            onClick = onClick,
-                            onRemove = removeRecipe,
-                            list = pageOther,
-                            modifier = Modifier.fillMaxSize(),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            sharedTransitionScope = sharedTransitionScope
-                        )
-                    }
+            },
+            floatingActionButton = {
+                Column(horizontalAlignment = Alignment.End) {
+                    if (hasNavigationBar())
+                        FloatingActionButton(onClick = {
+                            onClick(null)
+                        }) {
+                            Icon(Icons.TwoTone.Add, "Add")
+                        }
                 }
+
+            },
+            content = { padding ->
+
+                val selectedType = (selectedItem as? HomeNavigation.Recipe)?.type
+                RecipeList(
+                    onClick = onClick,
+                    onRemove = removeRecipe,
+                    list = when (selectedType) {
+                        Recipe.Type.Meal -> pageMeals
+                        Recipe.Type.Dessert -> pageDesserts
+                        Recipe.Type.Other -> pageOther
+                        else -> emptyFlow()
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    sharedTransitionScope = sharedTransitionScope
+                )
             }
-        }
+        )
+    }
+}
+
+private fun NavigationSuiteScope.spacerItem() {
+    item(
+        icon = {},
+        selected = false,
+        alwaysShowLabel = true,
+        enabled = false,
+        label = { Spacer(modifier = Modifier.height(32.dp)) },
+        onClick = {}
     )
 }
+
+
+@Composable
+fun Recipe.Type.string() = stringResource(
+    id = when (this) {
+        Recipe.Type.Dessert -> R.string.dessert
+        Recipe.Type.Meal -> R.string.meal
+        Recipe.Type.Other -> R.string.other
+    }
+)
+
+
+sealed interface HomeNavigation : Parcelable{
+
+    @Parcelize
+    object Settings : HomeNavigation
+
+    @Parcelize
+    data class Recipe(val type: Recipe.Type) : HomeNavigation
+}
+
+@Composable
+fun HomeNavigation.string() = when (this) {
+    HomeNavigation.Settings -> stringResource(id = R.string.settings)
+    is HomeNavigation.Recipe -> type.string()
+}
+
+fun HomeNavigation.Recipe.icon(selected: Boolean) = if (selected)
+    when (type) {
+        Recipe.Type.Dessert -> Icons.Filled.Cake
+        Recipe.Type.Meal -> Icons.Filled.LunchDining
+        Recipe.Type.Other -> Icons.Filled.BakeryDining
+    }
+else
+    when (type) {
+        Recipe.Type.Dessert -> Icons.TwoTone.Cake
+        Recipe.Type.Meal -> Icons.TwoTone.LunchDining
+        Recipe.Type.Other -> Icons.TwoTone.BakeryDining
+    }
+
 
 @Composable
 @PreviewScreenSizes
@@ -320,19 +376,3 @@ fun HomePreview() {
         }
     }
 }
-
-@Composable
-fun Recipe.Type.string() = stringResource(
-    id = when (this) {
-        Recipe.Type.Dessert -> R.string.dessert
-        Recipe.Type.Meal -> R.string.meal
-        Recipe.Type.Other -> R.string.other
-    }
-)
-
-val Recipe.Type.route
-    get() = when (this) {
-        Recipe.Type.Meal -> "meals"
-        Recipe.Type.Dessert -> "desserts"
-        Recipe.Type.Other -> "other"
-    }
