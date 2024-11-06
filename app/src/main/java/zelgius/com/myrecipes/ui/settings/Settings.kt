@@ -41,7 +41,7 @@ import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.common.LinkableText
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.ingredients.UpdateIngredient
-import zelgius.com.myrecipes.utils.isTwoPanes
+import zelgius.com.myrecipes.utils.hasNavigationRail
 
 @Composable
 fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit) {
@@ -93,7 +93,7 @@ private fun Settings(
                 title = { Text(text = stringResource(id = R.string.settings)) },
                 navigationIcon = {
 
-                    if (!isTwoPanes())
+                    if (!hasNavigationRail())
                         IconButton(onClick = onBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,

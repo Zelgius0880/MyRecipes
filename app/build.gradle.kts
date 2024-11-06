@@ -9,6 +9,7 @@ plugins {
     id("com.google.firebase.crashlytics")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("kotlin-parcelize")
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
 }
 
@@ -60,9 +61,9 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             isDebuggable = false
-            //isShrinkResources = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -208,10 +209,12 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
+
     implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha06")
     implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha06")
     implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha06")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.1")
+
 
 
     // Mediapipe

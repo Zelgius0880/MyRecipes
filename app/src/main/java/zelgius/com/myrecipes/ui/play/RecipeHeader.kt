@@ -36,7 +36,7 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.ui.common.IconSwitch
 import zelgius.com.myrecipes.ui.preview.createDummyModel
-import zelgius.com.myrecipes.utils.isTwoPanes
+import zelgius.com.myrecipes.utils.hasNavigationRail
 
 
 @Composable
@@ -49,7 +49,7 @@ fun RecipeHeader(
     isGestureDetectionError: Boolean = false,
     onGestureDetectionChecked: (checked: Boolean) -> Unit = {},
 ) {
-    if (isTwoPanes()) RecipeHeaderTwoPanes(
+    if (hasNavigationRail()) RecipeHeaderTwoPanes(
         recipe,
         modifier,
         isTextReadingChecked,

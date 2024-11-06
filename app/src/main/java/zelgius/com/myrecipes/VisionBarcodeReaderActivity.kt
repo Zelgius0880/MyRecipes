@@ -117,12 +117,12 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
                 SmallFloatingActionButton(
                     modifier = Modifier
                         .align(TopEnd)
-                        .padding(top = 16.dp, end = 16.dp),
+                        .padding(top = 32.dp, end = 16.dp),
                     onClick = {
-                        if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA)
-                            cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                        cameraSelector = if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA)
+                            CameraSelector.DEFAULT_FRONT_CAMERA
                         else
-                            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                            CameraSelector.DEFAULT_BACK_CAMERA
 
                         startCamera(previewView)
                     }
@@ -146,7 +146,7 @@ class VisionBarcodeReaderActivity : AppCompatActivity() {
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
+                    it.surfaceProvider = previewView.surfaceProvider
                 }
 
             // Select back camera as a default
