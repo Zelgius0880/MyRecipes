@@ -18,21 +18,26 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material.icons.twotone.PlayArrow
+import androidx.compose.material.icons.twotone.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,10 +53,9 @@ import zelgius.com.myrecipes.ui.common.recipe.IngredientChip
 import zelgius.com.myrecipes.ui.common.recipe.Step
 import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
-import zelgius.com.myrecipes.ui.home.string
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummyModel
-import zelgius.com.myrecipes.utils.hasNavigationRail
+import zelgius.com.myrecipes.ui.share.ShareDialog
 import zelgius.com.myrecipes.utils.ifNotNull
 
 
@@ -60,6 +64,7 @@ fun RecipeDetails(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope?,
     viewModel: RecipeDetailsViewModel,
+    isTwoPanes: Boolean = false,
     navigateBack: () -> Unit = {},
     playRecipe: (recipe: Recipe) -> Unit = {},
     onEdit: (Recipe) -> Unit = {}
@@ -71,6 +76,7 @@ fun RecipeDetails(
         RecipeDetailsView(
             sharedTransitionScope,
             animatedVisibilityScope,
+            isTwoPanes,
             navigateBack,
             onEdit,
             it,
@@ -84,49 +90,52 @@ fun RecipeDetails(
 private fun RecipeDetailsView(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope?,
+    isTwoPanes: Boolean = false,
     navigateBack: () -> Unit = {},
     onEdit: (Recipe) -> Unit = {},
     recipe: Recipe,
     items: List<StepItem>,
     playRecipe: (recipe: Recipe) -> Unit = {},
 ) = with(sharedTransitionScope) {
+    var showShareDialog: Boolean by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(topBar = {
-        if (!hasNavigationRail())
-            TopAppBar(title = {
-                Text(
-                    recipe.type.string(),
-                    modifier = Modifier.ifNotNull(animatedVisibilityScope) {
-                        sharedElement(
-                            animatedVisibilityScope = it,
-                            state = rememberSharedContentState(
-                                key = "${recipe.id}_recipe_type"
-                            )
+        TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+            title = {},
+            navigationIcon = {
+                if (!isTwoPanes)
+                    IconButton(onClick = navigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
+                            contentDescription = ""
                         )
                     }
-                )
-            }, navigationIcon = {
-                IconButton(onClick = navigateBack) {
+            },
+            actions = {
+                IconButton(onClick = { showShareDialog = true }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
+                        imageVector = Icons.TwoTone.Share,
                         contentDescription = ""
                     )
                 }
-            },
-                actions = {
-                    IconButton(onClick = { onEdit(recipe) }) {
-                        Icon(
-                            imageVector = Icons.TwoTone.Edit,
-                            contentDescription = ""
-                        )
-                    }
-                    IconButton(onClick = { playRecipe(recipe) }) {
-                        Icon(
-                            imageVector = Icons.TwoTone.PlayArrow,
-                            contentDescription = ""
-                        )
-                    }
+
+                IconButton(onClick = { onEdit(recipe) }) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Edit,
+                        contentDescription = ""
+                    )
                 }
-            )
+                IconButton(onClick = { playRecipe(recipe) }) {
+                    Icon(
+                        imageVector = Icons.TwoTone.PlayArrow,
+                        contentDescription = ""
+                    )
+                }
+            }
+        )
     }, content = { padding ->
         ExpandableList(
             reversed = true,
@@ -183,6 +192,10 @@ private fun RecipeDetailsView(
             },
         )
     })
+
+    if(showShareDialog) ShareDialog(recipe) {
+        showShareDialog = false
+    }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -228,18 +241,6 @@ fun RecipeDetailsHeader(
                             shape = MaterialTheme.shapes.extraLarge
                         ), contentScale = ContentScale.Crop
                 )
-
-
-                if (hasNavigationRail()) {
-                    FilledIconButton(
-                        modifier = Modifier.align(Alignment.BottomEnd),
-                        onClick = { onPlay(recipe) }) {
-                        Icon(
-                            imageVector = Icons.TwoTone.PlayArrow,
-                            contentDescription = ""
-                        )
-                    }
-                }
             }
 
             Text(
@@ -255,15 +256,6 @@ fun RecipeDetailsHeader(
                         )
                     }, style = MaterialTheme.typography.headlineLarge
             )
-
-            if (hasNavigationRail()) {
-                IconButton(onClick = { onEdit(recipe) }) {
-                    Icon(
-                        imageVector = Icons.TwoTone.Edit,
-                        contentDescription = ""
-                    )
-                }
-            }
         }
     }
 }

@@ -10,6 +10,7 @@ import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.worker.ImageGenerationWorker
+import zelgius.com.myrecipes.worker.WorkerRepository
 import javax.inject.Inject
 
 
@@ -17,6 +18,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val ingredientRepository: IngredientRepository,
+    private val workRepository: WorkerRepository
 ) : ViewModel() {
     private val _isIAGenerationEnabled = MutableStateFlow(false)
     val isIAGenerationEnabled = _isIAGenerationEnabled.asStateFlow()
@@ -31,6 +33,7 @@ class SettingsViewModel @Inject constructor(
     fun setIsIAGenerationChecked(checked: Boolean) {
         viewModelScope.launch {
             dataStoreRepository.setIAGenerationChecked(checked)
+            if(checked) workRepository.startIaGenerationWorker(true)
         }
     }
 

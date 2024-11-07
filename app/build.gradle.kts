@@ -28,14 +28,14 @@ android {
 
     defaultConfig {
         applicationId = "zelgius.com.myrecipes"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 35
         versionCode = 8
         versionName = "2.0-beta03"
         testInstrumentationRunner = "zelgius.com.myrecipes.utils.HiltTestRunner"
 
         ksp {
-            arg("room.schemaLocation" , "$projectDir/schemas")
+            arg("room.schemaLocation", "$projectDir/schemas")
         }
     }
 
@@ -187,8 +187,9 @@ dependencies {
 
     //Other
     implementation("com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:1.0.0")
-    implementation("com.github.kenglxn.QRGen:android:2.6.0")
+    implementation("com.google.zxing:core:3.5.3")
     implementation("com.google.android.gms:play-services-oss-licenses:17.1.0")
+    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2")
 
     //Worker
     implementation("androidx.work:work-runtime-ktx:$workVersion")
@@ -214,7 +215,6 @@ dependencies {
     implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha06")
     implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha06")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.1")
-
 
 
     // Mediapipe

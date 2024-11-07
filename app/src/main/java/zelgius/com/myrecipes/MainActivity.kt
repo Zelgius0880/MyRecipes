@@ -18,6 +18,8 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
@@ -158,14 +160,16 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     private fun NoSelection() {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Text(
-                "Nothing to display",
-                modifier = Modifier.align(Alignment.Center)
-            )
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                Text(
+                    "Nothing to display",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
     }
 
@@ -186,6 +190,7 @@ class MainActivity : AppCompatActivity() {
                 route = "details",
             ) {
                 RecipeDetails(animatedVisibilityScope = animatedVisibilityScope,
+                    isTwoPanes = navigator.scaffoldValue.secondary != PaneAdaptedValue.Hidden,
                     sharedTransitionScope = sharedTransitionScope,
                     navigateBack = {
                         lifecycleScope.launch {
