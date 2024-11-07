@@ -15,13 +15,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
 import zelgius.com.myrecipes.worker.DownloadImageWorker
 
@@ -69,6 +68,10 @@ class EditRecipeViewModel @AssistedInject constructor(
 
     fun changeImageUrl(imageUrl: String) {
         _recipeFlow.value = _recipeFlow.value.copy(imageUrl = imageUrl)
+    }
+
+    fun changeType(type: Recipe.Type) {
+        _recipeFlow.value = _recipeFlow.value.copy(type = type)
     }
 
     fun addStep(newStep: StepItem) {

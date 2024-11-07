@@ -167,4 +167,5 @@ AAAA
     <string name="custom_prompt">Prompt personnalisé</string>
     <string name="update_ingredient">Modifier l\'ingredient</string>
     <string name="reset_image">Regénerer</string>
+    <string name="type">Type</string>
 </resources>

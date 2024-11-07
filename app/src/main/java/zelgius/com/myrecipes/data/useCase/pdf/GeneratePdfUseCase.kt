@@ -1,4 +1,4 @@
-package zelgius.com.myrecipes.utils
+package zelgius.com.myrecipes.data.useCase.pdf
 
 import TextDrawable
 import android.content.Context
@@ -8,40 +8,45 @@ import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
-import android.util.Base64
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withTranslation
 import androidx.core.net.toUri
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.glxn.qrgen.android.QRCode
 import zelgius.com.myrecipes.R
-import zelgius.com.myrecipes.data.entities.IngredientForRecipe
-import zelgius.com.myrecipes.data.entities.RecipeEntity
-import zelgius.com.myrecipes.data.entities.StepEntity
-import zelgius.com.myrecipes.data.entities.asModel
+import zelgius.com.myrecipes.data.model.Ingredient
+import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.text
-import zelgius.com.myrecipes.utils.Utils.drawText
-import zelgius.com.myrecipes.utils.Utils.scaleCenterCrop
-import zelgius.com.myrecipes.utils.Utils.zipBytes
+import zelgius.com.myrecipes.data.useCase.GenerateQrCodeUseCase
+import zelgius.com.myrecipes.utils.UiUtils
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import javax.inject.Inject
 import kotlin.math.ceil
 import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 
-class PdfGenerator(val context: Context) {
+class GeneratePdfUseCase @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val recipeRepository: RecipeRepository
+) {
     companion object {
         const val A4_WIDTH = 4 * 595
         const val A4_HEIGHT = 4 * 842
+
+        private const val INGREDIENT_TEXT_SIZE = 48f
+        private const val STEP_TEXT_SIZE = 72f
+
     }
 
     private var pageNumber: Int = 0
@@ -56,18 +61,21 @@ class PdfGenerator(val context: Context) {
     private val paint = Paint()
 
     private val alpha = 0.6f
-    suspend fun createPdf(recipe: RecipeEntity, uri: Uri) =
+    suspend fun execute(recipe: Recipe, outputStream: OutputStream) =
         withContext(Dispatchers.IO) {
             drawRecipe(recipe)
             // write the document content
-            val output = context.contentResolver.openOutputStream(uri)!!
+            val output = ByteArrayOutputStream()
             createFile(document, output)
             document.close()
 
-            uri
+            outputStream.write(output.toByteArray())
+            outputStream.flush()
+            outputStream.close()
+            output.close()
         }
 
-    private fun drawRecipe(recipe: RecipeEntity) {
+    private suspend fun drawRecipe(recipe: Recipe) {
         pageNumber = 1
         pageInfo = PdfDocument.PageInfo.Builder(A4_WIDTH, A4_HEIGHT, pageNumber).create()
         document = PdfDocument()
@@ -89,11 +97,11 @@ class PdfGenerator(val context: Context) {
         textPaint.apply {
             reset()
             color = context.getColor(R.color.md_black_1000)
-            textSize = 48f
+            textSize = INGREDIENT_TEXT_SIZE
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         }
 
-        drawText(
+        Utils.drawText(
             canvas,
             linePosition,
             textPaint,
@@ -117,8 +125,6 @@ class PdfGenerator(val context: Context) {
 
         recipe.steps.forEach {
             linePosition += 100
-            //drawSeparator(margin = 700f)
-            //linePosition += 100
 
             drawStep(
                 it,
@@ -130,7 +136,7 @@ class PdfGenerator(val context: Context) {
         document.finishPage(page)
     }
 
-    suspend fun createPdf(recipes: List<RecipeEntity>, uri: Uri) =
+    suspend fun createPdf(recipes: List<Recipe>, uri: Uri) =
         withContext(Dispatchers.IO) {
             val zipOut = ZipOutputStream(context.contentResolver.openOutputStream(uri)!!)
             recipes.forEach {
@@ -151,10 +157,10 @@ class PdfGenerator(val context: Context) {
      * @param recipe    Recipe the targeted recipe
      * @return Int      Return the line position reaches after the title
      */
-    private fun drawTitle(recipe: RecipeEntity): Int {
+    private fun drawTitle(recipe: Recipe): Int {
 
-        val bmp = scaleCenterCrop(
-            recipe.imageURL?.toUri()?.let {
+        val bmp = Utils.scaleCenterCrop(
+            recipe.imageUrl?.toUri()?.let {
                 if (it.scheme == "content")
                     BitmapFactory.decodeStream(context.contentResolver.openInputStream(it))
                 else null
@@ -176,7 +182,7 @@ class PdfGenerator(val context: Context) {
 
         linePosition = max(
             linePosition + bmp.height,
-            drawText(canvas, linePosition, textPaint, recipe.name, 200 + bmp.width + 100)
+            Utils.drawText(canvas, linePosition, textPaint, recipe.name, 200 + bmp.width + 100)
         )
 
         return linePosition
@@ -221,15 +227,15 @@ class PdfGenerator(val context: Context) {
      * @return Int                      linePosition += max(image.height, text.height)
      */
     private fun drawIngredient(
-        item: IngredientForRecipe,
+        item: Ingredient,
         maxWidth: Int = A4_WIDTH,
         margin: Int = 200
     ): Int {
 
         val width = 100
 
-        val bmp = scaleCenterCrop(
-            UiUtils.getDrawableForImageView(context, item.asModel(), padding = 6f)
+        val bmp = Utils.scaleCenterCrop(
+            UiUtils.getDrawableForImageView(context, item, padding = 6f, color = context.getColor(R.color.md_blue_grey_700))
                 .toBitmap(width, width),
             width,
             width
@@ -238,20 +244,20 @@ class PdfGenerator(val context: Context) {
         textPaint.apply {
             reset()
             color = context.getColor(R.color.md_black_1000)
-            textSize = 48f
+            textSize = INGREDIENT_TEXT_SIZE
 
             if (item.optional == true || item.step?.optional == true)
-                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+                alpha = (this@GeneratePdfUseCase.alpha * 255).roundToInt()
         }
 
         paint.apply {
             reset()
 
             if (item.optional == true || item.step?.optional == true)
-                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+                alpha = (this@GeneratePdfUseCase.alpha * 255).roundToInt()
         }
 
-        val text = item.asModel().text(context)
+        val text = item.text(context)
 
         val builder = StaticLayout.Builder.obtain(
             text,
@@ -269,8 +275,8 @@ class PdfGenerator(val context: Context) {
         }
 
         if (staticLayout.height > bmp.height) {
-            drawText(
-                canvas, linePosition, textPaint, item.asModel().text(context),
+            Utils.drawText(
+                canvas, linePosition, textPaint, item.text(context),
                 margin + 100 + bmp.width
             )
 
@@ -283,11 +289,11 @@ class PdfGenerator(val context: Context) {
         } else {
             canvas.drawBitmap(bmp, margin.toFloat(), linePosition.toFloat(), paint)
 
-            drawText(
+            Utils.drawText(
                 canvas,
                 linePosition + bmp.height / 2 - staticLayout.height / 2,
                 textPaint,
-                item.asModel().text(context),
+                item.text(context),
                 margin + 100 + bmp.width
             )
         }
@@ -298,9 +304,9 @@ class PdfGenerator(val context: Context) {
     }
 
 
-    private fun drawStep(step: StepEntity, list: List<IngredientForRecipe>): Int {
+    private fun drawStep(step: Step, list: List<Ingredient>): Int {
         val width = 200
-        val bmp = scaleCenterCrop(
+        val bmp = Utils.scaleCenterCrop(
             TextDrawable(
                 context.resources,
                 "${step.order}",
@@ -316,7 +322,7 @@ class PdfGenerator(val context: Context) {
         paint.apply {
             reset()
             if (step.optional)
-                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+                alpha = (this@GeneratePdfUseCase.alpha * 255).roundToInt()
         }
         canvas.drawBitmap(bmp, margin, linePosition.toFloat(), paint)
 
@@ -372,10 +378,10 @@ class PdfGenerator(val context: Context) {
         textPaint.apply {
             reset()
             color = context.getColor(R.color.md_black_1000)
-            textSize = 72f
+            textSize = STEP_TEXT_SIZE
 
             if (step.optional)
-                alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+                alpha = (this@GeneratePdfUseCase.alpha * 255).roundToInt()
         }
 
         //linePosition = tempPosition
@@ -387,10 +393,10 @@ class PdfGenerator(val context: Context) {
             paint = textPaint.apply {
                 reset()
                 color = context.getColor(R.color.md_black_1000)
-                textSize = 72f
+                textSize = STEP_TEXT_SIZE
 
                 if (step.optional)
-                    alpha = (this@PdfGenerator.alpha * 255).roundToInt()
+                    alpha = (this@GeneratePdfUseCase.alpha * 255).roundToInt()
             }
         )
 
@@ -415,7 +421,7 @@ class PdfGenerator(val context: Context) {
             textPaint.apply {
                 reset()
                 color = context.getColor(R.color.md_black_1000)
-                textSize = 72f
+                textSize = STEP_TEXT_SIZE
             }
         else textPaint.set(paint)
 
@@ -445,7 +451,7 @@ class PdfGenerator(val context: Context) {
                 )
             }
 
-            drawText(canvas, linePosition, textPaint, builder.toString(), x)
+            Utils.drawText(canvas, linePosition, textPaint, builder.toString(), x)
 
             text = text.substring(builder.length - 1).trim()
 
@@ -462,25 +468,19 @@ class PdfGenerator(val context: Context) {
             nextPage()
         }
 
-        drawText(canvas, linePosition, textPaint, text, x)
+        Utils.drawText(canvas, linePosition, textPaint, text, x)
         linePosition += staticLayout.height
 
         return linePosition
     }
 
 
-    private fun drawQrCode(recipeEntry: RecipeEntity): Int {
-        val recipe = recipeEntry.copy(imageURL = null)
+    private suspend fun drawQrCode(recipe: Recipe): Int {
+        val recipe = recipe.copy(imageUrl = null)
 
-        val bytes = zipBytes("", recipe.toProtoBuff().toByteArray())
-        val bmp = QRCode.from(Base64.encodeToString(bytes, Base64.NO_PADDING))
-            .withSize(400, 400)
-            .bitmap()
-
-        /*val bmp = QRCode.from(String(bytes, Charset.forName("UTF-8")))
-            .withSize(250, 250)
-            .bitmap()*/
-
+        val bmp = GenerateQrCodeUseCase().execute(
+            recipeRepository.getBytes(recipe), dotColor = Color.BLACK.toInt()
+        ) ?: return linePosition
 
         val margin = 200
         textPaint.apply {
@@ -496,7 +496,7 @@ class PdfGenerator(val context: Context) {
                 A4_HEIGHT - margin - bmp.height.toFloat(),
                 null
             )
-            drawText(
+            Utils.drawText(
                 canvas,
                 A4_HEIGHT - margin - bmp.height + 15,
                 textPaint,
@@ -507,7 +507,7 @@ class PdfGenerator(val context: Context) {
         } else {
             nextPage()
             canvas.drawBitmap(bmp, margin.toFloat(), linePosition.toFloat(), null)
-            drawText(
+            Utils.drawText(
                 canvas,
                 linePosition + 15,
                 textPaint,
@@ -571,7 +571,7 @@ object Utils {
 
         val dest = Bitmap.createBitmap(
             newWidth, newHeight,
-            source.config?: Bitmap.Config.ARGB_8888
+            source.config ?: Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(dest)
         canvas.drawBitmap(source, null, targetRect, null)
@@ -585,7 +585,7 @@ object Utils {
         paint: TextPaint,
         text: String,
         x: Int,
-        maxWidth: Int = PdfGenerator.A4_WIDTH,
+        maxWidth: Int = GeneratePdfUseCase.A4_WIDTH,
         marginEnd: Int = 200
     ): Int {
         val builder = StaticLayout.Builder.obtain(
@@ -596,9 +596,6 @@ object Utils {
             maxWidth - x - marginEnd
         )
             .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-        /*.setLineSpacing(1f, 0)
-        .setIncludePad(false)
-        .setMaxLines(5)*/
         val staticLayout = builder.build()
 
         canvas.withTranslation(x.toFloat(), linePosition.toFloat()) {
@@ -608,18 +605,6 @@ object Utils {
         return linePosition + staticLayout.height
     }
 
-    @Throws(IOException::class)
-    fun zipBytes(filename: String, input: ByteArray): ByteArray {
-        val baos = ByteArrayOutputStream()
-        val zos = ZipOutputStream(baos)
-        val entry = ZipEntry(filename.substring(0, min(filename.length, 0xFFFF)))
-        entry.size = input.size.toLong()
-        zos.putNextEntry(entry)
-        zos.write(input)
-        zos.closeEntry()
-        zos.close()
-        return baos.toByteArray()
-    }
 }
 
 fun Canvas.isHighEnough(height: Int, linePosition: Int, marginBottom: Int = 200) =

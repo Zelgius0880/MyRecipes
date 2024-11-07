@@ -32,6 +32,7 @@ import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material.icons.twotone.Check
 import androidx.compose.material.icons.twotone.InsertPhoto
+import androidx.compose.material.icons.twotone.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,9 +53,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -70,6 +75,7 @@ import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.ui.common.AppDropDown
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.RemovableItem
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
@@ -81,6 +87,8 @@ import zelgius.com.myrecipes.ui.edit.viewModel.EditRecipeViewModel
 import zelgius.com.myrecipes.ui.edit.viewModel.IngredientItem
 import zelgius.com.myrecipes.ui.edit.viewModel.ListItem
 import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
+import zelgius.com.myrecipes.ui.home.string
+import zelgius.com.myrecipes.ui.home.tabs
 import zelgius.com.myrecipes.ui.preview.createDummyModel
 
 
@@ -102,6 +110,9 @@ fun EditRecipe(
         onNameChanged = viewModel::changeName,
         onImageUrlChanged = {
             viewModel.changeImageUrl(it.toString())
+        },
+        onTypeChanged = {
+            viewModel.changeType(it)
         },
         onActionOnStep = { action ->
             when (action) {
@@ -140,6 +151,7 @@ private fun EditRecipeView(
     navigateBack: () -> Unit = {},
     onNameChanged: (String) -> Unit = {},
     onImageUrlChanged: (Uri) -> Unit = {},
+    onTypeChanged: (Recipe.Type) -> Unit = {},
     onActionOnStep: (Action<StepItem>) -> Unit = { },
     onActionOnIngredient: (Action<Ingredient>) -> Unit = { },
     onSaved: () -> Unit = {}
@@ -191,7 +203,9 @@ private fun EditRecipeView(
                         name = recipe.name,
                         imageUrl = recipe.imageUrl,
                         onNameChanged = onNameChanged,
-                        onImageUrlChanged = onImageUrlChanged
+                        onImageUrlChanged = onImageUrlChanged,
+                        type = recipe.type,
+                        onTypeChanged = onTypeChanged
                     )
                 }
 
@@ -267,10 +281,12 @@ private fun EditRecipeView(
 @Composable
 private fun EditRecipeHeader(
     name: String,
+    type: Recipe.Type,
     imageUrl: String?,
     modifier: Modifier = Modifier,
     onNameChanged: (String) -> Unit = {},
     onImageUrlChanged: (Uri) -> Unit = {},
+    onTypeChanged: (Recipe.Type) -> Unit = {},
 ) {
     var imageUrlState by remember {
         mutableStateOf(
@@ -304,6 +320,9 @@ private fun EditRecipeHeader(
             )
 
             Column(Modifier.padding(8.dp)) {
+                TypeDropdown(type, onTypeChanged)
+                Spacer(modifier = Modifier.height(8.dp))
+
                 AppTextField(
                     value = name,
                     onValueChange = onNameChanged,
@@ -362,6 +381,50 @@ private fun EditRecipeHeader(
             }
         }
     }
+}
+
+@Composable
+private fun TypeDropdown(
+    selectedType: Recipe.Type,
+    onTypeChanged: (Recipe.Type) -> Unit = {}
+) {
+    AppDropDown(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 8.dp)
+        ,
+        selection = {
+            Box(contentAlignment = Center) {
+                AppTextField(
+                    value = " ",
+                    modifier = Modifier
+                        .focusProperties { canFocus = false }
+                        .fillMaxWidth(),
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.type)) },
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
+                    readOnly = true,
+                )
+                Text(
+                    selectedType.string(), modifier = Modifier
+                        .align(CenterStart)
+                        .padding(start = 16.dp, end = 30.dp)
+                )
+                Icon(
+                    Icons.TwoTone.KeyboardArrowDown,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .align(
+                            CenterEnd
+                        )
+                        .padding(end = 4.dp)
+                )
+            }
+        }, item = {
+            Text(it.string())
+        }, items = tabs.map { it.type }, onItemSelected = {
+            onTypeChanged(it)
+        }, selectedItem = selectedType
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)

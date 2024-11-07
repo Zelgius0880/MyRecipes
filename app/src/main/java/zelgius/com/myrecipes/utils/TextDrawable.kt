@@ -50,7 +50,7 @@ class TextDrawable(res: Resources, private val mText: CharSequence) : Drawable()
     }
 
     override fun setColorFilter(filter: ColorFilter?) {
-        mPaint.setColorFilter(filter)
+        mPaint.colorFilter = filter
     }
 
     companion object {
