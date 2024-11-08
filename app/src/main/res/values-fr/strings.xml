@@ -168,4 +168,5 @@ AAAA
     <string name="update_ingredient">Modifier l\'ingredient</string>
     <string name="reset_image">Regénerer</string>
     <string name="type">Type</string>
+    <string name="export_all_recipes">Exporter toutes les recettes</string>
 </resources>
