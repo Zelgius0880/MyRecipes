@@ -1,10 +1,8 @@
 package zelgius.com.myrecipes.data.useCase.pdf
 
-import TextDrawable
 import android.content.Context
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
-import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
@@ -25,11 +23,8 @@ import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.data.useCase.GenerateQrCodeUseCase
 import zelgius.com.myrecipes.utils.UiUtils
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.IOException
 import java.io.OutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlin.math.max
@@ -44,8 +39,18 @@ class GeneratePdfUseCase @Inject constructor(
         const val A4_WIDTH = 4 * 595
         const val A4_HEIGHT = 4 * 842
 
-        private const val INGREDIENT_TEXT_SIZE = 48f
-        private const val STEP_TEXT_SIZE = 72f
+        const val INGREDIENT_TEXT_SIZE = 24f
+        const val INGREDIENT_IMAGE_SIZE = 50
+        const val INGREDIENT_IMAGE_PADDING = 4f
+
+        const val STEP_TEXT_SIZE = 36f
+        const val STEP_IMAGE_SIZE = 50
+
+        const val MARGINS_SMALL = 50
+        const val MARGINS_HORIZONTAL = 200
+
+        const val TITLE_TEXT_SIZE = 77f
+        const val TITLE_IMAGE_SIZE = 200
 
     }
 
@@ -61,7 +66,7 @@ class GeneratePdfUseCase @Inject constructor(
     private val paint = Paint()
 
     private val alpha = 0.6f
-    suspend fun execute(recipe: Recipe, outputStream: OutputStream) =
+    suspend fun execute(recipe: Recipe, outputStream: OutputStream, close: Boolean = true) =
         withContext(Dispatchers.IO) {
             drawRecipe(recipe)
             // write the document content
@@ -71,7 +76,11 @@ class GeneratePdfUseCase @Inject constructor(
 
             outputStream.write(output.toByteArray())
             outputStream.flush()
-            outputStream.close()
+
+            if (close) {
+                outputStream.close()
+            }
+
             output.close()
         }
 
@@ -81,10 +90,9 @@ class GeneratePdfUseCase @Inject constructor(
         document = PdfDocument()
         page = document.startPage(pageInfo)
         canvas = page.canvas
-        linePosition = 0
 
         linePosition = 200
-        // create a new document
+
         linePosition = drawTitle(recipe)
 
         linePosition += 100
@@ -106,7 +114,7 @@ class GeneratePdfUseCase @Inject constructor(
             linePosition,
             textPaint,
             context.getString(R.string.all_ingredients),
-            200
+            MARGINS_HORIZONTAL
         )
         val ingredients =
             recipe.ingredients.sortedWith { o1, o2 ->
@@ -136,27 +144,7 @@ class GeneratePdfUseCase @Inject constructor(
         document.finishPage(page)
     }
 
-    suspend fun createPdf(recipes: List<Recipe>, uri: Uri) =
-        withContext(Dispatchers.IO) {
-            val zipOut = ZipOutputStream(context.contentResolver.openOutputStream(uri)!!)
-            recipes.forEach {
-                drawRecipe(it)
 
-                val entry = ZipEntry("${it.name.replace(File.separator, "_")}.pdf")
-                zipOut.putNextEntry(entry)
-                document.writeTo(zipOut)
-                document.close()
-            }
-
-            zipOut.close()
-            uri
-        }
-
-    /**
-     * Draw the title of the document which is the name of the recipe and the image of the recipe
-     * @param recipe    Recipe the targeted recipe
-     * @return Int      Return the line position reaches after the title
-     */
     private fun drawTitle(recipe: Recipe): Int {
 
         val bmp = Utils.scaleCenterCrop(
@@ -165,24 +153,31 @@ class GeneratePdfUseCase @Inject constructor(
                     BitmapFactory.decodeStream(context.contentResolver.openInputStream(it))
                 else null
             }
-                ?: ContextCompat.getDrawable(context, R.drawable.ic_dish)!!.toBitmap(400, 400),
-            400, 400
+                ?: ContextCompat.getDrawable(context, R.drawable.ic_dish)!!
+                    .toBitmap(TITLE_IMAGE_SIZE, TITLE_IMAGE_SIZE),
+            TITLE_IMAGE_SIZE, TITLE_IMAGE_SIZE
         )
 
         val matrix = Matrix()
         matrix.postScale(0.5f, 0.5f)
 
-        canvas.drawBitmap(bmp, 200f, linePosition.toFloat(), null)
+        canvas.drawBitmap(bmp, MARGINS_HORIZONTAL.toFloat(), linePosition.toFloat(), null)
 
         textPaint.apply {
             reset()
             color = context.getColor(R.color.md_black_1000)
-            textSize = 144f
+            textSize = TITLE_TEXT_SIZE
         }
 
         linePosition = max(
             linePosition + bmp.height,
-            Utils.drawText(canvas, linePosition, textPaint, recipe.name, 200 + bmp.width + 100)
+            Utils.drawText(
+                canvas,
+                linePosition,
+                textPaint,
+                recipe.name,
+                MARGINS_HORIZONTAL + bmp.width + 100
+            )
         )
 
         return linePosition
@@ -229,16 +224,14 @@ class GeneratePdfUseCase @Inject constructor(
     private fun drawIngredient(
         item: Ingredient,
         maxWidth: Int = A4_WIDTH,
-        margin: Int = 200
+        margin: Int = MARGINS_HORIZONTAL
     ): Int {
 
-        val width = 100
-
         val bmp = Utils.scaleCenterCrop(
-            UiUtils.getDrawableForImageView(context, item, padding = 6f, color = context.getColor(R.color.md_blue_grey_700))
-                .toBitmap(width, width),
-            width,
-            width
+            UiUtils.getDrawableForImageView(context, item, padding = INGREDIENT_IMAGE_PADDING)
+                .toBitmap(INGREDIENT_IMAGE_SIZE, INGREDIENT_IMAGE_SIZE),
+            INGREDIENT_IMAGE_SIZE,
+            INGREDIENT_IMAGE_SIZE
         )
 
         textPaint.apply {
@@ -277,7 +270,7 @@ class GeneratePdfUseCase @Inject constructor(
         if (staticLayout.height > bmp.height) {
             Utils.drawText(
                 canvas, linePosition, textPaint, item.text(context),
-                margin + 100 + bmp.width
+                margin + MARGINS_SMALL + bmp.width
             )
 
             canvas.drawBitmap(
@@ -294,7 +287,7 @@ class GeneratePdfUseCase @Inject constructor(
                 linePosition + bmp.height / 2 - staticLayout.height / 2,
                 textPaint,
                 item.text(context),
-                margin + 100 + bmp.width
+                margin + MARGINS_SMALL + bmp.width
             )
         }
 
@@ -305,19 +298,19 @@ class GeneratePdfUseCase @Inject constructor(
 
 
     private fun drawStep(step: Step, list: List<Ingredient>): Int {
-        val width = 200
         val bmp = Utils.scaleCenterCrop(
-            TextDrawable(
-                context.resources,
+            UiUtils.getDrawableForText(
+                context,
                 "${step.order}",
-            ).toBitmap(width, width),
-            width,
-            width
+                ContextCompat.getColor(context, R.color.md_blue_800)
+            ).toBitmap(STEP_IMAGE_SIZE, STEP_IMAGE_SIZE),
+            STEP_IMAGE_SIZE,
+            STEP_IMAGE_SIZE
         )
 
         if (!canvas.isHighEnough(bmp.height, linePosition)) nextPage()
 
-        val margin = 200f
+        val margin = MARGINS_HORIZONTAL.toFloat()
 
         paint.apply {
             reset()
@@ -338,7 +331,7 @@ class GeneratePdfUseCase @Inject constructor(
             drawIngredient(
                 item, maxWidth = A4_WIDTH / 2,
                 margin = if (i < ceil(list.size / 2f)) {
-                    margin.toInt() + width + 50
+                    margin.toInt() + STEP_IMAGE_SIZE + 50
                 } else {
                     if (!colChanged) {
                         linePosition = tempPosition
@@ -403,7 +396,7 @@ class GeneratePdfUseCase @Inject constructor(
         linePosition = if (linePosition < tempPosition) linePosition // new page
         else max(
             linePosition,
-            tempPosition + width
+            tempPosition + STEP_IMAGE_SIZE
         ) // max between the text bottom and the image bottom
         return linePosition
     }
@@ -586,7 +579,7 @@ object Utils {
         text: String,
         x: Int,
         maxWidth: Int = GeneratePdfUseCase.A4_WIDTH,
-        marginEnd: Int = 200
+        marginEnd: Int = GeneratePdfUseCase.MARGINS_HORIZONTAL
     ): Int {
         val builder = StaticLayout.Builder.obtain(
             text,

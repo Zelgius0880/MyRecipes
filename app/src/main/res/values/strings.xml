@@ -182,6 +182,7 @@ SwEAAAAAAAAAAAAAAAAAAAAAAAAAAFBLBQYAAAAAAQABAC4AAAAFAQAAAAA
     <string name="update_ingredient">Update ingredient</string>
     <string name="reset_image">Reset image</string>
     <string name="type">Type</string>
+    <string name="export_all_recipes">Export all recipes</string>
 </resources>
 
 
