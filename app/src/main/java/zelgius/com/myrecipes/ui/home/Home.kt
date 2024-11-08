@@ -7,9 +7,15 @@ import android.os.Parcelable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -282,22 +288,66 @@ private fun HomeView(
             },
             content = { padding ->
 
-                val selectedType = (selectedItem as? HomeNavigation.Recipe)?.type
-                RecipeList(
-                    onClick = onClick,
-                    onRemove = removeRecipe,
-                    list = when (selectedType) {
-                        Recipe.Type.Meal -> pageMeals
-                        Recipe.Type.Dessert -> pageDesserts
-                        Recipe.Type.Other -> pageOther
-                        else -> emptyFlow()
-                    },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    sharedTransitionScope = sharedTransitionScope
-                )
+                AnimatedContent(targetState = selectedItem,
+                    transitionSpec = {
+                        val oldIndex = initialState.let {
+                            tabs.indexOf(it)
+                        }
+
+                        val newIndex = targetState.let {
+                            tabs.indexOf(it)
+                        }
+
+                        when {
+                            oldIndex < newIndex -> {
+                                slideIntoContainer(
+                                    AnimatedContentTransitionScope.SlideDirection.End,
+                                    animationSpec = tween(300)
+                                ).togetherWith(
+                                    slideOutOfContainer(
+                                        AnimatedContentTransitionScope.SlideDirection.End,
+                                        animationSpec = tween(300)
+                                    )
+                                )
+                            }
+
+                            oldIndex > newIndex -> {
+                                slideIntoContainer(
+                                    AnimatedContentTransitionScope.SlideDirection.Start,
+                                    animationSpec = tween(300)
+                                ).togetherWith(
+                                    slideOutOfContainer(
+                                        AnimatedContentTransitionScope.SlideDirection.Start,
+                                        animationSpec = tween(300)
+                                    )
+                                )
+                            }
+
+                            else -> (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                                    scaleIn(
+                                        initialScale = 0.92f,
+                                        animationSpec = tween(220, delayMillis = 90)
+                                    ))
+                                .togetherWith(fadeOut(animationSpec = tween(90)))
+                        }
+                    }
+                ) {
+                    RecipeList(
+                        onClick = onClick,
+                        onRemove = removeRecipe,
+                        list = when ((it as? HomeNavigation.Recipe)?.type) {
+                            Recipe.Type.Meal -> pageMeals
+                            Recipe.Type.Dessert -> pageDesserts
+                            Recipe.Type.Other -> pageOther
+                            else -> emptyFlow()
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        sharedTransitionScope = sharedTransitionScope
+                    )
+                }
             }
         )
     }
@@ -325,7 +375,7 @@ fun Recipe.Type.string() = stringResource(
 )
 
 
-sealed interface HomeNavigation : Parcelable{
+sealed interface HomeNavigation : Parcelable {
 
     @Parcelize
     object Settings : HomeNavigation
