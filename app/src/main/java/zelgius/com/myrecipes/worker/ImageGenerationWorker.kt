@@ -21,6 +21,8 @@ import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 import com.google.mediapipe.framework.image.BitmapExtractor
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator
 import dagger.assisted.Assisted
@@ -88,6 +90,8 @@ open class ImageGenerationWorker @AssistedInject constructor(
             dataStoreRepository.setStillNeedToGenerate(false)
         } catch (e: Exception) {
             e.printStackTrace()
+
+            Firebase.crashlytics.recordException(e)
             return Result.failure()
         } finally {
             imageGenerator?.close()
