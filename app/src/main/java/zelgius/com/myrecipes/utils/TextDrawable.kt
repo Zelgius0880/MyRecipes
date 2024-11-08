@@ -7,7 +7,11 @@ import android.graphics.Paint.Align
 import android.graphics.drawable.Drawable
 import android.util.TypedValue
 
-class TextDrawable(res: Resources, private val mText: CharSequence) : Drawable() {
+class TextDrawable(
+    res: Resources,
+    private val mText: CharSequence,
+    private val textSize: Float? = null
+) : Drawable() {
     private val mPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val mIntrinsicWidth: Int
     private val mIntrinsicHeight: Int
@@ -15,7 +19,7 @@ class TextDrawable(res: Resources, private val mText: CharSequence) : Drawable()
     init {
         mPaint.color = DEFAULT_COLOR
         mPaint.textAlign = Align.CENTER
-        val textSize = TypedValue.applyDimension(
+        val textSize = this.textSize ?: TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_SP,
             DEFAULT_TEXTSIZE.toFloat(), res.displayMetrics
         )

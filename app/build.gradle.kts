@@ -30,8 +30,8 @@ android {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 28
         targetSdk = 35
-        versionCode = 8
-        versionName = "2.0-beta03"
+        versionCode = 9
+        versionName = "2.0-beta04"
         testInstrumentationRunner = "zelgius.com.myrecipes.utils.HiltTestRunner"
 
         ksp {
