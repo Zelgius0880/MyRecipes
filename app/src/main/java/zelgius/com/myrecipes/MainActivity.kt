@@ -44,6 +44,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -57,6 +58,7 @@ import zelgius.com.myrecipes.ui.home.Home
 import zelgius.com.myrecipes.ui.home.HomeNavigation
 import zelgius.com.myrecipes.ui.play.PlayRecipeActivity
 import zelgius.com.myrecipes.ui.settings.Settings
+import zelgius.com.myrecipes.utils.Logger
 import java.net.URLDecoder
 import java.net.URLEncoder
 import kotlin.collections.listOf
@@ -69,6 +71,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Logger.i(WorkManager.getInstance(this).getWorkInfosByTag("ImageGenerationWorker").get().toString())
         setContent {
             AppTheme {
                 SharedTransitionLayout {
@@ -76,6 +79,10 @@ class MainActivity : AppCompatActivity() {
                     var selectedItem: HomeNavigation by rememberSaveable {
                         mutableStateOf(HomeNavigation.Recipe(Recipe.Type.Meal))
                     }
+                    var oldSelectedItem: HomeNavigation? by rememberSaveable {
+                        mutableStateOf(null)
+                    }
+
 
                     val navigator = rememberListDetailPaneScaffoldNavigator<Navigation>()
 
