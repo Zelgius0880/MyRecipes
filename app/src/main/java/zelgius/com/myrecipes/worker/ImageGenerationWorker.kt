@@ -68,18 +68,17 @@ open class ImageGenerationWorker @AssistedInject constructor(
     val results = mutableListOf<String>()
 
     override suspend fun doWork(): Result {
-        val options = ImageGenerator.ImageGeneratorOptions.builder()
-            .setImageGeneratorModelDirectory(IA_MODEL_PATH)
-            .build()
-
-        setForeground(createForegroundInfo(createNotification("", 0, 100, true, null)))
-
-        val recipes = recipeDao.getAllWithoutImages()
-        val ingredients = ingredientDao.getAllWithoutImages()
 
         var imageGenerator: ImageGenerator? = null
-
         try {
+            val options = ImageGenerator.ImageGeneratorOptions.builder()
+                .setImageGeneratorModelDirectory(IA_MODEL_PATH)
+                .build()
+
+            setForeground(createForegroundInfo(createNotification("", 0, 100, true, null)))
+
+            val recipes = recipeDao.getAllWithoutImages()
+            val ingredients = ingredientDao.getAllWithoutImages()
             imageGenerator = ImageGenerator.createFromOptions(context, options)
 
             val maxProgress = ITERATION_COUNT * (recipes.size + ingredients.size)

@@ -146,8 +146,6 @@ private fun RecipeDetailsView(
                     sharedTransitionScope = sharedTransitionScope,
                     animatedVisibilityScope = animatedVisibilityScope,
                     recipe = recipe,
-                    onEdit = onEdit,
-                    onPlay = playRecipe,
                     modifier = Modifier.fillMaxWidth()
                 )
             },
@@ -205,8 +203,6 @@ fun RecipeDetailsHeader(
     animatedVisibilityScope: AnimatedVisibilityScope?,
     modifier: Modifier = Modifier,
     recipe: Recipe,
-    onEdit: (Recipe) -> Unit = {},
-    onPlay: (Recipe) -> Unit = {},
 ) = with(sharedTransitionScope) {
     Card(
         modifier = modifier

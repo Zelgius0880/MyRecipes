@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,7 +40,6 @@ import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.platform.LocalContext
@@ -63,6 +63,7 @@ import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.string
 import zelgius.com.myrecipes.ui.common.AppDropDown
+import zelgius.com.myrecipes.ui.common.AppLabeledCheckbox
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.preview.createDummyModel
@@ -102,7 +103,11 @@ fun IngredientBottomSheet(
             },
             onChanged = {
                 viewModel.setIngredient(it)
-            })
+            },
+            onOptionalChanged = {
+                viewModel.changeOptional(it)
+            }
+            )
     }
 }
 
@@ -115,6 +120,7 @@ private fun IngredientBottomSheet(
     showAdd: Boolean,
     onChangeName: (String?) -> Unit = {},
     onChanged: (Ingredient) -> Unit,
+    onOptionalChanged: (Boolean) -> Unit = {},
     onSaved: () -> Unit = {},
 ) {
 
@@ -165,24 +171,32 @@ private fun IngredientBottomSheet(
             UnitDropdown(ingredient, onChanged)
         }
 
-        Button(
-            onClick = {
-                val q = quantity.toDoubleOrNull()
-                isQuantityError = q == null || q <= 0
-                isNameError =
-                    (name == null && ingredient.name.isEmpty()) || (name != null && name.isNullOrEmpty())
+        Row {
+            AppLabeledCheckbox(
+                label = stringResource(R.string.optional),
+                checked = ingredient.optional == true,
+                onCheckedChange = onOptionalChanged
+            )
+            Spacer(Modifier.weight(1f))
+            Button(
+                onClick = {
+                    val q = quantity.toDoubleOrNull()
+                    isQuantityError = q == null || q <= 0
+                    isNameError =
+                        (name == null && ingredient.name.isEmpty()) || (name != null && name.isNullOrEmpty())
 
-                if (!isQuantityError && !isNameError) {
-                    onChanged(ingredient.copy(quantity = q!!))
-                    onSaved()
-                    quantity = ""
-                }
-            }, modifier = Modifier
-                .align(End)
-                .padding(8.dp)
-        ) {
-            Text(stringResource(R.string.save))
+                    if (!isQuantityError && !isNameError) {
+                        onChanged(ingredient.copy(quantity = q!!))
+                        onSaved()
+                        quantity = ""
+                    }
+                }, modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Text(stringResource(R.string.save))
+            }
         }
+
     }
 }
 
@@ -422,4 +436,7 @@ class IngredientBottomSheetViewModel @Inject constructor(
         } ?: ingredient
     }
 
+    fun changeOptional(optional: Boolean) {
+        _ingredientFlow.value = ingredient.copy(optional = optional)
+    }
 }

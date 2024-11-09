@@ -169,4 +169,5 @@ AAAA
     <string name="reset_image">Regénerer</string>
     <string name="type">Type</string>
     <string name="export_all_recipes">Exporter toutes les recettes</string>
+    <string name="generate_now">Générer maintenant</string>
 </resources>
