@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +28,7 @@ import zelgius.com.myrecipes.data.model.Step
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.common.LocalStepCardValues
 import zelgius.com.myrecipes.ui.common.autosizetext.AutoSizeText
+import zelgius.com.myrecipes.utils.conditional
 
 @Composable
 fun Step(step: Step, modifier: Modifier = Modifier) {
@@ -41,7 +43,7 @@ private fun StepContent(step: Step) {
     val values = LocalStepCardValues.current
     val textStyle = LocalTextStyle.current
 
-    Row {
+    Row(modifier = Modifier.conditional(step.optional){alpha(0.6f)}) {
         Box(
             Modifier
                 .size(values.iconSize)

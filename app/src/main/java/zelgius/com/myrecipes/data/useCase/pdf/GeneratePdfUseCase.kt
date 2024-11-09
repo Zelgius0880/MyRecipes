@@ -469,10 +469,8 @@ class GeneratePdfUseCase @Inject constructor(
 
 
     private suspend fun drawQrCode(recipe: Recipe): Int {
-        val recipe = recipe.copy(imageUrl = null)
-
         val bmp = GenerateQrCodeUseCase().execute(
-            recipeRepository.getBytes(recipe), dotColor = Color.BLACK.toInt()
+            recipeRepository.getBytesForQr(recipe), dotColor = Color.BLACK.toInt()
         ) ?: return linePosition
 
         val margin = 200

@@ -1,10 +1,16 @@
 package zelgius.com.myrecipes.ui.settings
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
@@ -22,6 +28,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val dataStoreRepository: DataStoreRepository,
     private val ingredientRepository: IngredientRepository,
     private val recipeRepository: RecipeRepository,
@@ -32,13 +39,18 @@ class SettingsViewModel @Inject constructor(
     val isIAGenerationEnabled = _isIAGenerationEnabled.asStateFlow()
     val ingredients = ingredientRepository.getSimpleIngredients()
 
-    val isIAGenerationChecked get() = dataStoreRepository.isIAGenerationChecked
+    val isIAGenerationChecked
+        get() = dataStoreRepository.isIAGenerationChecked.map {
+            it && (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                    || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+        }
 
     private val _exportingProgress = MutableStateFlow<Float?>(null)
     val exportingProgress = _exportingProgress.asStateFlow()
 
     init {
-        _isIAGenerationEnabled.value = ImageGenerationWorker.modelExists
+        _isIAGenerationEnabled.value =
+            ImageGenerationWorker.modelExists
     }
 
     fun setIsIAGenerationChecked(checked: Boolean) {
@@ -79,6 +91,10 @@ class SettingsViewModel @Inject constructor(
 
         zipOut.close()
         _exportingProgress.value = null
+    }
+
+    fun generateImageNow() {
+        workRepository.startIaGenerationImmediately()
     }
 
 }
