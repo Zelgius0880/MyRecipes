@@ -3,8 +3,6 @@
 package zelgius.com.myrecipes.ui.edit
 
 import android.content.res.Configuration
-import android.net.Uri
-import android.webkit.URLUtil
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -69,7 +67,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
@@ -150,7 +147,7 @@ private fun EditRecipeView(
     displayBack: Boolean = true,
     navigateBack: () -> Unit = {},
     onNameChanged: (String) -> Unit = {},
-    onImageUrlChanged: (Uri) -> Unit = {},
+    onImageUrlChanged: (String) -> Unit = {},
     onTypeChanged: (Recipe.Type) -> Unit = {},
     onActionOnStep: (Action<StepItem>) -> Unit = { },
     onActionOnIngredient: (Action<Ingredient>) -> Unit = { },
@@ -285,7 +282,7 @@ private fun EditRecipeHeader(
     imageUrl: String?,
     modifier: Modifier = Modifier,
     onNameChanged: (String) -> Unit = {},
-    onImageUrlChanged: (Uri) -> Unit = {},
+    onImageUrlChanged: (String) -> Unit = {},
     onTypeChanged: (Recipe.Type) -> Unit = {},
 ) {
     var imageUrlState by remember {
@@ -299,7 +296,7 @@ private fun EditRecipeHeader(
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
-            uri?.let { onImageUrlChanged(it) }
+            uri?.let { onImageUrlChanged(it.toString()) }
             imageUrlState = imageUrlState.copy(text = "")
         })
 
@@ -354,9 +351,9 @@ private fun EditRecipeHeader(
                                 )
                             )
 
-                            if (URLUtil.isValidUrl(it.text)) {
-                                onImageUrlChanged(it.text.toUri())
-                            }
+                            //if (URLUtil.isValidUrl(it.text)) {
+                                onImageUrlChanged(it.text)
+                            //}
                         },
                         modifier = Modifier
                             .fillMaxWidth()

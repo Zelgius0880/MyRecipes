@@ -157,7 +157,7 @@ class ShareDialogViewModel @Inject constructor(
     fun generateQrCode(recipe: Recipe, @ColorInt color: Int, width: Int = 400, height: Int = 400) {
         viewModelScope.launch {
             _qrCode.value = generateQrCodeUseCase.execute(
-                recipeRepository.getBytes(recipe),
+                recipeRepository.getBytesForQr(recipe),
                 width = width,
                 height = height,
                 dotColor = color

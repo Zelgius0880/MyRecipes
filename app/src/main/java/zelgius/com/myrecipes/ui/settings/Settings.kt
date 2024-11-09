@@ -1,6 +1,8 @@
 package zelgius.com.myrecipes.ui.settings
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -25,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -36,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -65,11 +69,23 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
     }
 
     val exportingProgress by viewModel.exportingProgress.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        viewModel.setIsIAGenerationChecked(isGranted)
+    }
 
     Settings(
         isIAGenerationChecked = isIAGenerationChecked,
         isIAGenerationEnabled = isIAGenerationEnabled,
-        onIAGenerationChanged = viewModel::setIsIAGenerationChecked,
+        onIAGenerationChanged = {
+            if (it && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            else
+                viewModel.setIsIAGenerationChecked(it)
+        },
         ingredients = ingredients,
         exportingProgress = exportingProgress,
         onDeleteIngredient = viewModel::deleteIngredient,
@@ -78,6 +94,9 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
         },
         onExportAll = {
             viewModel.exportAllRecipes(it)
+        },
+        onGenerateNow = {
+            viewModel.generateImageNow()
         },
         onBack = onBack
     )
@@ -105,6 +124,7 @@ private fun Settings(
     onDeleteIngredient: (SimpleIngredient) -> Unit = {},
     onUpdateIngredient: (SimpleIngredient) -> Unit = {},
     onExportAll: suspend (outputStream: OutputStream) -> Unit = {},
+    onGenerateNow: () -> Unit = {},
     onBack: () -> Unit = {},
 ) {
     Scaffold(
@@ -138,7 +158,8 @@ private fun Settings(
                 IAGenerationSwitch(
                     isIAGenerationChecked,
                     isIAGenerationEnabled,
-                    onIAGenerationChanged
+                    onIAGenerationChanged,
+                    onGenerateNow
                 )
             }
 
@@ -175,7 +196,10 @@ private fun Settings(
 }
 
 @Composable
-private fun ExportButton(onExportAll: suspend (outputStream: OutputStream) -> Unit, exportingProgress: Float?) {
+private fun ExportButton(
+    onExportAll: suspend (outputStream: OutputStream) -> Unit,
+    exportingProgress: Float?
+) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -205,7 +229,7 @@ private fun ExportButton(onExportAll: suspend (outputStream: OutputStream) -> Un
     Box(modifier = Modifier.fillMaxWidth()) {
         Button(
             onClick = {
-                if(exportingProgress == null) saveFileLauncher.launch("Export.zip")
+                if (exportingProgress == null) saveFileLauncher.launch("Export.zip")
             },
             modifier = Modifier
                 .padding(end = 16.dp)
@@ -240,6 +264,7 @@ private fun IAGenerationSwitch(
     isIAGenerationChecked: Boolean,
     isIAGenerationEnabled: Boolean,
     onIAGenerationChanged: (Boolean) -> Unit,
+    onGenerateNow: () -> Unit = {}
 ) {
     val uriHandler = LocalUriHandler.current
     Column(
@@ -259,6 +284,17 @@ private fun IAGenerationSwitch(
             )
             Switch(isIAGenerationChecked, onIAGenerationChanged, enabled = isIAGenerationEnabled)
         }
+
+        AnimatedVisibility(
+            isIAGenerationEnabled && isIAGenerationChecked,
+            modifier = Modifier.align(End)
+        ) {
+            OutlinedButton(onClick = onGenerateNow) {
+                Text(stringResource(R.string.generate_now))
+            }
+        }
+
+
         if (!isIAGenerationEnabled)
             LinkableText(
                 modifier = Modifier.fillMaxWidth(),
@@ -302,7 +338,8 @@ private fun SettingsIngredient(
 private fun SettingsPreview() {
     AppTheme {
         Settings(
-            isIAGenerationEnabled = false,
+            isIAGenerationEnabled = true,
+            isIAGenerationChecked = true,
             ingredients = List(5) {
                 SimpleIngredient(
                     it.toLong(),

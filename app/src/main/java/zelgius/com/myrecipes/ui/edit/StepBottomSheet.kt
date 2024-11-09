@@ -5,6 +5,7 @@ package zelgius.com.myrecipes.ui.edit
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -40,13 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
@@ -55,11 +50,12 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
-import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.ui.common.AppDropDown
+import zelgius.com.myrecipes.ui.common.AppLabeledCheckbox
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.edit.viewModel.StepItem
+import zelgius.com.myrecipes.ui.preview.createDummyModel
 
 @Composable
 fun StepBottomSheet(
@@ -86,7 +82,9 @@ fun StepBottomSheet(
             onSaved = onSaved,
             onTextChange = viewModel::onTextChange,
             onIngredientAdded = viewModel::onIngredientAdded,
-            onIngredientRemoved = viewModel::onIngredientRemoved
+            onIngredientRemoved = viewModel::onIngredientRemoved,
+            onOptionalChanged = viewModel::onOptionalChanged
+
         )
     }
 }
@@ -99,6 +97,7 @@ private fun StepBottomSheet(
     onTextChange: (String) -> Unit,
     onIngredientAdded: (Ingredient) -> Unit,
     onIngredientRemoved: (Ingredient) -> Unit,
+    onOptionalChanged: (Boolean) -> Unit = {},
     onSaved: (StepItem) -> Unit
 ) {
     Column(
@@ -156,14 +155,23 @@ private fun StepBottomSheet(
             maxLines = 4,
         )
 
-        Button(
-            onClick = { onSaved(item) },
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(vertical = 8.dp)
-        ) {
-            Text(stringResource(id = R.string.save))
+        Row {
+            AppLabeledCheckbox(
+                label = stringResource(R.string.optional),
+                checked = item.step.optional == true,
+                onCheckedChange = onOptionalChanged
+            )
+            Spacer(Modifier.weight(1f))
+
+            Button(
+                onClick = { onSaved(item) },
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(stringResource(id = R.string.save))
+            }
         }
+
     }
 }
 
@@ -312,4 +320,8 @@ class StepBottomSheetViewModel: ViewModel() {
         _stepFlow.value = item.copy(ingredients = item.ingredients - ingredient)
     }
 
+    fun onOptionalChanged(optional: Boolean) {
+        val item = _stepFlow.value
+        _stepFlow.value = item.copy(step = item.step.copy(optional = optional))
+    }
 }

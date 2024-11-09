@@ -2,7 +2,6 @@ package zelgius.com.myrecipes.worker
 
 import android.content.Context
 import androidx.work.Constraints
-import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,9 +26,6 @@ class WorkerRepository @Inject constructor(
         if (!isIaGenerationEnabled || !stillNeedToGenerate || !ImageGenerationWorker.modelExists) return
 
         val worker = OneTimeWorkRequestBuilder<ImageGenerationWorker>()
-            .setInputData(
-                Data.Builder().build()
-            )
             .addTag(ImageGenerationWorker.TAG)
             .setConstraints(
                 Constraints.Builder()
@@ -37,6 +33,17 @@ class WorkerRepository @Inject constructor(
                     .setRequiresDeviceIdle(true)
                     .build()
             )
+            .build()
+
+        WorkManager.getInstance(context).apply {
+            cancelAllWorkByTag(ImageGenerationWorker.TAG)
+            enqueue(worker)
+        }
+    }
+
+    fun startIaGenerationImmediately() {
+        val worker = OneTimeWorkRequestBuilder<ImageGenerationWorker>()
+            .addTag(ImageGenerationWorker.TAG)
             .build()
 
         WorkManager.getInstance(context).apply {

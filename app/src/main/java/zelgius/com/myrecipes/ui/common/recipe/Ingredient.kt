@@ -4,6 +4,7 @@ package zelgius.com.myrecipes.ui.common.recipe
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import zelgius.com.myrecipes.data.DefaultIngredients
@@ -16,6 +17,7 @@ import zelgius.com.myrecipes.data.text
 import zelgius.com.myrecipes.ui.common.LocalStepCardValues
 import zelgius.com.myrecipes.ui.common.StepCard
 import zelgius.com.myrecipes.ui.md_blue_grey_700
+import zelgius.com.myrecipes.utils.conditional
 import kotlin.random.Random
 
 @Composable
@@ -39,7 +41,7 @@ fun Ingredient(
         else StepCard(
             "${ingredient.name.uppercase().first()}",
             text = text,
-            modifier = modifier,
+            modifier = modifier.conditional(ingredient.optional == true){alpha(0.6f)},
             imageUrl = ingredient.imageUrl
         )
     }

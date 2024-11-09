@@ -1,6 +1,8 @@
 package zelgius.com.myrecipes.mediapipe.usecase
 
 import android.content.Context
+import android.view.OrientationEventListener
+import android.view.Surface
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -33,12 +35,13 @@ class LiveGestureRecognitionUseCase @Inject constructor(
     val gestureFlow = _gestureFlow.filterNotNull()
 
     private var cameraProvider: ProcessCameraProvider? = null
+    private var imageAnalyzer: ImageAnalysis? = null
 
     suspend fun execute(
         targetRotation: Int,
         previewView: PreviewView?,
         lifecycleOwner: LifecycleOwner
-    )  {
+    ) {
         val cameraProvider = setUpCamera()
         this.cameraProvider = cameraProvider
 
@@ -58,7 +61,7 @@ class LiveGestureRecognitionUseCase @Inject constructor(
             }
         }
 
-        val imageAnalyzer =
+        imageAnalyzer =
             ImageAnalysis.Builder().setResolutionSelector(
                 ResolutionSelector.Builder()
                     .setAspectRatioStrategy(RATIO_4_3_FALLBACK_AUTO_STRATEGY).build()
@@ -73,7 +76,6 @@ class LiveGestureRecognitionUseCase @Inject constructor(
                         gestureRecognizerRepository.recognizeLiveStream(image)
                     }
                 }
-
 
         val preview = Preview.Builder()
             .setTargetRotation(targetRotation)
@@ -93,8 +95,9 @@ class LiveGestureRecognitionUseCase @Inject constructor(
             preview
         )
 
-        preview.setSurfaceProvider(previewView?.surfaceProvider)
+        preview.surfaceProvider = previewView?.surfaceProvider
 
+        orientationEventListener.enable()
     }
 
     fun clear() {
@@ -105,6 +108,7 @@ class LiveGestureRecognitionUseCase @Inject constructor(
         gestureRecognizerRepository.clear()
         cameraProvider?.unbindAll()
         backgroundExecutor = null
+        orientationEventListener.disable()
     }
 
     private suspend fun setUpCamera() =
@@ -120,4 +124,24 @@ class LiveGestureRecognitionUseCase @Inject constructor(
                 }, ContextCompat.getMainExecutor(context)
             )
         }
+
+    private val orientationEventListener by lazy {
+        object : OrientationEventListener(context) {
+            override fun onOrientationChanged(orientation: Int) {
+                if (orientation == ORIENTATION_UNKNOWN) {
+                    return
+                }
+
+                val rotation = when (orientation) {
+                    in 45 until 135 -> Surface.ROTATION_270
+                    in 135 until 225 -> Surface.ROTATION_180
+                    in 225 until 315 -> Surface.ROTATION_90
+                    else -> Surface.ROTATION_0
+                }
+
+                imageAnalyzer?.targetRotation = rotation
+            }
+        }
+    }
+
 }

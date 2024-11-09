@@ -80,11 +80,11 @@ class RecipeRepository(
     suspend fun delete(recipe: Recipe): Int =
         recipeDao.delete(recipe.asEntity())
 
-    suspend fun getBytes(recipe: Recipe): ByteArray {
+    suspend fun getBytesForQr(recipe: Recipe): ByteArray {
         val id = recipe.id?: return ByteArray(0)
         val entity = getFullEntity(id)?: return ByteArray(0)
 
-        val bytes = entity.toProtoBuff().toByteArray()
+        val bytes = entity.copy(imageURL = null).toProtoBuff().toByteArray()
         // zip bytes
         val baos = ByteArrayOutputStream()
         val zos = ZipOutputStream(baos)
