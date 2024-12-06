@@ -85,8 +85,7 @@
     <string name="last_edit">Last edited: </string>
     <string name="error_dir_access">Directory cannot be accessed</string>
     <string name="label_parent_dir" translatable="false">...</string>
-    <string name="channel_name">Image Generation</string>
-    <string name="channel_description">Indicates the progress of the image generation</string>
+
     <string name="play">Play</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
@@ -142,9 +141,6 @@
     <string name="ia_generation">Enable IA image generation</string>
     <string name="ia_generation_disabled">No IA model found, follow <a href="https://ai.google.dev/edge/mediapipe/solutions/vision/image_generator/android#model">this link</a> to add an IA generative model</string>
 
-    <string name="ingrient_prompt_generation" translatable="false">a hand drawn %s on a plain green background, drawing</string>
-    <string name="recipe_prompt_generation" translatable="false">a realistic %s freshly cooked on a kitchen table, animated, photo</string>
-
     <string name="play_recipe_enable_text_reading">Enable text reading</string>
     <string name="play_recipe_enable_gesture_detection">Enable gesture detection\n👍 for next\n👎 for previous\n☝️ for repeating </string>
 
@@ -184,6 +180,10 @@ SwEAAAAAAAAAAAAAAAAAAAAAAAAAAFBLBQYAAAAAAQABAC4AAAAFAQAAAAA
     <string name="type">Type</string>
     <string name="export_all_recipes">Export all recipes</string>
     <string name="generate_now">Generate now</string>
+    <string name="recipe_url">Recipe Url</string>
+    <string name="data_extraction_error">An error occurred. It may happen, please retry</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
 </resources>
 
 

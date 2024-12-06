@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material.icons.twotone.Check
+import androidx.compose.material.icons.twotone.CloudDownload
 import androidx.compose.material.icons.twotone.InsertPhoto
 import androidx.compose.material.icons.twotone.KeyboardArrowDown
 import androidx.compose.material3.Button
@@ -93,7 +94,8 @@ import zelgius.com.myrecipes.ui.preview.createDummyModel
 fun EditRecipe(
     viewModel: EditRecipeViewModel,
     displayBack: Boolean = true,
-    navigateBack: () -> Unit = {}
+    navigateBack: () -> Unit = {},
+    addFromWeb: () -> Unit = {},
 ) {
 
     val recipe by viewModel.recipeFlow.collectAsState()
@@ -103,6 +105,7 @@ fun EditRecipe(
     EditRecipeView(recipe,
         items = items,
         navigateBack = navigateBack,
+        addFromWeb = viewModel.addFromWeb,
         displayBack = displayBack,
         onNameChanged = viewModel::changeName,
         onImageUrlChanged = {
@@ -130,7 +133,8 @@ fun EditRecipe(
                 viewModel.save()
                 navigateBack()
             }
-        }
+        },
+        onAddFromWeb = addFromWeb
     )
 }
 
@@ -145,13 +149,15 @@ private fun EditRecipeView(
     recipe: Recipe,
     items: List<ListItem>,
     displayBack: Boolean = true,
+    addFromWeb: Boolean = true,
     navigateBack: () -> Unit = {},
     onNameChanged: (String) -> Unit = {},
     onImageUrlChanged: (String) -> Unit = {},
     onTypeChanged: (Recipe.Type) -> Unit = {},
     onActionOnStep: (Action<StepItem>) -> Unit = { },
     onActionOnIngredient: (Action<Ingredient>) -> Unit = { },
-    onSaved: () -> Unit = {}
+    onSaved: () -> Unit = {},
+    onAddFromWeb: () -> Unit = {},
 ) {
 
     Scaffold(
@@ -169,8 +175,17 @@ private fun EditRecipeView(
                             contentDescription = ""
                         )
                     }
+
+
             }, actions = {
-                IconButton(onClick = onSaved) {
+                if(addFromWeb)
+                    IconButton(onClick = onAddFromWeb) {
+                        Icon(
+                            imageVector = Icons.TwoTone.CloudDownload,
+                            contentDescription = ""
+                        )
+                    }
+                IconButton(onClick = onSaved, enabled = recipe.name.isNotEmpty()) {
                     Icon(
                         imageVector = Icons.TwoTone.Check, contentDescription = ""
                     )

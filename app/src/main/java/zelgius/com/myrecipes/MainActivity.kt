@@ -44,12 +44,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.ui.AppTheme
+import zelgius.com.myrecipes.ui.addFromWeb.AddFromWeb
 import zelgius.com.myrecipes.ui.details.RecipeDetails
 import zelgius.com.myrecipes.ui.details.viewModel.RecipeDetailsViewModel
 import zelgius.com.myrecipes.ui.edit.EditRecipe
@@ -58,10 +58,8 @@ import zelgius.com.myrecipes.ui.home.Home
 import zelgius.com.myrecipes.ui.home.HomeNavigation
 import zelgius.com.myrecipes.ui.play.PlayRecipeActivity
 import zelgius.com.myrecipes.ui.settings.Settings
-import zelgius.com.myrecipes.utils.Logger
 import java.net.URLDecoder
 import java.net.URLEncoder
-import kotlin.collections.listOf
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
@@ -71,7 +69,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Logger.i(WorkManager.getInstance(this).getWorkInfosByTag("ImageGenerationWorker").get().toString())
         setContent {
             AppTheme {
                 SharedTransitionLayout {
@@ -79,10 +76,6 @@ class MainActivity : AppCompatActivity() {
                     var selectedItem: HomeNavigation by rememberSaveable {
                         mutableStateOf(HomeNavigation.Recipe(Recipe.Type.Meal))
                     }
-                    var oldSelectedItem: HomeNavigation? by rememberSaveable {
-                        mutableStateOf(null)
-                    }
-
 
                     val navigator = rememberListDetailPaneScaffoldNavigator<Navigation>()
 
@@ -162,6 +155,8 @@ class MainActivity : AppCompatActivity() {
 
             Navigation.Settings -> Settings(onBack = { lifecycleScope.launch { navigator.navigateBack() } })
             is Navigation.Add -> Add(navigator = navigator, type = destination.type)
+            is Navigation.AddFromWeb -> AddFromWeb(navigator = navigator, type = destination.type)
+            is Navigation.Edit -> Edit(navigator = navigator, recipe =  destination.recipe)
         }
     }
 
@@ -250,6 +245,28 @@ class MainActivity : AppCompatActivity() {
             viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
                 factory.create(Recipe(type = type, name = ""))
             }),
+            addFromWeb = {
+                navigator.navigateToDetails(Navigation.AddFromWeb(type), )
+            }
+        )
+    }
+
+    @Composable
+    fun Edit(
+        navigator: ThreePaneScaffoldNavigator<Navigation>,
+        recipe: Recipe
+    ) {
+        EditRecipe(
+            navigateBack = {
+                if (navigator.canNavigateBack()) lifecycleScope.launch { navigator.navigateBack() }
+                else navigator.navigateToDetails(Navigation.NoSelection)
+            },
+            displayBack = navigator.canNavigateBack(),
+            viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
+                factory.create(recipe)
+            }).apply{
+                load(recipe)
+            },
         )
     }
 
@@ -290,14 +307,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Parcelize
-    sealed class Navigation(val route: String) : Parcelable {
-        object NoSelection : Navigation("no_selection")
-        class Details(val recipe: Recipe) :
-            Navigation("details${recipe.urlParams.let { "?$it" }}")
+    sealed interface Navigation : Parcelable {
+        object NoSelection : Navigation
+        class Details(val recipe: Recipe) : Navigation
 
-        data class Add(val type: Recipe.Type) : Navigation("edit?type=${type.name}")
+        data class Add(val type: Recipe.Type) : Navigation
+        data class Edit(val recipe: Recipe) : Navigation
 
-        object Settings : Navigation("settings")
+        object Settings : Navigation
+        data class AddFromWeb(val type: Recipe.Type) : Navigation
     }
 
 }

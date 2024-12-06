@@ -60,4 +60,8 @@ interface IngredientDao {
             "LEFT OUTER JOIN RecipeIngredient ri ON i.id = ri.ref_ingredient " +
             "ORDER BY removable DESC, i.name")
     fun getSimpleIngredients(): Flow<List<SimpleIngredientEntity>>
+
+    @Query("SELECT * FROM Ingredient WHERE name = :name  COLLATE NOCASE LIMIT 1")
+    suspend fun getIngredientByName(name: String): IngredientEntity?
+
 }

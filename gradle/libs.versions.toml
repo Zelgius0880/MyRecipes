@@ -1,0 +1,109 @@
+[versions]
+
+autoValueAnnotationsVersion = "1.8.1" # Do not modify
+datastorePreferencesVersion = "1.1.1"
+firebaseBomVersion = "33.6.0"
+generativeaiVersion = "0.9.0"
+kotlinxSerializationJsonVersion = "1.6.3"
+materialVersion = "1.12.0"
+roomVersion = "2.6.1"
+tasksVisionImageGeneratorVersion = "0.10.18" # Do not modify
+workVersion = "2.10.0"
+composeVersion = "1.7.5"
+pagingVersion = "3.3.4"
+lifecycleVersion = "2.8.7"
+cameraxVersion = "1.4.0"
+coroutinesVersion = "1.9.0"
+hilt = "2.51.1"
+mlkitVersion = "17.3.0"
+composeAdaptive = "1.1.0-alpha07"
+
+[libraries]
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }
+
+#Room
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
+androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "roomVersion" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
+androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomVersion" }
+
+#Firebase
+crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version = "19.2.1" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics", version = "22.1.2" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
+firebase-functions-ktx = { module = "com.google.firebase:firebase-functions-ktx" }
+
+#Tests
+material = { module = "com.google.android.material:material", version.ref = "materialVersion" }
+test-junit = { module = "junit:junit", version = "4.13.2" }
+test-runner = { module = "androidx.test:runner", version ="1.6.2" }
+test-core = { module = "androidx.test:core", version = "1.6.1" }
+test-core-testing = { module = "androidx.arch.core:core-testing", version ="2.2.0" }
+test-rules = { module = "androidx.test:rules", version = "1.6.1" }
+test-junit-ext = { module = "androidx.test.ext:junit", version = "1.2.1" }
+test-worker = { module = "androidx.work:work-testing", version.ref = "workVersion" }
+
+#Hilt
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+hilt-worker = { module = "androidx.hilt:hilt-work", version = "1.2.0" }
+hilt-compiler = { module = "androidx.hilt:hilt-compiler", version = "1.2.0" }
+
+#Android X
+androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.15.0" }
+androidx-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleVersion" }
+androidx-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleVersion" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
+
+#KTX & coroutines
+coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
+coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutinesVersion" }
+
+#Paging Library
+paging-runtime = { module = "androidx.paging:paging-runtime-ktx", version.ref = "pagingVersion" }
+paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingVersion" }
+
+#Other
+oss-licenses = { module = "com.google.android.gms:play-services-oss-licenses", version = "17.1.0"}
+custom-qr-generator = { module = "com.github.alexzhirkevich:custom-qr-generator", version ="1.6.2"}
+coil = {module = "io.coil-kt:coil-compose", version = "2.6.0"}
+
+#Worker
+work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "workVersion" }
+
+#Midia pipe & IA
+barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitVersion" }
+
+#CameraX
+camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraxVersion" }
+camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraxVersion" }
+camera-view = { module = "androidx.camera:camera-view", version = "1.4.0" }
+
+#Compose
+activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.3" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.4" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeVersion" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "composeVersion" }
+compose-animation = { module = "androidx.compose.animation:animation", version.ref = "composeVersion" }
+compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "composeVersion" }
+compose-material-icons = { module = "androidx.compose.material:material-icons-extended", version = "1.7.5" }
+compose-material3 = { module = "androidx.compose.material3:material3", version = "1.3.1" }
+compose-material3-window = { module = "androidx.compose.material3:material3-window-size-class", version = "1.3.1" }
+
+compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "composeAdaptive" }
+compose-material3-adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout", version.ref = "composeAdaptive" }
+compose-material3-adaptive-navigation = { module = "androidx.compose.material3.adaptive:adaptive-navigation", version.ref = "composeAdaptive" }
+compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version = "1.3.1" }
+
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferencesVersion" }
+
+#Mediapipe & IA
+tasks-vision = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVisionImageGeneratorVersion" }
+tasks-vision-image-generator = { module = "com.google.mediapipe:tasks-vision-image-generator", version.ref = "tasksVisionImageGeneratorVersion" }
+generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeaiVersion" }
+
+# Fixme: this two first dependencies will need to be removed when the com.google.mediapipe:tasks-vision will not trigger duplicated classes anymore
+auto-value = { module = "com.google.auto.value:auto-value", version.ref = "autoValueAnnotationsVersion" }
+auto-value-annotations = { module = "com.google.auto.value:auto-value-annotations", version.ref = "autoValueAnnotationsVersion" }
+[plugins]

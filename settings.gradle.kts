@@ -3,3 +3,4 @@ plugins {
 }
 include (":app", ":protobuff")
 include(":data")
+include(":ia")

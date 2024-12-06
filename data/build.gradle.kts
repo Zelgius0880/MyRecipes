@@ -32,7 +32,7 @@ android {
             )
         }
 
-        create("generationTest") {}
+        create("randomTests") {}
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -42,23 +42,23 @@ android {
         jvmTarget = "1.8"
     }
 
-
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
-    val roomVersion = "2.6.1"
     api(project(path = (":protobuff")))
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation(libs.androidx.datastore.preferences)
 
     //Room
-    ksp("androidx.room:room-compiler:$roomVersion")
-    api("androidx.room:room-ktx:$roomVersion")
-    api("androidx.room:room-paging:$roomVersion")
-    androidTestImplementation("androidx.room:room-testing:$roomVersion")
+    ksp(libs.androidx.room.compiler)
+    api(libs.androidx.room.ktx)
+    api(libs.androidx.room.paging)
+    androidTestImplementation(libs.androidx.room.testing)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.junit.ext)
 }
 java {
     toolchain {

@@ -38,7 +38,7 @@ fun AppTextField(
     leadingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textAlign: TextAlign = TextAlign.Start,
-    contentPadding: PaddingValues =  PaddingValues(
+    contentPadding: PaddingValues = PaddingValues(
         horizontal = 16.dp,
         vertical = 4.dp
     )
@@ -55,9 +55,12 @@ fun AppTextField(
         readOnly = readOnly,
         maxLines = maxLines,
         singleLine = singleLine,
-        cursorBrush = SolidColor( MaterialTheme.colorScheme.onSurfaceVariant),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
         keyboardOptions = keyboardOptions,
-        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, textAlign = textAlign)
+        textStyle = MaterialTheme.typography.bodyLarge.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = textAlign
+        )
     ) { innerTextField ->
         OutlinedTextFieldDefaults.DecorationBox(
             value = value,
@@ -67,9 +70,9 @@ fun AppTextField(
             innerTextField = innerTextField,
             singleLine = singleLine,
             enabled = enabled,
-            trailingIcon = trailingIcon,
-            leadingIcon = leadingIcon,
-            colors = OutlinedTextFieldDefaults.colors(cursorColor =MaterialTheme.colorScheme.onSurfaceVariant),
+            suffix = trailingIcon,
+            prefix = leadingIcon,
+            colors = OutlinedTextFieldDefaults.colors(cursorColor = MaterialTheme.colorScheme.onSurfaceVariant),
             container = {
                 OutlinedTextFieldDefaults.Container(
                     enabled = enabled,
@@ -95,6 +98,7 @@ fun AppTextField(
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     singleLine: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
     label: @Composable () -> Unit = {},
     interactionSource: MutableInteractionSource? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
@@ -109,11 +113,15 @@ fun AppTextField(
         modifier = modifier,
         visualTransformation = visualTransformation,
         interactionSource = interactionSource,
+        maxLines = maxLines,
         enabled = enabled,
         readOnly = readOnly,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
         keyboardOptions = keyboardOptions,
-        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, textAlign = textAlign),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = textAlign
+        ),
         singleLine = singleLine,
     ) { innerTextField ->
         OutlinedTextFieldDefaults.DecorationBox(

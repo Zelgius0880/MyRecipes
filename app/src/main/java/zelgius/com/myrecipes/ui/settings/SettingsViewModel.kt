@@ -17,7 +17,6 @@ import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.useCase.pdf.GeneratePdfUseCase
-import zelgius.com.myrecipes.worker.ImageGenerationWorker
 import zelgius.com.myrecipes.worker.WorkerRepository
 import java.io.File
 import java.io.OutputStream
@@ -50,7 +49,7 @@ class SettingsViewModel @Inject constructor(
 
     init {
         _isIAGenerationEnabled.value =
-            ImageGenerationWorker.modelExists
+            com.zelgius.myrecipes.ia.worker.ImageGenerationWorker.Companion.modelExists
     }
 
     fun setIsIAGenerationChecked(checked: Boolean) {
