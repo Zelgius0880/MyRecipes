@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -124,8 +125,10 @@ private fun RecipeHeaderOnePane(
     ) {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.End)
         ) {
+            Spacer(modifier.weight(1f))
 
             CompositionLocalProvider(
                 LocalContentColor provides if (isGestureDetectionError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
