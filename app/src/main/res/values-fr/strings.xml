@@ -11,8 +11,6 @@
     <string name="butter_name">Beurre</string>
     <string name="cancel">Annuler</string>
     <string name="cancel_button_label">Annuler</string>
-    <string name="channel_description">Indique la progression de la génération d\'image</string>
-    <string name="channel_name">Génération d\'image</string>
     <string name="cheese_name">Fromage</string>
     <string name="chocolate_name">Chocolat</string>
     <string name="choose_button_label">Choisir</string>
@@ -170,4 +168,9 @@ AAAA
     <string name="type">Type</string>
     <string name="export_all_recipes">Exporter toutes les recettes</string>
     <string name="generate_now">Générer maintenant</string>
+    <string name="recipe_url">Url de la recette</string>
+    <string name="data_extraction_error">Une erreur c\'est produite. Ca arrive parfois, essayez de nouveau</string>
+    <string name="error">Erreur</string>
+    <string name="retry">Réessayer</string>
+
 </resources>

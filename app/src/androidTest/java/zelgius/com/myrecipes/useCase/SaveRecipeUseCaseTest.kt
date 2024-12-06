@@ -1,8 +1,6 @@
 package zelgius.com.myrecipes.useCase
 
-import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
@@ -10,7 +8,9 @@ import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import zelgius.com.myrecipes.data.AppDatabase
+import zelgius.com.myrecipes.TestDataBase
+import zelgius.com.myrecipes.TestDataBase.context
+import zelgius.com.myrecipes.TestDataBase.db
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Ingredient.Unit
 import zelgius.com.myrecipes.data.model.Recipe
@@ -24,7 +24,6 @@ import zelgius.com.myrecipes.utils.DEFAULT_BASE_64
 import zelgius.com.myrecipes.utils.TestHelper
 import zelgius.com.myrecipes.utils.assertEquals
 import zelgius.com.myrecipes.worker.WorkerRepository
-import java.io.IOException
 import kotlin.random.Random
 
 @RunWith(AndroidJUnit4ClassRunner::class)
@@ -51,25 +50,6 @@ class SaveRecipeUseCaseTest {
         )
     }
 
-    companion object {
-        private var _db: AppDatabase? = null
-        private val context by lazy { ApplicationProvider.getApplicationContext<Application>()!! }
-        private val db get() = _db!!
-
-        @BeforeClass
-        @JvmStatic
-        fun createDb() {
-            _db = AppDatabase.getInstance(context, true)
-
-        }
-
-        @AfterClass
-        @JvmStatic
-        @Throws(IOException::class)
-        fun closeDb() {
-            db.close()
-        }
-    }
 
 
     @Test
@@ -159,6 +139,18 @@ class SaveRecipeUseCaseTest {
         sortOrder = sortOrder,
         optional = optional,
     )
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUp() {
+            TestDataBase.createDb()
+        }
 
+        @AfterClass
+        @JvmStatic
+        fun tearDown() {
+            TestDataBase.closeDb()
+        }
+    }
 
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cancel">Annuler</string>
+    <string name="channel_description">Indique la progression de la génération d\'image</string>
+    <string name="channel_name">Génération d\'image</string>
+</resources>

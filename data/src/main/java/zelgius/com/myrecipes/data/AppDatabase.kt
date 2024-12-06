@@ -35,7 +35,11 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private var instance: AppDatabase? = null
-        fun getInstance(context: Context, test: Boolean = false): AppDatabase {
+        fun getInstance(
+            context: Context,
+            test: Boolean = false,
+            onCreate: (db: SupportSQLiteDatabase) -> Unit = {}
+        ): AppDatabase {
             if (instance == null) {
                 instance = if (!test) createDatabase(context)
                 else
@@ -43,6 +47,12 @@ abstract class AppDatabase : RoomDatabase() {
                         context, AppDatabase::class.java
                     )
                         .addCallback(object : Callback() {
+
+                            override fun onCreate(db: SupportSQLiteDatabase) {
+                                super.onCreate(db)
+
+                                onCreate(db)
+                            }
                         })
                         .build()
             }
@@ -50,7 +60,10 @@ abstract class AppDatabase : RoomDatabase() {
             return instance!!
         }
 
-        fun createDatabase(context: Context, onCreate: (db: SupportSQLiteDatabase) -> Unit = {}): AppDatabase {
+        fun createDatabase(
+            context: Context,
+            onCreate: (db: SupportSQLiteDatabase) -> Unit = {}
+        ): AppDatabase {
             return Room.databaseBuilder(
                 context,
                 AppDatabase::class.java, "database"

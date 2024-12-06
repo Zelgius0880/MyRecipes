@@ -95,13 +95,6 @@ class IngredientRepository(
         return item.copy(id = id)
     }
 
-
-    /**
-     * For the given recipe, delete all joins with the ingredients except the ingredients in params
-     * @param recipe Recipe                     the targeted recipe
-     * @param ingredients IngredientForRecipe   the ingredients to keep
-     * @return Int                              the number of rows affected
-     */
     suspend fun deleteAllButThem(
         ingredients: List<Ingredient>,
         recipeId: Long
@@ -115,4 +108,8 @@ class IngredientRepository(
 
     suspend fun deleteIngredient(id: Long) = dao.delete(id)
     suspend fun update(ingredient: SimpleIngredient) = dao.update(ingredient.asEntity())
+
+    suspend  fun getIngredientByName(name: String): Ingredient? {
+        return dao.getIngredientByName(name)?.asModel()
+    }
 }

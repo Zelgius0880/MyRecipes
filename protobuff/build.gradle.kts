@@ -22,7 +22,7 @@ android {
     }
 
     buildTypes {
-        create("generationTest") {}
+        create("randomTests") {}
     }
 
     dependencies {

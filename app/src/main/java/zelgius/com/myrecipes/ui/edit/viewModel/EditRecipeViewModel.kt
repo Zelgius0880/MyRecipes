@@ -33,6 +33,7 @@ class EditRecipeViewModel @AssistedInject constructor(
 ) : ViewModel() {
 
     private val _recipeFlow = MutableStateFlow(recipe)
+    val addFromWeb = recipe.name.isEmpty()
 
     val recipeFlow
         get() = _recipeFlow.asStateFlow()
@@ -60,6 +61,10 @@ class EditRecipeViewModel @AssistedInject constructor(
                 _recipeFlow.value = it
             }
         }
+    }
+
+    fun load(recipe: Recipe) {
+        _recipeFlow.value = recipe
     }
 
     fun changeName(name: String) {

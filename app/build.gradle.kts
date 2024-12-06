@@ -10,7 +10,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
 }
 
 val getProps: (propName: String) -> String = {
@@ -32,7 +32,7 @@ android {
         targetSdk = 35
         versionCode = 9
         versionName = "2.0-beta04"
-        testInstrumentationRunner = "zelgius.com.myrecipes.utils.HiltTestRunner"
+        testInstrumentationRunner =  "androidx.test.runner.AndroidJUnitRunner"
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
@@ -45,7 +45,9 @@ android {
     }
 
     sourceSets {
-        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
+        getByName("androidTest") {
+            assets.srcDirs (listOf("src/androidTest/assets/", "$projectDir/schemas"))
+        }
     }
 
     signingConfigs {
@@ -84,7 +86,7 @@ android {
             buildConfigField(type = "String", name = "EMAIL", value = getProps("app.email"))
         }
 
-        create("generationTest") {
+        create("randomTests") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".debug"
         }
@@ -120,108 +122,78 @@ android {
 }
 
 
-val composeVersion = "1.7.5"
-val pagingVersion = "3.3.2"
-val lifecycleVersion = "2.8.7"
-val workVersion = "2.10.0"
-val cameraxVersion = "1.4.0"
-val coroutinesVersion = "1.9.0-RC.2"
 
 dependencies {
-    implementation("com.google.firebase:firebase-crashlytics:19.2.1")
-    implementation("com.google.firebase:firebase-analytics:22.1.2")
+    implementation(libs.firebase.analytics)
+    implementation(libs.crashlytics)
 
     implementation(project(":data"))
-
-    // implementation (fileTree(dir:("libs"), include: ["*.jar"]))
-    implementation("com.google.android.material:material:1.12.0")
+    implementation(project(":ia"))
+    implementation(libs.material)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test:runner:1.6.2")
-    androidTestImplementation("androidx.test:core:1.6.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
-    testImplementation("org.mockito:mockito-core:5.10.0")
-    androidTestImplementation("org.mockito:mockito-core:5.10.0")
-    androidTestImplementation("androidx.test:rules:1.6.1")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.work:work-testing:$workVersion")
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.test.core)
+    androidTestImplementation(libs.test.core.testing)
+    androidTestImplementation(libs.test.rules)
+    androidTestImplementation(libs.test.junit.ext)
+    androidTestImplementation(libs.test.worker)
 
-    kspTest("com.google.dagger:hilt-android-compiler:2.51.1")
-    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.51.1")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.51.1")
+    kspTest(libs.hilt.android.compiler)
+    kspAndroidTest(libs.hilt.android.compiler)
+    androidTestImplementation(libs.hilt.android)
 
-    androidTestImplementation("com.google.code.gson:gson:2.10.1")
-    implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("de.hdodenhof:circleimageview:3.1.0")
+    implementation(libs.coil)
 
     //Hilt
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    ksp("com.google.dagger:hilt-android-compiler:2.51.1")
-    implementation("androidx.hilt:hilt-work:1.2.0")
-    ksp("androidx.hilt:hilt-compiler:1.2.0")
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.hilt.worker)
+    implementation(libs.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
 
     //Android X
-    implementation("androidx.fragment:fragment:1.8.5")
-    implementation("androidx.fragment:fragment-ktx:1.8.5")
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.0")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
-    implementation("androidx.legacy:legacy-support-v13:1.0.0")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.viewmodel)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.viewmodel.compose)
 
     //KTX & coroutines
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
+    implementation(libs.coroutines.core)
+    implementation(libs.coroutines.android)
 
     //Paging Library
-    implementation("androidx.paging:paging-runtime-ktx:$pagingVersion")
-    implementation("androidx.paging:paging-compose:3.3.2")
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
 
     //Other
-    implementation("com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:1.0.0")
-    implementation("com.google.zxing:core:3.5.3")
-    implementation("com.google.android.gms:play-services-oss-licenses:17.1.0")
-    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2")
+    implementation(libs.oss.licenses)
+    implementation(libs.custom.qr.generator)
 
     //Worker
-    implementation("androidx.work:work-runtime-ktx:$workVersion")
-    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation(libs.work.runtime)
+    implementation(libs.barcode.scanning)
 
     //CameraX
-    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
-    implementation("androidx.camera:camera-camera2:${cameraxVersion}")
-    implementation("androidx.camera:camera-view:1.4.0")
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.view)
 
     //Compose
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.navigation:navigation-compose:2.8.3")
-    implementation("androidx.compose.ui:ui-tooling:$composeVersion")
-    implementation("androidx.compose.ui:ui:$composeVersion")
-    implementation("androidx.compose.animation:animation:$composeVersion")
-    implementation("androidx.compose.foundation:foundation:$composeVersion")
-    implementation("androidx.compose.material:material-icons-extended:1.7.5")
-    implementation("androidx.compose.material3:material3:1.3.1")
-    implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
+    implementation(libs.activity.compose)
+    implementation(libs.navigation.compose)
+    implementation(libs.compose.ui.tooling)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.animation)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material.icons)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.material3.window)
 
-    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha06")
-    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha06")
-    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha06")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.1")
+    implementation(libs.compose.material3.adaptive)
+    implementation(libs.compose.material3.adaptive.layout)
+    implementation(libs.compose.material3.adaptive.navigation)
+    implementation(libs.compose.material3.adaptive.navigation.suite)
 
-
-    // Mediapipe
-    implementation("com.google.mediapipe:tasks-vision-image-generator:0.10.16")
-    //implementation ("com.google.mediapipe:tasks-vision:0.10.16")
-
-    // Fixme: this two first dependencies will need to be removed when the com.google.mediapipe:tasks-vision will not trigger duplicated classes anymore
-    compileOnly("com.google.auto.value:auto-value-annotations:1.8.1")
-    annotationProcessor("com.google.auto.value:auto-value:1.8.1")
 }
