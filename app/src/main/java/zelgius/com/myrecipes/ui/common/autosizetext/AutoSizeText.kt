@@ -60,8 +60,8 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastFilter
+import zelgius.com.myrecipes.data.logger.Logger
 import zelgius.com.myrecipes.ui.common.autosizetext.SuggestedFontSizesStatus.Companion.validSuggestedFontSizes
-import zelgius.com.myrecipes.utils.Logger
 import kotlin.math.min
 
 private const val TAG = "AutoSizeText"

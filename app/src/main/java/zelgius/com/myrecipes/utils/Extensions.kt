@@ -1,14 +1,12 @@
 package zelgius.com.myrecipes.utils
 
 import android.content.Context
-import android.util.Log
 import android.util.TypedValue
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import zelgius.com.myrecipes.BuildConfig
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
@@ -80,22 +78,3 @@ fun hasNavigationRail(): Boolean =
 @Composable
 fun hasNavigationBar(): Boolean =
     NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo()) == NavigationSuiteType.NavigationBar
-
-object Logger {
-    val TAG = Logger::class.simpleName?:"Logger"
-    fun i(tag:String, message: String) {
-        if(BuildConfig.DEBUG) Log.i(tag, message)
-    }
-
-    fun i(message: String) {
-        i(TAG, message)
-    }
-
-    fun w(tag:String, message: String) {
-        if(BuildConfig.DEBUG) Log.w(tag, message)
-    }
-
-    fun w(message: String) {
-        w(TAG, message)
-    }
-}

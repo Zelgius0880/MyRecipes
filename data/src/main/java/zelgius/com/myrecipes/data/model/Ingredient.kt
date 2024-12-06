@@ -4,6 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.model.Ingredient.Unit.entries
 
 @Parcelize
 data class Ingredient(
@@ -28,7 +29,11 @@ data class Ingredient(
         TeaSpoon,
         TableSpoon,
         Cup,
-        Pinch
+        Pinch;
+
+        companion object {
+            fun valueOfOrElse(value: String, default: Unit = Unit) = entries.find { it.name == value } ?: default
+        }
     }
 
     companion object {

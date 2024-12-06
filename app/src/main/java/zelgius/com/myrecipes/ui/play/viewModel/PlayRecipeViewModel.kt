@@ -5,6 +5,8 @@ import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.zelgius.myrecipes.ia.repository.Gesture
+import com.zelgius.myrecipes.ia.usecase.LiveGestureRecognitionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -20,11 +22,8 @@ import zelgius.com.myrecipes.data.useCase.GetInstructionsUseCase
 import zelgius.com.myrecipes.data.useCase.IngredientInstruction
 import zelgius.com.myrecipes.data.useCase.InstructionItem
 import zelgius.com.myrecipes.data.useCase.StepInstruction
-import zelgius.com.myrecipes.mediapipe.usecase.LiveGestureRecognitionUseCase
-import zelgius.com.myrecipes.repository.Gesture
 import zelgius.com.myrecipes.repository.TextToSpeechRepository
 import javax.inject.Inject
-import kotlin.collections.lastIndex
 
 @HiltViewModel
 class PlayRecipeViewModel @Inject constructor(
@@ -81,7 +80,11 @@ class PlayRecipeViewModel @Inject constructor(
             _gestureRecognitionError.value = true
         }
         viewModelScope.launch(coroutineExceptionHandler) {
-            gestureRecognitionUseCase.execute(orientation, preview , lifecycleOwner)
+            gestureRecognitionUseCase.execute(
+                orientation,
+                preview,
+                lifecycleOwner
+            )
         }
     }
 
@@ -141,7 +144,7 @@ class PlayRecipeViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        gestureRecognitionUseCase.clear()
+        cancelRecognition()
     }
 
     fun cancelRecognition() {
