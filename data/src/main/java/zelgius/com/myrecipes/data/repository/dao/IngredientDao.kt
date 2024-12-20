@@ -7,6 +7,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
+import zelgius.com.myrecipes.data.entities.IngredientImageUrlUpdate
 import zelgius.com.myrecipes.data.entities.RecipeIngredient
 import zelgius.com.myrecipes.data.entities.SimpleIngredientEntity
 
@@ -24,6 +25,9 @@ interface IngredientDao {
 
     @Update
     suspend fun update(join: RecipeIngredient): Int
+
+    @Update(entity = IngredientEntity::class)
+    suspend fun update(update: IngredientImageUrlUpdate): Int
 
     @Query("SELECT * FROM ingredient ORDER BY name")
     suspend fun get(): List<IngredientEntity>
@@ -51,7 +55,6 @@ interface IngredientDao {
 
     @Query("DELETE FROM RecipeIngredient WHERE ref_recipe = :recipeId")
     suspend fun deleteFromRecipe(recipeId: Long): Int
-
 
     @Query("DELETE FROM Ingredient WHERE id = :id")
     suspend fun delete(id: Long): Int

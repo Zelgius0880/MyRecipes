@@ -2,6 +2,7 @@ package zelgius.com.myrecipes.data.repository
 
 import kotlinx.coroutines.flow.map
 import zelgius.com.myrecipes.data.entities.IngredientEntity
+import zelgius.com.myrecipes.data.entities.IngredientImageUrlUpdate
 import zelgius.com.myrecipes.data.entities.RecipeIngredient
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Ingredient
@@ -112,4 +113,6 @@ class IngredientRepository(
     suspend  fun getIngredientByName(name: String): Ingredient? {
         return dao.getIngredientByName(name)?.asModel()
     }
+
+    suspend fun updateUrlImage(id: Long, url: String) = dao.update(IngredientImageUrlUpdate(id, url))
 }

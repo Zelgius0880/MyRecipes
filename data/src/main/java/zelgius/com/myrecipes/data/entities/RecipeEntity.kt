@@ -101,3 +101,9 @@ fun RecipeEntity.asModel(): Recipe {
         generationEnabled = generationEnabled
     )
 }
+
+@Entity
+class RecipeImageUrlUpdate(
+    var id: Long? = null,
+    @ColumnInfo(name = "image_url") var imageURL: String? = null
+)

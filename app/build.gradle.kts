@@ -30,8 +30,8 @@ android {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 28
         targetSdk = 35
-        versionCode = 9
-        versionName = "2.0-beta04"
+        versionCode = 11
+        versionName = "2.0-beta05"
         testInstrumentationRunner =  "androidx.test.runner.AndroidJUnitRunner"
 
         ksp {
@@ -170,6 +170,7 @@ dependencies {
     //Other
     implementation(libs.oss.licenses)
     implementation(libs.custom.qr.generator)
+    implementation(libs.billing.ktx)
 
     //Worker
     implementation(libs.work.runtime)
@@ -190,6 +191,7 @@ dependencies {
     implementation(libs.compose.material.icons)
     implementation(libs.compose.material3)
     implementation(libs.compose.material3.window)
+    implementation (libs.androidx.constraintlayout.compose)
 
     implementation(libs.compose.material3.adaptive)
     implementation(libs.compose.material3.adaptive.layout)

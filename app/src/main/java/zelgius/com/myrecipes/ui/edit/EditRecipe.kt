@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -68,7 +67,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.atLeast
+import androidx.constraintlayout.compose.atMost
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Ingredient
@@ -102,7 +105,8 @@ fun EditRecipe(
     val items by viewModel.itemsFlow.collectAsState(emptyList())
     val coroutineScope = rememberCoroutineScope()
 
-    EditRecipeView(recipe,
+    EditRecipeView(
+        recipe,
         items = items,
         navigateBack = navigateBack,
         addFromWeb = viewModel.addFromWeb,
@@ -178,7 +182,7 @@ private fun EditRecipeView(
 
 
             }, actions = {
-                if(addFromWeb)
+                if (addFromWeb)
                     IconButton(onClick = onAddFromWeb) {
                         Icon(
                             imageVector = Icons.TwoTone.CloudDownload,
@@ -254,7 +258,8 @@ private fun EditRecipeView(
 
             val stepSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-            if (showStepBottomSheet) StepBottomSheet(initialStep = selectedStep,
+            if (showStepBottomSheet) StepBottomSheet(
+                initialStep = selectedStep,
                 modalBottomSheetState = stepSheetState,
                 recipe = recipe,
                 onSaved = {
@@ -272,7 +277,8 @@ private fun EditRecipeView(
 
             val ingredientSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-            if (showIngredientBottomSheet) IngredientBottomSheet(initialIngredient = selectedIngredient,
+            if (showIngredientBottomSheet) IngredientBottomSheet(
+                initialIngredient = selectedIngredient,
                 modalBottomSheetState = ingredientSheetState,
                 onSaved = {
                     val selected = selectedIngredient
@@ -317,21 +323,53 @@ private fun EditRecipeHeader(
 
 
     Card(modifier.padding(8.dp), shape = MaterialTheme.shapes.extraLarge) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Min), verticalAlignment = CenterVertically
+        ConstraintLayout(
+            modifier = Modifier.fillMaxWidth(),
         ) {
+            val (image, fields) = createRefs()
+            var isError by remember { mutableStateOf(imageUrl == null) }
 
-            Image(
-                painter = rememberAsyncImagePainter(
-                    imageUrl, error = painterResource(R.drawable.ic_dish)
-                ), contentDescription = null, modifier = Modifier
-                    .size(128.dp)
+            if (!isError)
+                AsyncImage(
+                    model = imageUrl,
+                    onError = { isError = true },
+                    contentDescription = null,
+                    modifier = Modifier
+                        .constrainAs(image) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            bottom.linkTo(parent.bottom)
+                            width = Dimension.ratio("1:1")
+                            height = Dimension.fillToConstraints.atLeast(128.dp).atMost(180.dp)
+                        }
+                        .clip(
+                            shape = MaterialTheme.shapes.extraLarge
+                        ),
+                    contentScale = ContentScale.Crop
+                )
+            else Image(
+                painterResource(R.drawable.ic_dish), contentDescription = null,
+                modifier = Modifier
+                    .constrainAs(image) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        bottom.linkTo(parent.bottom)
+                        width = Dimension.ratio("1:1")
+                        height = Dimension.fillToConstraints.atLeast(128.dp).atMost(180.dp)
+                    }
                     .clip(
                         shape = MaterialTheme.shapes.extraLarge
-                    ), contentScale = ContentScale.Crop
+                    ),
             )
 
-            Column(Modifier.padding(8.dp)) {
+            Column(Modifier
+                .constrainAs(fields) {
+                    top.linkTo(parent.top, margin = 8.dp)
+                    start.linkTo(image.end, margin = 8.dp)
+                    end.linkTo(parent.end, margin = 8.dp)
+                    bottom.linkTo(parent.bottom, margin = 8.dp)
+                    width = Dimension.fillToConstraints
+                }) {
                 TypeDropdown(type, onTypeChanged)
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -367,7 +405,7 @@ private fun EditRecipeHeader(
                             )
 
                             //if (URLUtil.isValidUrl(it.text)) {
-                                onImageUrlChanged(it.text)
+                            onImageUrlChanged(it.text)
                             //}
                         },
                         modifier = Modifier
@@ -400,10 +438,10 @@ private fun TypeDropdown(
     selectedType: Recipe.Type,
     onTypeChanged: (Recipe.Type) -> Unit = {}
 ) {
-    AppDropDown(modifier = Modifier
-        .fillMaxWidth()
-        .padding(top = 8.dp)
-        ,
+    AppDropDown(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
         selection = {
             Box(contentAlignment = Center) {
                 AppTextField(
@@ -450,10 +488,11 @@ private fun LazyItemScope.StepItem(
             .fillMaxWidth()
             .padding(vertical = 4.dp, horizontal = 8.dp), shape = MaterialTheme.shapes.extraLarge
     ) {
-        RemovableItem(modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Max)
-            .clickable { onEdit(item) }, onRemove = { onRemove(item) }) {
+        RemovableItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max)
+                .clickable { onEdit(item) }, onRemove = { onRemove(item) }) {
             Row {
                 Step(
                     item.step, modifier = Modifier
@@ -492,11 +531,12 @@ private fun LazyItemScope.IngredientItem(
             .height(IntrinsicSize.Max)
             .padding(horizontal = 8.dp), shape = shape
     ) {
-        RemovableItem(modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onEdit(item.ingredient)
-            },
+        RemovableItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    onEdit(item.ingredient)
+                },
             onRemove = { onRemove(item.ingredient) }) {
             Ingredient(
                 item.ingredient, modifier = Modifier.padding(8.dp)

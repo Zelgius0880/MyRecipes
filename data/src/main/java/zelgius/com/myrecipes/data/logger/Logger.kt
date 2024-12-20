@@ -18,7 +18,11 @@ object Logger {
         if(BuildConfig.DEBUG) Log.w(tag, message)
     }
 
-    fun w(message: String) {
-        w(TAG, message)
+    fun e(message: String) {
+        e(message)
+    }
+
+    fun e(message: String? = null, throwable: Throwable? = null) {
+        if(BuildConfig.DEBUG) Log.e(TAG, message, throwable)
     }
 }

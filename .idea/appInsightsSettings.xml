@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AppInsightsSettings">
+    <option name="selectedTabId" value="Firebase Crashlytics" />
     <option name="tabSettings">
       <map>
         <entry key="Android Vitals">
@@ -27,14 +28,14 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="zelgius.com.myrecipes" />
-                  <option name="mobileSdkAppId" value="1:302277001312:android:5c39be65871e852e710305" />
+                  <option name="appId" value="zelgius.com.myrecipes.debug" />
+                  <option name="mobileSdkAppId" value="1:302277001312:android:e6822d34339d6752710305" />
                   <option name="projectId" value="piclock-c9af5" />
                   <option name="projectNumber" value="302277001312" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
-              <option name="timeIntervalDays" value="THIRTY_DAYS" />
+              <option name="timeIntervalDays" value="SEVEN_DAYS" />
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>

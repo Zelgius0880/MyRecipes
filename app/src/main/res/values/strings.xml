@@ -9,7 +9,6 @@
     <string name="meal">Meal</string>
     <string name="search">Search</string>
     <string name="search_hint">Search a recipe</string>
-    <string name="title_activity_main2" translatable="false">Main2Activity</string>
     <string name="undo">Undo</string>
     <string name="recipe_removed">Recipe removed</string>
 
@@ -139,7 +138,6 @@
 
     <string name="settings">Settings</string>
     <string name="ia_generation">Enable IA image generation</string>
-    <string name="ia_generation_disabled">No IA model found, follow <a href="https://ai.google.dev/edge/mediapipe/solutions/vision/image_generator/android#model">this link</a> to add an IA generative model</string>
 
     <string name="play_recipe_enable_text_reading">Enable text reading</string>
     <string name="play_recipe_enable_gesture_detection">Enable gesture detection\n👍 for next\n👎 for previous\n☝️ for repeating </string>

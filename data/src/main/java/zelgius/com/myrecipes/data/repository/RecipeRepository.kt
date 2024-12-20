@@ -3,6 +3,7 @@ package zelgius.com.myrecipes.data.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.RecipeImageUrlUpdate
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.asEntity
@@ -97,4 +98,6 @@ class RecipeRepository(
 
         return baos.toByteArray()
     }
+
+    suspend fun updateUrlImage(id: Long, url: String) = recipeDao.update(RecipeImageUrlUpdate(id, url))
 }
