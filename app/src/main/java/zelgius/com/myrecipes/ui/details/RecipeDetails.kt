@@ -8,12 +8,10 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Edit
@@ -34,7 +32,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -43,6 +40,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.atLeast
+import androidx.constraintlayout.compose.atMost
 import coil.compose.rememberAsyncImagePainter
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
@@ -191,7 +192,7 @@ private fun RecipeDetailsView(
         )
     })
 
-    if(showShareDialog) ShareDialog(recipe) {
+    if (showShareDialog) ShareDialog(recipe) {
         showShareDialog = false
     }
 }
@@ -216,33 +217,42 @@ fun RecipeDetailsHeader(
             }
             .padding(top = 8.dp), shape = MaterialTheme.shapes.extraLarge
     ) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
+        ConstraintLayout(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-
-            Box {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
-                    ), contentDescription = null, modifier = Modifier
-                        .size(128.dp)
-                        .ifNotNull(animatedVisibilityScope) {
-                            sharedElement(
-                                animatedVisibilityScope = it,
-                                state = rememberSharedContentState(key = "${recipe.id}_recipe_image")
-                            )
-                        }
-                        .clip(
-                            shape = MaterialTheme.shapes.extraLarge
-                        ), contentScale = ContentScale.Crop
-                )
-            }
+            val (image, name) = createRefs()
+            Image(
+                painter = rememberAsyncImagePainter(
+                    recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
+                ), contentDescription = null, modifier = Modifier
+                    .constrainAs(image) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        bottom.linkTo(parent.bottom)
+                        width = Dimension.ratio("1:1")
+                        height = Dimension.fillToConstraints.atLeast(128.dp).atMost(180.dp)
+                    }
+                    .ifNotNull(animatedVisibilityScope) {
+                        sharedElement(
+                            animatedVisibilityScope = it,
+                            state = rememberSharedContentState(key = "${recipe.id}_recipe_image")
+                        )
+                    }
+                    .clip(
+                        shape = MaterialTheme.shapes.extraLarge
+                    ), contentScale = ContentScale.Crop
+            )
 
             Text(
-                recipe.name, modifier = Modifier
-                    .padding(16.dp)
-                    .weight(1f)
+                recipe.name,
+                modifier = Modifier
+                    .constrainAs(name) {
+                        top.linkTo(parent.top, margin = 16.dp)
+                        start.linkTo(image.end, margin = 16.dp)
+                        end.linkTo(parent.end, margin = 16.dp)
+                        bottom.linkTo(parent.bottom, margin = 16.dp)
+                        width = Dimension.fillToConstraints
+                    }
                     .ifNotNull(animatedVisibilityScope) {
                         sharedElement(
                             animatedVisibilityScope = it,
@@ -250,7 +260,8 @@ fun RecipeDetailsHeader(
                                 key = "${recipe.id}_recipe_name"
                             )
                         )
-                    }, style = MaterialTheme.typography.headlineLarge
+                    },
+                style = MaterialTheme.typography.headlineLarge,
             )
         }
     }
@@ -261,7 +272,7 @@ fun RecipeDetailsHeader(
 @Composable
 fun RecipeDetailsPreview() {
     SharedElementPreview { animatedVisibilityScope, sharedTransitionScope ->
-        val recipe = createDummyModel(suffix = "")
+        val recipe = createDummyModel(suffix = "testing testing testing")
         RecipeDetailsView(
             animatedVisibilityScope = animatedVisibilityScope,
             sharedTransitionScope = sharedTransitionScope,

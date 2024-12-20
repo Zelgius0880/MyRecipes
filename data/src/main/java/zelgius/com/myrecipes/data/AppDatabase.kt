@@ -9,22 +9,24 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import zelgius.com.myrecipes.data.entities.ImageGenerationRequestEntity
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.IngredientForRecipe
 import zelgius.com.myrecipes.data.entities.RecipeEntity
 import zelgius.com.myrecipes.data.entities.RecipeIngredient
 import zelgius.com.myrecipes.data.entities.StepEntity
+import zelgius.com.myrecipes.data.repository.dao.ImageGenerationProgressDao
 import zelgius.com.myrecipes.data.repository.dao.IngredientDao
 import zelgius.com.myrecipes.data.repository.dao.RecipeDao
 import zelgius.com.myrecipes.data.repository.dao.StepDao
 
 
 @Database(
-    entities = [IngredientEntity::class, RecipeEntity::class, StepEntity::class, RecipeIngredient::class],
+    entities = [IngredientEntity::class, RecipeEntity::class, StepEntity::class, RecipeIngredient::class, ImageGenerationRequestEntity::class],
     views = [IngredientForRecipe::class],
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 5, to = 6)],
-    version = 6
+    autoMigrations = [AutoMigration(from = 5, to = 6), AutoMigration(from = 6, to = 7)],
+    version = 7
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -32,6 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val ingredientDao: IngredientDao
     abstract val recipeDao: RecipeDao
     abstract val stepDao: StepDao
+    abstract val imageGenerationProgressDao: ImageGenerationProgressDao
 
     companion object {
         private var instance: AppDatabase? = null

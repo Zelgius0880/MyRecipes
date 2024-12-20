@@ -57,8 +57,8 @@ dependencies {
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
-    implementation(libs.hilt.worker)
     ksp(libs.hilt.compiler)
+    implementation(libs.hilt.worker)
     implementation(libs.work.runtime)
 
     //CameraX
@@ -67,16 +67,18 @@ dependencies {
     implementation(libs.camera.view)
 
     // Mediapipe & IA
-    implementation(libs.tasks.vision.image.generator)
-    //implementation (libs.tasks.vision)
-    implementation(libs.generativeai)
-
-    compileOnly(libs.auto.value.annotations)
-    annotationProcessor(libs.auto.value)
-
+    implementation (libs.tasks.vision)
     implementation (libs.kotlinx.serialization.json)
+    implementation (libs.translate)
 
     //FIREBASE
     api(platform(libs.firebase.bom))
     api (libs.firebase.functions.ktx)
+    implementation(libs.firebase.config)
+
+    //Netwokring
+    implementation(libs.retrofit)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
 }

@@ -4,7 +4,7 @@
     <string name="channel_name">Image Generation</string>
     <string name="channel_description">Indicates the progress of the image generation</string>
 
-    <string name="ingredient_prompt_generation" translatable="false">a hand drawn %s on a plain green background, drawing</string>
+    <string name="ingredient_prompt_generation" translatable="false">a minimalist 4 colors clipart of a %s, ingredient for recipe</string>
     <string name="recipe_prompt_generation" translatable="false">a realistic %s freshly cooked on a kitchen table, animated, photo</string>
 
 

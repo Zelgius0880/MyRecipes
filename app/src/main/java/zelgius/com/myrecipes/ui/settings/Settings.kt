@@ -53,7 +53,6 @@ import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.data.model.asIngredient
 import zelgius.com.myrecipes.ui.AppTheme
-import zelgius.com.myrecipes.ui.common.LinkableText
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.ingredients.UpdateIngredient
 import zelgius.com.myrecipes.utils.hasNavigationRail
@@ -295,14 +294,9 @@ private fun IAGenerationSwitch(
         }
 
 
-        if (!isIAGenerationEnabled)
-            LinkableText(
-                modifier = Modifier.fillMaxWidth(),
-                id = R.string.ia_generation_disabled,
-                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.error)
-            ) {
-                uriHandler.openUri(it)
-            }
+        if (!isIAGenerationEnabled){
+            // TODO: By feature
+        }
     }
 }
 

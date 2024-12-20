@@ -57,7 +57,7 @@ class SaveRecipeUseCase @Inject constructor(
         ingredientRepository.deleteAllButThem(ingredients, recipeId)
         stepRepository.deleteAllButThem(recipe, recipe.steps)
 
-        workRepository.startIaGenerationWorker(true)
+        workRepository.startOrScheduleIaGenerationWorker(resetStatus = true)
 
         recipeId
     }

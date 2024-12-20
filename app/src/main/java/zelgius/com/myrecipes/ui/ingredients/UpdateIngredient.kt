@@ -51,6 +51,7 @@ import zelgius.com.myrecipes.ui.common.AppLabeledSwitch
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.Avatar
 import zelgius.com.myrecipes.ui.common.LocalStepCardValues
+import zelgius.com.myrecipes.utils.conditional
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,15 +122,19 @@ fun UpdateIngredient(
     ) {
         Row {
             Box {
+                val avatar = ingredient.drawable?.let {
+                    Avatar.StaticImage(it)
+                } ?: Avatar.Image(
+                    letter = (ingredient.name.firstOrNull() ?: ' ').uppercase(),
+                    ingredient.imageUrl
+                )
                 Avatar(
-                    ingredient.drawable?.let {
-                        Avatar.StaticImage(it)
-                    } ?: Avatar.Image(
-                        letter = ingredient.name.first().uppercase(),
-                        ingredient.imageUrl
-                    ),
+                    avatar,
                     Modifier
                         .clip(CircleShape)
+                        .conditional(avatar is Avatar.Image && avatar.imageUrl != null){
+                            padding(4.dp)
+                        }
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = ripple(
@@ -214,17 +219,18 @@ fun IngredientImageGrid(
     ) {
         item {
             Box {
-                Avatar(Avatar.Image(text), Modifier
-                    .align(Alignment.Center)
-                    .clip(CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    ) {
-                        onImageSelected(null)
-                    }
+                Avatar(
+                    Avatar.Image(text), Modifier
+                        .align(Alignment.Center)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        ) {
+                            onImageSelected(null)
+                        }
                 )
             }
         }

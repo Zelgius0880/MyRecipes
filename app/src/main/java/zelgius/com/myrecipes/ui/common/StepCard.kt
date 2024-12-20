@@ -121,7 +121,8 @@ fun Avatar(
                         contentDescription = null,
                         onError = {
                             isError = true
-                        }
+                        },
+                        modifier = Modifier.padding(all = 4.dp)
                     )
                 } else
                     Text(avatar.letter, style = LocalTextStyle.current)

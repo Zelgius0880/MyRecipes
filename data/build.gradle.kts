@@ -51,6 +51,13 @@ dependencies {
     api(project(path = (":protobuff")))
     implementation(libs.androidx.datastore.preferences)
 
+    api(platform(libs.firebase.bom))
+    implementation(libs.firebase.config)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.hilt.compiler)
+
     //Room
     ksp(libs.androidx.room.compiler)
     api(libs.androidx.room.ktx)
