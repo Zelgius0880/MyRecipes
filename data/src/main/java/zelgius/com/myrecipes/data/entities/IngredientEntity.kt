@@ -93,3 +93,10 @@ fun IngredientEntity.Unit.asModel(): Ingredient.Unit = when (this) {
     IngredientEntity.Unit.CUP -> Ingredient.Unit.Cup
     IngredientEntity.Unit.PINCH -> Ingredient.Unit.Pinch
 }
+
+
+@Entity
+class IngredientImageUrlUpdate(
+    var id: Long? = null,
+    @ColumnInfo(name = "image_url") var imageURL: String? = null
+)

@@ -53,7 +53,7 @@ class UpdateIngredientViewModel @Inject constructor(
                 ingredientRepository.update(it)
 
                 if (it.generationEnabled && it.imageUrl == null)
-                    workerRepository.startIaGenerationWorker(true)
+                    workerRepository.startOrScheduleIaGenerationWorker(resetStatus = true)
             }
         }
     }
@@ -63,7 +63,7 @@ class UpdateIngredientViewModel @Inject constructor(
         viewModelScope.launch {
             ingredientRepository.update(initialIngredient.copy(imageUrl = null))
             if (initialIngredient.generationEnabled)
-                workerRepository.startIaGenerationWorker(true)
+                workerRepository.startOrScheduleIaGenerationWorker(resetStatus = true)
 
         }
     }

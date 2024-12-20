@@ -7,7 +7,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +42,6 @@ import zelgius.com.myrecipes.ui.common.RemovableItemEndActionSize
 import zelgius.com.myrecipes.ui.common.rememberAnchoredDraggableState
 import zelgius.com.myrecipes.ui.preview.SharedElementPreview
 import zelgius.com.myrecipes.ui.preview.createDummySample
-import zelgius.com.myrecipes.utils.conditional
 
 @Composable
 fun RecipeList(
@@ -108,7 +105,7 @@ fun RecipeListItem(
             },
             state = state
         ) {
-            Row(modifier = Modifier.padding(8.dp)) {
+            Row {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(recipe.imageUrl)
@@ -122,7 +119,7 @@ fun RecipeListItem(
                         .size(64.dp)
                 )
 
-                Column(modifier = Modifier.padding(start = 8.dp)) {
+                Column(modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp)) {
                     Text(
                         recipe.type.text(LocalContext.current),
                         style = MaterialTheme.typography.labelMedium,

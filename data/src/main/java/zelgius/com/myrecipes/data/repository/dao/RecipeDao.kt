@@ -1,9 +1,14 @@
 package zelgius.com.myrecipes.data.repository.dao
 
 import androidx.paging.DataSource
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import zelgius.com.myrecipes.data.entities.RecipeEntity
+import zelgius.com.myrecipes.data.entities.RecipeImageUrlUpdate
 
 @Dao
 interface RecipeDao {
@@ -13,6 +18,9 @@ interface RecipeDao {
 
     @Update
     suspend fun update(vararg recipe: RecipeEntity): Int
+
+    @Update(entity = RecipeEntity::class)
+    suspend fun update(update: RecipeImageUrlUpdate): Int
 
     @Delete
     suspend fun delete(vararg recipe: RecipeEntity): Int
@@ -29,7 +37,6 @@ interface RecipeDao {
 
     @Query("SELECT * FROM recipe WHERE id = :id ORDER BY name")
     fun getFlow(id: Long): Flow<RecipeEntity?>
-
 
     //Paging
     @Query("SELECT * FROM recipe ORDER BY name")

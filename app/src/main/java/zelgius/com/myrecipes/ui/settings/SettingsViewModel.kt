@@ -48,14 +48,13 @@ class SettingsViewModel @Inject constructor(
     val exportingProgress = _exportingProgress.asStateFlow()
 
     init {
-        _isIAGenerationEnabled.value =
-            com.zelgius.myrecipes.ia.worker.ImageGenerationWorker.Companion.modelExists
+        _isIAGenerationEnabled.value = true // TODO
     }
 
     fun setIsIAGenerationChecked(checked: Boolean) {
         viewModelScope.launch {
             dataStoreRepository.setIAGenerationChecked(checked)
-            if (checked) workRepository.startIaGenerationWorker(true)
+            if (checked) workRepository.startOrScheduleIaGenerationWorker(resetStatus = true)
         }
     }
 
@@ -94,6 +93,7 @@ class SettingsViewModel @Inject constructor(
 
     fun generateImageNow() {
         workRepository.startIaGenerationImmediately()
+        //context.startForegroundService(Intent(context, ImageGenerationService::class.java))
     }
 
 }

@@ -2,52 +2,73 @@ package zelgius.com.myrecipes.worker
 
 import android.content.Context
 import androidx.work.Constraints
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import zelgius.com.myrecipes.data.model.ImageGenerationRequest
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
+import zelgius.com.myrecipes.data.repository.ImageGenerationRequestRepository
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class WorkerRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val dataStoreRepository: DataStoreRepository
+    private val dataStoreRepository: DataStoreRepository,
+    private val imageGenerationProgressRepository: ImageGenerationRequestRepository,
 ) {
 
-    suspend fun startIaGenerationWorker(resetStatus: Boolean = false) {
+    suspend fun startOrScheduleIaGenerationWorker(
+        pendingRequest: ImageGenerationRequest? = null,
+        resetStatus: Boolean = false
+    ) {
         val isIaGenerationEnabled = dataStoreRepository.isIAGenerationChecked.first()
-        val stillNeedToGenerate = if(resetStatus) {
+        val stillNeedToGenerate = if (resetStatus) {
             dataStoreRepository.setStillNeedToGenerate(true)
             true
         } else dataStoreRepository.stillNeedToGenerate.first()
 
-        if (!isIaGenerationEnabled || !stillNeedToGenerate || !com.zelgius.myrecipes.ia.worker.ImageGenerationWorker.Companion.modelExists) return
+        if (!isIaGenerationEnabled || !stillNeedToGenerate) return
 
-        val worker = OneTimeWorkRequestBuilder<com.zelgius.myrecipes.ia.worker.ImageGenerationWorker>()
-            .addTag(com.zelgius.myrecipes.ia.worker.ImageGenerationWorker.Companion.TAG)
-            .setConstraints(
-                Constraints.Builder()
-                    .setRequiresCharging(true)
-                    .setRequiresDeviceIdle(true)
-                    .build()
-            )
-            .build()
+        if (pendingRequest == null
+            || pendingRequest.status == ImageGenerationRequest.Status.Waiting
+            || pendingRequest.status == ImageGenerationRequest.Status.Processing
+        ) {
+            val worker = OneTimeWorkRequestBuilder<ImageGenerationWorker>()
+                .addTag(ImageGenerationWorker.TAG)
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                ).let {
+                    if (pendingRequest != null) {
+                        it.setInitialDelay(
+                            (pendingRequest.remainingTime).coerceAtLeast(60),
+                            TimeUnit.SECONDS
+                        )
+                    } else it
+                }
+                .build()
 
-        WorkManager.getInstance(context).apply {
-            cancelAllWorkByTag(com.zelgius.myrecipes.ia.worker.ImageGenerationWorker.Companion.TAG)
-            enqueue(worker)
+            pendingRequest?.let {
+                imageGenerationProgressRepository.insert(it)
+            }
+
+            WorkManager.getInstance(context).enqueue(worker)
+
         }
     }
 
     fun startIaGenerationImmediately() {
-        val worker = OneTimeWorkRequestBuilder<com.zelgius.myrecipes.ia.worker.ImageGenerationWorker>()
-            .addTag(com.zelgius.myrecipes.ia.worker.ImageGenerationWorker.Companion.TAG)
+        val worker = OneTimeWorkRequestBuilder<ImageGenerationWorker>()
+            .addTag(ImageGenerationWorker.TAG)
             .build()
 
         WorkManager.getInstance(context).apply {
-            cancelAllWorkByTag(com.zelgius.myrecipes.ia.worker.ImageGenerationWorker.Companion.TAG)
+            cancelAllWorkByTag(ImageGenerationWorker.TAG)
             enqueue(worker)
         }
     }
