@@ -38,6 +38,7 @@ class EditRecipeViewModel @AssistedInject constructor(
     val recipeFlow
         get() = _recipeFlow.asStateFlow()
 
+
     val itemsFlow
         get() = _recipeFlow
             .map {
@@ -94,7 +95,7 @@ class EditRecipeViewModel @AssistedInject constructor(
         }
     }
 
-    fun updateStep(old: StepItem, newStep: StepItem) {
+    fun updateStep(old: StepItem, newStep: StepItem, commitUpdate: Boolean = true) {
         val recipe = _recipeFlow.value
 
         val steps = recipe.steps.toMutableList()
@@ -108,10 +109,12 @@ class EditRecipeViewModel @AssistedInject constructor(
                 newStep.ingredients,
                 newStep.step
             )
-            _recipeFlow.value =
-                recipe.copy(ingredients = ingredients, steps = steps.mapIndexed { i, step ->
-                    step.copy(order = i + 1)
-                })
+
+            if (commitUpdate)
+                _recipeFlow.value =
+                    recipe.copy(ingredients = ingredients, steps = steps.mapIndexed { i, step ->
+                        step.copy(order = i + 1)
+                    })
         }
     }
 

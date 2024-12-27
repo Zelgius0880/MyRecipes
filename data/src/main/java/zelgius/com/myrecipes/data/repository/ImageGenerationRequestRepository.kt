@@ -19,4 +19,7 @@ class ImageGenerationRequestRepository @Inject constructor(
 
     suspend fun delete(progress: ImageGenerationRequest) =
         imageGenerationProgressDao.delete(progress.toEntity())
+
+    suspend fun delete() =
+        imageGenerationProgressDao.delete()
 }

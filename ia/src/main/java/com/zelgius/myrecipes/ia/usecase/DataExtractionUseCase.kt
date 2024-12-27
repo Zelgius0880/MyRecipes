@@ -78,7 +78,11 @@ open class DataExtractionUseCase(
             }.await()
 
         val result = response.result
-        if(result == null) return kotlin.Result.failure(DataExtractionException(response.error?.status?: -1, response.error?.message?: "Unknown"))
+        if (result == null) return kotlin.Result.failure(
+            DataExtractionException(
+                response.error?.status ?: -1, response.error?.message ?: "Unknown"
+            )
+        )
 
         val steps = result.steps.mapIndexed { index, step ->
             Step(
@@ -93,7 +97,11 @@ open class DataExtractionUseCase(
             .distinct()
             .mapIndexed { index, i ->
                 val step = result.steps.firstOrNull { step ->
-                    step.ingredients.firstOrNull { ingredient -> ingredient.name.lowercase() == i.name.lowercase() } != null
+                    (step.ingredients.firstOrNull { ingredient ->
+                        ingredient.name.lowercase() == i.name.lowercase()
+                                && ingredient.quantity == i.quantity
+                                && ingredient.unit == i.unit }
+                        ?: step.ingredients.firstOrNull { ingredient -> ingredient.name.lowercase() == i.name.lowercase() }) != null
                 }?.let {
                     steps.find { step -> it.description == step.text }
                 }
@@ -118,13 +126,15 @@ open class DataExtractionUseCase(
             }
 
 
-        return kotlin.Result.success(Recipe(
-            name = result.recipe.name,
-            type = Recipe.Type.Meal,
-            imageUrl = result.recipe.imageUrl,
-            steps = steps,
-            ingredients = ingredients
-        ))
+        return kotlin.Result.success(
+            Recipe(
+                name = result.recipe.name,
+                type = Recipe.Type.Meal,
+                imageUrl = result.recipe.imageUrl,
+                steps = steps,
+                ingredients = ingredients
+            )
+        )
 
     }
 }

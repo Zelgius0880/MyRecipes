@@ -28,7 +28,7 @@ class DataStoreRepository(context: Context) {
     }
 
     val isIAGenerationChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
-        preferences[iaGenerationKey] == true
+        preferences[iaGenerationKey] != false
     }
 
     val isTextReadingChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->

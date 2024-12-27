@@ -102,6 +102,7 @@
     <string name="water_name">Eau</string>
     <string name="pinch_select">pincée(s)</string>
     <string name="optional">Optionnel</string>
+    <string name="close">Fermer</string>
 
     <string name="select_file">Selectionner un app</string>
     <string name="from_gallery">Gallerie</string>
@@ -123,11 +124,21 @@
 
     <string name="settings">Paramètres</string>
     <string name="ia_generation">Activer la génération d\'image par IA</string>
-    <string name="ia_generation_disabled">Aucun modèle d\IA détécté. Suivez <a href="https://ai.google.dev/edge/mediapipe/solutions/vision/image_generator/android#model">ce lien</a> ajouter un modèle de génération d\'image</string>
     <!--<string name="ingrient_prompt_generation" translatable="false">un dessin à la main de %s sur un fond uni gris, dessin</string>-->
 
     <string name="play_recipe_enable_text_reading">Activer la lecture du texte</string>
     <string name="play_recipe_enable_gesture_detection">Activer la detection de la main\n👍 pour suivant\n👎 pour precédent\n☝️ pour répéter</string>
+
+
+    <string name="billing_subscription">Par an: %s</string>
+    <string name="billing_one_time">A vie: %s</string>
+    <string name="billing_title">Fonctionnalité premium</string>
+    <string name="billing_become_premium">Devenir premium</string>
+    <string name="billing_description">Cette fonctionnalité fait partie des fonctionnalités premium. <a href="">Cliquez ici</a> pour voir ce qui est disponible dans la version premium</string>
+    <string name="billing_premium_feature_1">Lorsque vous êtes dans le mode lecture de recette, vous pouvez controller la lecture de recette avec des gestes, au lieu d\'utiliser les boutons:\n\n👍 pour suivant\n👎 pour precédent\n☝️ pour répéter</string>
+    <string name="billing_premium_feature_2">Quand vous voulez ajouter une nouvelle recette, vous pouvez directement l\'ajouter à partir du web. Collez simplment l\'URL dans l\'application et elle fera le reste pour vous</string>
+    <string name="billing_premium_feature_3">Vous n\'avez plus besoin d\'ajouter des image pour vos recettes. Les fonctionnalités premium incluent une génération d\'image par IA qui créera les images maquantes pour vos recettes et vos ingredients </string>
+
 
     <string name="default_1">
         UEsDBBQACAgIAA+CaVEAAAAAAAAAAAAAAAAAAAAAxdNNSgMxFAfwTjv9sAuts5JZPbuxLcVWupFu

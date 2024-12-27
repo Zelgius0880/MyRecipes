@@ -16,12 +16,22 @@ class RemoteConfigRepository {
     private val _stableHordeKey = MutableStateFlow<String?>(null)
     val stableHordeKey = _stableHordeKey.filterNotNull()
 
+
+    private val _billingProductKey = MutableStateFlow<String?>(null)
+    val billingProductKey = _billingProductKey.filterNotNull()
+
+    private val _billingSubscriptionKey = MutableStateFlow<String?>(null)
+    val billingSubscriptionKey = _billingSubscriptionKey.filterNotNull()
+
+
     init {
         remoteConfig.setConfigSettingsAsync(configSettings)
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _stableHordeKey.value = remoteConfig.getString("stable_horde_key")
+                    _billingProductKey.value = remoteConfig.getString("billing_product_key")
+                    _billingSubscriptionKey.value = remoteConfig.getString("billing_subscription_key")
                 }
             }
 
