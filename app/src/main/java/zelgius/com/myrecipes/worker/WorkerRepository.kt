@@ -2,6 +2,7 @@ package zelgius.com.myrecipes.worker
 
 import android.content.Context
 import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -57,7 +58,9 @@ class WorkerRepository @Inject constructor(
                 imageGenerationProgressRepository.insert(it)
             }
 
-            WorkManager.getInstance(context).enqueue(worker)
+            WorkManager.getInstance(context).apply {
+                enqueueUniqueWork(ImageGenerationWorker.TAG, ExistingWorkPolicy.REPLACE, worker)
+            }
 
         }
     }
@@ -68,8 +71,7 @@ class WorkerRepository @Inject constructor(
             .build()
 
         WorkManager.getInstance(context).apply {
-            cancelAllWorkByTag(ImageGenerationWorker.TAG)
-            enqueue(worker)
+            enqueueUniqueWork(ImageGenerationWorker.TAG, ExistingWorkPolicy.REPLACE, worker)
         }
     }
 }

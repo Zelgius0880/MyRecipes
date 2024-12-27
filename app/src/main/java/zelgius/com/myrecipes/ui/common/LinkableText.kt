@@ -81,17 +81,20 @@ fun annotatedStringResource(
     val density = LocalDensity.current
     return remember(id, formatArgs) {
         val text = resources.getText(id, *formatArgs)
-        spannableStringToAnnotatedString(text, density, onClick)
+        spannableStringToAnnotatedString(text, density, onClick = onClick)
     }
 }
 
 @Composable
-fun annotatedStringResource(@StringRes id: Int, onClick: (String) -> Unit = {}): AnnotatedString {
+fun annotatedStringResource(
+    @StringRes id: Int,
+    style: SpanStyle? = null, onClick: (String) -> Unit = {}
+): AnnotatedString {
     val resources = resources()
     val density = LocalDensity.current
     return remember(id) {
         val text = resources.getText(id)
-        spannableStringToAnnotatedString(text, density, onClick)
+        spannableStringToAnnotatedString(text, density, onClick = onClick, style = style)
     }
 }
 
@@ -99,6 +102,7 @@ fun annotatedStringResource(@StringRes id: Int, onClick: (String) -> Unit = {}):
 private fun spannableStringToAnnotatedString(
     text: CharSequence,
     density: Density,
+    style: SpanStyle? = null,
     onClick: (String) -> Unit
 ): AnnotatedString {
     return if (text is Spanned) {
@@ -208,7 +212,6 @@ private fun spannableStringToAnnotatedString(
                         )
 
                         is URLSpan -> {
-
                             addLink(
                                 LinkAnnotation.Url(
                                     url = it.url,
@@ -219,8 +222,8 @@ private fun spannableStringToAnnotatedString(
                                 start = start,
                                 end = end
                             )
-                           addStyle(
-                                style = SpanStyle(
+                            addStyle(
+                                style = style ?: SpanStyle(
                                     color = Color.Blue,
                                     textDecoration = TextDecoration.Underline
                                 ),

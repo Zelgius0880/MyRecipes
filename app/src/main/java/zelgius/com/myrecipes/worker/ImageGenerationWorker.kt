@@ -41,6 +41,7 @@ open class ImageGenerationWorker @AssistedInject constructor(
                 ImageGenerationRequest.Status.Done -> {
                     stableHordeDownloadUseCase.execute(progress)
                     imageGenerationRequestRepository.delete(progress)
+                    imageGenerationRequestRepository.delete()
                     workRepository.startOrScheduleIaGenerationWorker()
                 }
 

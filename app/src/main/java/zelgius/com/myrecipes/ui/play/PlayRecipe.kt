@@ -101,7 +101,6 @@ fun PlayRecipe(
 
     recipe?.let {
         Box {
-
             PlayRecipe(
                 recipe = it,
                 instructions = instructions,

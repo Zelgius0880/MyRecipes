@@ -63,9 +63,9 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = true
-            isDebuggable = false
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isDebuggable = true
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -75,7 +75,6 @@ android {
         }
 
         getByName("debug") {
-            isMinifyEnabled = false
             isDebuggable = true
             applicationIdSuffix = ".debug"
             proguardFiles(
@@ -89,6 +88,18 @@ android {
         create("randomTests") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".debug"
+        }
+
+        flavorDimensions += "premium"
+
+        productFlavors {
+            create("billing") {
+                dimension = "premium"
+            }
+
+            create("noBilling") {
+                dimension = "premium"
+            }
         }
 
     }
@@ -129,6 +140,7 @@ dependencies {
 
     implementation(project(":data"))
     implementation(project(":ia"))
+    implementation(project(":billing"))
     implementation(libs.material)
 
     // Tests
@@ -170,7 +182,6 @@ dependencies {
     //Other
     implementation(libs.oss.licenses)
     implementation(libs.custom.qr.generator)
-    implementation(libs.billing.ktx)
 
     //Worker
     implementation(libs.work.runtime)
