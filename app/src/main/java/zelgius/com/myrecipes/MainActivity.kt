@@ -44,6 +44,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.zelgius.billing.repository.BillingRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -60,16 +61,25 @@ import zelgius.com.myrecipes.ui.play.PlayRecipeActivity
 import zelgius.com.myrecipes.ui.settings.Settings
 import java.net.URLDecoder
 import java.net.URLEncoder
+import javax.inject.Inject
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    @Inject
+    lateinit var billingRepository: BillingRepository
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            billingRepository.checkPurchase()
+        }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
 
         setContent {
             AppTheme {
@@ -158,7 +168,7 @@ class MainActivity : AppCompatActivity() {
             Navigation.Settings -> Settings(onBack = { lifecycleScope.launch { navigator.navigateBack() } })
             is Navigation.Add -> Add(navigator = navigator, type = destination.type)
             is Navigation.AddFromWeb -> AddFromWeb(navigator = navigator, type = destination.type)
-            is Navigation.Edit -> Edit(navigator = navigator, recipe =  destination.recipe)
+            is Navigation.Edit -> Edit(navigator = navigator, recipe = destination.recipe)
         }
     }
 
@@ -193,7 +203,8 @@ class MainActivity : AppCompatActivity() {
             recipeComposable(
                 route = "details",
             ) {
-                RecipeDetails(animatedVisibilityScope = animatedVisibilityScope,
+                RecipeDetails(
+                    animatedVisibilityScope = animatedVisibilityScope,
                     isTwoPanes = navigator.scaffoldValue.secondary != PaneAdaptedValue.Hidden,
                     sharedTransitionScope = sharedTransitionScope,
                     navigateBack = {
@@ -248,7 +259,7 @@ class MainActivity : AppCompatActivity() {
                 factory.create(Recipe(type = type, name = ""))
             }),
             addFromWeb = {
-                navigator.navigateToDetails(Navigation.AddFromWeb(type), )
+                navigator.navigateToDetails(Navigation.AddFromWeb(type))
             }
         )
     }
@@ -266,7 +277,7 @@ class MainActivity : AppCompatActivity() {
             displayBack = navigator.canNavigateBack(),
             viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
                 factory.create(recipe)
-            }).apply{
+            }).apply {
                 load(recipe)
             },
         )
@@ -300,7 +311,9 @@ class MainActivity : AppCompatActivity() {
 
             if (id == null || type == null) return@composable
 
-            content(Recipe(if (id == -1L) null else id,
+            content(
+                Recipe(
+                    if (id == -1L) null else id,
                 type = type,
                 name = it.arguments?.getString("name")
                     ?.let { s -> URLDecoder.decode(s, Charsets.UTF_8.name()) } ?: "",

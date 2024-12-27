@@ -119,6 +119,7 @@
     <string name="tomato_sauce_name">Tomato sauce</string>
     <string name="pinch_select">pinch</string>
     <string name="optional">Optional</string>
+    <string name="close">Close</string>
 
     <string name="select_file">Select an app to open this file</string>
     <string name="share">Share</string>
@@ -141,6 +142,15 @@
 
     <string name="play_recipe_enable_text_reading">Enable text reading</string>
     <string name="play_recipe_enable_gesture_detection">Enable gesture detection\n👍 for next\n👎 for previous\n☝️ for repeating </string>
+
+    <string name="billing_subscription">Yearly: %s</string>
+    <string name="billing_one_time">For life: %s</string>
+    <string name="billing_title">Premium feature</string>
+    <string name="billing_become_premium">Become premium</string>
+    <string name="billing_description">This feature is part of the premium features. <a href="">Click here</a> to see what is available in the premium version </string>
+    <string name="billing_premium_feature_1">While you are in recipe play mode, you can control the recipe reading with gestures instead of tapping on buttons:\n\n👍 for next\n👎 for previous\n☝️ for repeating</string>
+    <string name="billing_premium_feature_2">When you want to add a new recipe, you can directly import it from the web, just past the URL and the app will do the rest for you</string>
+    <string name="billing_premium_feature_3">No need anymore to add image for you recipes. The premium features include a IA image generation that will generate the missing images for your recipes and your ingredients</string>
 
 
     <string name="default_1">

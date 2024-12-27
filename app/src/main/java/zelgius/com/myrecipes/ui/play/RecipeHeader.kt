@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.ui.billing.PremiumFeature
 import zelgius.com.myrecipes.ui.common.IconSwitch
 import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.utils.hasNavigationRail
@@ -195,19 +196,21 @@ private fun GestureDetectionSwitch(
     onCheckChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    IconSwitch(
-        checked = checked,
-        onCheckedChange = onCheckChanged,
-        tooltip = stringResource(R.string.play_recipe_enable_gesture_detection),
-        modifier = modifier,
-        icon = {
-            Icon(
-                Icons.TwoTone.SignLanguage,
-                contentDescription = null,
-                modifier = Modifier.padding(end = 8.dp)
-            )
-        }
-    )
+    PremiumFeature {
+        IconSwitch(
+            checked = checked,
+            onCheckedChange = onCheckChanged,
+            tooltip = stringResource(R.string.play_recipe_enable_gesture_detection),
+            modifier = modifier,
+            icon = {
+                Icon(
+                    Icons.TwoTone.SignLanguage,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
+        )
+    }
 }
 
 @Composable

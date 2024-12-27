@@ -5,6 +5,7 @@ import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.zelgius.billing.repository.BillingRepository
 import com.zelgius.myrecipes.ia.repository.Gesture
 import com.zelgius.myrecipes.ia.usecase.LiveGestureRecognitionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,6 +13,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.data.model.Recipe
@@ -31,6 +33,7 @@ class PlayRecipeViewModel @Inject constructor(
     private val getInstructionUseCase: GetInstructionsUseCase,
     private val recipeRepository: RecipeRepository,
     private val dataStoreRepository: DataStoreRepository,
+    private val billingRepository: BillingRepository,
     private val textToSpeechRepository: TextToSpeechRepository,
     private val gestureRecognitionUseCase: LiveGestureRecognitionUseCase
 ) : ViewModel() {
@@ -38,7 +41,12 @@ class PlayRecipeViewModel @Inject constructor(
     val instructions = _instructions.asStateFlow()
 
     val readingEnabled get() = dataStoreRepository.isTextReadingChecked
-    val gestureRecognitionEnabled get() = dataStoreRepository.isGestureRecognitionChecked
+    val gestureRecognitionEnabled
+        get() = dataStoreRepository.isGestureRecognitionChecked
+            .combine(billingRepository.isPremium) { isChecked, isPremium ->
+            isChecked && isPremium
+        }
+
     private val _gestureRecognitionError = MutableStateFlow(false)
     val gestureRecognitionError get() = _gestureRecognitionError.asStateFlow()
 
@@ -56,7 +64,9 @@ class PlayRecipeViewModel @Inject constructor(
                 when (it) {
                     Gesture.ThumbUp -> onNext()
                     Gesture.ThumbDown -> onPreview()
-                    Gesture.PointingUp, Gesture.ClosedFist -> onInstructionSelected(currentInstructionPosition.value)
+                    Gesture.PointingUp, Gesture.ClosedFist -> onInstructionSelected(
+                        currentInstructionPosition.value
+                    )
                 }
             }
         }
@@ -73,7 +83,11 @@ class PlayRecipeViewModel @Inject constructor(
         }
     }
 
-    fun startGestureRecognition(lifecycleOwner: LifecycleOwner, preview: PreviewView?, orientation: Int) {
+    fun startGestureRecognition(
+        lifecycleOwner: LifecycleOwner,
+        preview: PreviewView?,
+        orientation: Int
+    ) {
         val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
             exception.printStackTrace()
             gestureRecognitionUseCase.clear()
