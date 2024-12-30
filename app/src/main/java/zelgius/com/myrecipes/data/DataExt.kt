@@ -10,8 +10,8 @@ import zelgius.com.myrecipes.utils.round
 import java.text.DecimalFormat
 
 
-fun Ingredient.text(context: Context, abrv: Boolean =  true): String {
-    val unit = if(abrv) this.unit.abrv(context) else this.unit.string(context)
+fun Ingredient.text(context: Context, abrv: Boolean = true): String {
+    val unit = if (abrv) this.unit.abrv(context) else this.unit.string(context)
 
     return if (this.unit != Ingredient.Unit.Cup) {
         String.format(
@@ -52,7 +52,7 @@ fun Recipe.Type.text(context: Context) = when (this) {
     Recipe.Type.Other -> context.getString(R.string.other)
 }
 
-fun Ingredient.Unit.abrv(context: Context) =when (this) {
+fun Ingredient.Unit.abrv(context: Context) = when (this) {
     Ingredient.Unit.Milliliter -> context.getString(R.string.milliliter_abrv)
     Ingredient.Unit.Liter -> context.getString(R.string.liter_abrv)
     Ingredient.Unit.Unit -> context.getString(R.string.unit_abrv)
@@ -64,7 +64,7 @@ fun Ingredient.Unit.abrv(context: Context) =when (this) {
     Ingredient.Unit.Pinch -> context.getString(R.string.pinch_abrv)
 }
 
-fun Ingredient.Unit.string(context: Context) =when (this) {
+fun Ingredient.Unit.string(context: Context) = when (this) {
     Ingredient.Unit.Milliliter -> context.getString(R.string.milliliter)
     Ingredient.Unit.Liter -> context.getString(R.string.liter)
     Ingredient.Unit.Unit -> context.getString(R.string.unit)

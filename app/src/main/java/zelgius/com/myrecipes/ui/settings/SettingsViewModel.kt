@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.zelgius.billing.repository.BillingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import zelgius.com.myrecipes.data.model.PlayRecipeStepPosition
 import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
@@ -31,21 +33,45 @@ class SettingsViewModel @Inject constructor(
     private val workRepository: WorkerRepository,
 ) : ViewModel() {
 
-    val ingredients = ingredientRepository.getSimpleIngredients()
+    private val ingredients = ingredientRepository.getSimpleIngredients()
 
-    val isIAGenerationChecked =
-        dataStoreRepository.isIAGenerationChecked.
-        combine(billingRepository.isPremium) { isChecked, isPremium ->
+    private val isIAGenerationChecked =
+        dataStoreRepository.isIAGenerationChecked.combine(billingRepository.isPremium) { isChecked, isPremium ->
             isChecked && isPremium
         }
 
-    private val _exportingProgress = MutableStateFlow<Float?>(null)
-    val exportingProgress = _exportingProgress.asStateFlow()
+    private val exportingProgress = MutableStateFlow<Float?>(null)
+
+    private val _settingsUiState = MutableStateFlow(SettingsUiState())
+        .combine(ingredients) { state, ingredients ->
+            state.copy(ingredients = ingredients)
+        }
+        .combine(isIAGenerationChecked) { state, isChecked ->
+            state.copy(isIAGenerationChecked = isChecked)
+        }
+        .combine(exportingProgress) { state, progress ->
+            state.copy(exportingProgress = progress)
+        }
+        .combine(dataStoreRepository.playRecipeStepPosition){ state, position ->
+            state.copy(playRecipeStepPosition = position)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingsUiState()
+        )
+
+    val settingsUiState = _settingsUiState
 
     fun setIsIAGenerationChecked(checked: Boolean) {
         viewModelScope.launch {
             dataStoreRepository.setIAGenerationChecked(checked)
             if (checked) workRepository.startOrScheduleIaGenerationWorker(resetStatus = true)
+        }
+    }
+
+    fun setPlayRecipeStepPosition(position: PlayRecipeStepPosition) {
+        viewModelScope.launch {
+            dataStoreRepository.setPlayRecipeStepPosition(position)
         }
     }
 
@@ -56,7 +82,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     suspend fun exportAllRecipes(outputStream: OutputStream) {
-        _exportingProgress.value = 0f
+        exportingProgress.value = 0f
         val recipes = recipeRepository.get()
         val zipOut = ZipOutputStream(outputStream)
 
@@ -75,16 +101,21 @@ class SettingsViewModel @Inject constructor(
                 entries[recipe.name] = (entries[recipe.name] ?: 0) + 1
 
                 generatePdfUseCase.execute(recipe, zipOut, false)
-                _exportingProgress.value = (index + 1f) / recipes.size
+                exportingProgress.value = (index + 1f) / recipes.size
             }
 
         zipOut.close()
-        _exportingProgress.value = null
+        exportingProgress.value = null
     }
 
     fun generateImageNow() {
         workRepository.startIaGenerationImmediately()
-        //context.startForegroundService(Intent(context, ImageGenerationService::class.java))
     }
-
 }
+
+data class SettingsUiState(
+    val isIAGenerationChecked: Boolean = false,
+    val exportingProgress: Float? = 0f,
+    val ingredients: List<SimpleIngredient> = emptyList(),
+    val playRecipeStepPosition: PlayRecipeStepPosition = PlayRecipeStepPosition.Last,
+)

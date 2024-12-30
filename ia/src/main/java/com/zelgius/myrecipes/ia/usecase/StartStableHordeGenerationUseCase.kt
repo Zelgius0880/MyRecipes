@@ -3,6 +3,7 @@ package com.zelgius.myrecipes.ia.usecase
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.app.NotificationCompat
+import androidx.core.net.toUri
 import com.google.firebase.functions.dagger.assisted.AssistedFactory
 import com.zelgius.myrecipes.ia.R
 import com.zelgius.myrecipes.ia.model.stableHorde.request.GenerationInputStable
@@ -12,6 +13,7 @@ import com.zelgius.myrecipes.ia.utils.save
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import okio.FileNotFoundException
 import org.example.model.response.RequestAsync
 import zelgius.com.myrecipes.data.entities.IngredientEntity
 import zelgius.com.myrecipes.data.entities.RecipeEntity
@@ -32,7 +34,11 @@ class StartStableHordeGenerationUseCase @Inject constructor(
     private val stableHordeGenerationStatusUseCase: StableHordeStatusUseCase
 ) {
     suspend fun execute(): ImageGenerationRequest? = coroutineScope {
-        val recipes = recipeDao.getAllWithoutImages().filter { it.generationEnabled }
+        val recipes = recipeDao.getAll().filter {
+            it.generationEnabled
+                    && it.imageURL?.startsWith("content://") == true
+                    && it.imageURL?.fileExists(context) != true
+        }
         val ingredients = ingredientDao.getAllWithoutImages().filter { it.generationEnabled }
 
         val recipe = recipes.firstOrNull()
@@ -41,14 +47,15 @@ class StartStableHordeGenerationUseCase @Inject constructor(
         var fileName = ""
         var entityId = 0L
         val request = if (recipe != null) {
-            val translatedName = FrenchToEnglishUseCase().execute(recipe.prompt?: recipe.name)
+            val translatedName = FrenchToEnglishUseCase().execute(recipe.prompt ?: recipe.name)
             fileName = "R_${recipe.id}"
             entityId = recipe.id ?: 0L
             generate(RecipeInfo(context, recipe, translatedName))
         } else if (ingredient != null) {
-            val translatedName = FrenchToEnglishUseCase().execute(ingredient.prompt?: ingredient.name)
+            val translatedName =
+                FrenchToEnglishUseCase().execute(ingredient.prompt ?: ingredient.name)
             fileName = "I_${ingredient.id}"
-            entityId =ingredient.id ?: 0L
+            entityId = ingredient.id ?: 0L
             generate(IngredientInfo(context, ingredient, translatedName))
         } else {
             null
@@ -141,8 +148,14 @@ class StartStableHordeGenerationUseCase @Inject constructor(
         }
     }
 
-    companion object {
-        const val NOTIFICATION_ID = 42
+    private fun String.fileExists(context: Context): Boolean  {
+        return try {
+            context.contentResolver.openInputStream(this.toUri())?.close()
+
+            true
+        } catch (_: FileNotFoundException) {
+            false
+        }
     }
 
 }

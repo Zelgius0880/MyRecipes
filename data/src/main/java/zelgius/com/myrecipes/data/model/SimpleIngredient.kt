@@ -25,7 +25,7 @@ fun SimpleIngredient.asIngredient() = Ingredient(
     recipe = null,
     step = null,
 
-)
+    )
 
 fun SimpleIngredient.asEntity() = IngredientEntity(
     id = id,
@@ -35,3 +35,7 @@ fun SimpleIngredient.asEntity() = IngredientEntity(
     prompt = prompt,
     generationEnabled = generationEnabled,
 )
+
+enum class PlayRecipeStepPosition {
+    Last, First,
+}

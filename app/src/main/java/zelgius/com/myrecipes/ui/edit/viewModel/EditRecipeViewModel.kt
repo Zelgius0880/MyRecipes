@@ -48,11 +48,12 @@ class EditRecipeViewModel @AssistedInject constructor(
                         isFirst = index == 0,
                         isLast = index == it.ingredients.lastIndex
                     )
-                } + AddIngredient(it.ingredients.isEmpty()) + it.steps.map { s ->
-                    StepItem(
-                        s,
-                        it.ingredients.filter { i -> i.step == s })
-                } + AddStep
+                } + AddIngredient(it.ingredients.isEmpty()) + it.steps.sortedBy { s -> s.order }
+                    .map { s ->
+                        StepItem(
+                            s,
+                            it.ingredients.filter { i -> i.step == s })
+                    } + AddStep
             }
 
     init {
@@ -95,7 +96,7 @@ class EditRecipeViewModel @AssistedInject constructor(
         }
     }
 
-    fun updateStep(old: StepItem, newStep: StepItem, commitUpdate: Boolean = true) {
+    fun updateStep(old: StepItem, newStep: StepItem) {
         val recipe = _recipeFlow.value
 
         val steps = recipe.steps.toMutableList()
@@ -110,11 +111,10 @@ class EditRecipeViewModel @AssistedInject constructor(
                 newStep.step
             )
 
-            if (commitUpdate)
-                _recipeFlow.value =
-                    recipe.copy(ingredients = ingredients, steps = steps.mapIndexed { i, step ->
-                        step.copy(order = i + 1)
-                    })
+            _recipeFlow.value =
+                recipe.copy(ingredients = ingredients, steps = steps.mapIndexed { i, step ->
+                    step.copy(order = i + 1)
+                })
         }
     }
 
@@ -179,6 +179,19 @@ class EditRecipeViewModel @AssistedInject constructor(
             }
 
         }
+    }
+
+    fun onStepReordered(steps: List<StepItem>) {
+        val recipe = _recipeFlow.value
+        val reorderedSteps = steps.mapIndexed { index, step -> step.step.copy(order = index + 1) }
+        _recipeFlow.value =
+            recipe.copy(
+                steps =reorderedSteps,
+                ingredients = recipe.ingredients.map {
+                    val step = reorderedSteps.find { s -> s.copy(order = 0) == it.step?.copy(order = 0) }
+
+                    it.copy(step = step)
+                })
     }
 
     private fun MutableList<Ingredient>.updateIngredients(

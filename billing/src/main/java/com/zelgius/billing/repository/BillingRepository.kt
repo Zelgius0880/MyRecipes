@@ -66,7 +66,7 @@ class BillingRepository @Inject constructor(
     val products = _products.asStateFlow()
 
     suspend fun start() {
-        if (billingClient.connectionState == BillingClient.ConnectionState.CONNECTED) return
+        if (billingClient.connectionState == BillingClient.ConnectionState.CONNECTED || !BuildConfig.BILLING_ENABLED) return
 
         suspendCancellableCoroutine { continuation ->
             billingClient.startConnection(object : BillingClientStateListener {
@@ -123,11 +123,6 @@ class BillingRepository @Inject constructor(
             val phase = offer?.pricingPhases?.pricingPhaseList?.first()
 
             Product(formattedPrice = phase?.formattedPrice ?: "", type = Product.Type.Subscription)
-        } + queryProducts(Product.Type.OneTime).map {
-            Product(
-                formattedPrice = it.oneTimePurchaseOfferDetails?.formattedPrice ?: "",
-                type = Product.Type.OneTime
-            )
         }
     }
 

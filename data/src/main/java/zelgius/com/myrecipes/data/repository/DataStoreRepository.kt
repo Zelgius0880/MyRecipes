@@ -10,6 +10,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import zelgius.com.myrecipes.data.model.PlayRecipeStepPosition
 
 class DataStoreRepository(context: Context) {
     private val dataStore = context.dataStore
@@ -17,6 +18,7 @@ class DataStoreRepository(context: Context) {
     private val textReadingKey = booleanPreferencesKey("isTextReadingChecked")
     private val gestureRecognitionKey = booleanPreferencesKey("isGestureRecognitionChecked")
     private val stillNeedToGenerateKey = booleanPreferencesKey("stillNeedToGenerate")
+    private val playRecipeStepPositionKey = stringPreferencesKey("playRecipeStepPosition")
 
     suspend fun unit(name: String) =
         dataStore.data.first()[stringPreferencesKey(name)]
@@ -27,23 +29,33 @@ class DataStoreRepository(context: Context) {
         }
     }
 
-    val isIAGenerationChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
-        preferences[iaGenerationKey] != false
-    }
+    val isIAGenerationChecked: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[iaGenerationKey] != false
+        }
 
-    val isTextReadingChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
-        preferences[textReadingKey] != false
-    }
-
-
-    val isGestureRecognitionChecked: Flow<Boolean> get() = dataStore.data.map { preferences ->
-        preferences[gestureRecognitionKey] != false
-    }
+    val isTextReadingChecked: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[textReadingKey] != false
+        }
 
 
-    val stillNeedToGenerate: Flow<Boolean> get() = dataStore.data.map { preferences ->
-        preferences[stillNeedToGenerateKey] == true
-    }
+    val isGestureRecognitionChecked: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[gestureRecognitionKey] != false
+        }
+
+    val stillNeedToGenerate: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[stillNeedToGenerateKey] == true
+        }
+
+    val playRecipeStepPosition: Flow<PlayRecipeStepPosition>
+        get() = dataStore.data.map { preferences ->
+            preferences[playRecipeStepPositionKey]?.let {
+                PlayRecipeStepPosition.valueOf(it)
+            } ?: PlayRecipeStepPosition.Last
+        }
 
     suspend fun setIAGenerationChecked(checked: Boolean) {
         dataStore.edit { preferences ->
@@ -69,6 +81,11 @@ class DataStoreRepository(context: Context) {
         }
     }
 
+    suspend fun setPlayRecipeStepPosition(position: PlayRecipeStepPosition) {
+        dataStore.edit { preferences ->
+            preferences[playRecipeStepPositionKey] = position.name
+        }
+    }
 }
 
 // At the top level of your kotlin file:

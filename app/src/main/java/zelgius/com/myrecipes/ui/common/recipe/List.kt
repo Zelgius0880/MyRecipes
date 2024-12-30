@@ -21,21 +21,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.entities.asModel
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.text
+import zelgius.com.myrecipes.ui.common.AppImage
 import zelgius.com.myrecipes.ui.common.DragAnchors
 import zelgius.com.myrecipes.ui.common.RemovableItem
 import zelgius.com.myrecipes.ui.common.RemovableItemEndActionSize
@@ -106,15 +102,8 @@ fun RecipeListItem(
             state = state
         ) {
             Row {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(recipe.imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    error = painterResource(R.drawable.ic_dish),
-                    placeholder = painterResource(R.drawable.ic_dish),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                AppImage(
+                    imageUrl = recipe.imageUrl,
                     modifier = modifier(animatedVisibilityScope, "${recipe.id}_recipe_image")
                         .size(64.dp)
                 )
