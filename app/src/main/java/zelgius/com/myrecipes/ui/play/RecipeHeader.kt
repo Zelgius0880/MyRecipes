@@ -1,7 +1,6 @@
 package zelgius.com.myrecipes.ui.play
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -27,15 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.ui.billing.PremiumFeature
+import zelgius.com.myrecipes.ui.common.AppImage
 import zelgius.com.myrecipes.ui.common.IconSwitch
 import zelgius.com.myrecipes.ui.preview.createDummyModel
 import zelgius.com.myrecipes.utils.hasNavigationRail
@@ -85,10 +83,10 @@ private fun MainCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Image(
-                painter = rememberAsyncImagePainter(
-                    recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
-                ), contentDescription = null, modifier = Modifier
+            AppImage(
+                imageUrl =
+                    recipe.imageUrl,
+                modifier = Modifier
                     .size(128.dp)
                     .clip(
                         shape = MaterialTheme.shapes.extraLarge

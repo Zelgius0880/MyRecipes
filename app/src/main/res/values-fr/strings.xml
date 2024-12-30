@@ -110,6 +110,7 @@
     <string name="share">Share</string>
 
     <plurals name="selected_recipes">
+        <item quantity="many">%d recettes</item>
         <item quantity="other">%d recettes</item>
         <item quantity="one">%d recette</item>
     </plurals>
@@ -183,5 +184,8 @@ AAAA
     <string name="data_extraction_error">Une erreur c\'est produite. Ca arrive parfois, essayez de nouveau</string>
     <string name="error">Erreur</string>
     <string name="retry">Réessayer</string>
+    <string name="play_recipe_step_position">Position de l\'étape lors de la lecture de la recette</string>
+    <string name="play_recipe_step_position_first">Avant les ingrédients</string>
+    <string name="play_recipe_step_position_last">Après les ingredients</string>
 
 </resources>

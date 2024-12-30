@@ -28,8 +28,8 @@ open class ImageGenerationWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
 
+        val currentRequest = imageGenerationRequestRepository.get()
         try {
-            val currentRequest = imageGenerationRequestRepository.get()
 
             val progress = if (currentRequest == null) {
                 startStableHordeGenerationUseCase.execute()
@@ -54,6 +54,8 @@ open class ImageGenerationWorker @AssistedInject constructor(
 
             return Result.success()
         } catch (e: Exception) {
+            // If it failed here, it means the API is in error. The best way to handle that is to restart generation
+            imageGenerationRequestRepository.delete()
             Logger.e("Generation Error", e)
             Firebase.crashlytics.recordException(e)
             return Result.retry()

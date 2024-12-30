@@ -6,7 +6,6 @@ import android.webkit.URLUtil
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,7 +41,7 @@ class DownloadImageWorker(private val appContext: Context, workerParams: WorkerP
                     BuildConfig.APPLICATION_ID + ".fileprovider",
                     File(
                         appContext.getExternalFilesDir(DIRECTORY_PICTURES),
-                        "$recipeId"
+                        "R_$recipeId"
                     )
                 )
 

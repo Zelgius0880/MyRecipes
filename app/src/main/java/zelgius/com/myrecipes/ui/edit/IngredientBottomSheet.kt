@@ -74,7 +74,7 @@ import javax.inject.Inject
 fun IngredientBottomSheet(
     modalBottomSheetState: SheetState,
     initialIngredient: Ingredient?,
-    viewModel: IngredientBottomSheetViewModel = hiltViewModel<IngredientBottomSheetViewModel>(),
+    viewModel: IngredientBottomSheetViewModel = hiltViewModel(),
     onSaved: (Ingredient) -> Unit = {},
     onDismiss: () -> Unit = {}
 ) {

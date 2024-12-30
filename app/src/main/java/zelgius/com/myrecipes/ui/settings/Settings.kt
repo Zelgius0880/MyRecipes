@@ -28,6 +28,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -48,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
+import zelgius.com.myrecipes.data.model.PlayRecipeStepPosition
 import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.data.model.asIngredient
 import zelgius.com.myrecipes.ui.AppTheme
@@ -59,21 +63,17 @@ import java.io.OutputStream
 
 @Composable
 fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit) {
-    val isIAGenerationChecked by viewModel.isIAGenerationChecked.collectAsStateWithLifecycle(false)
-    val ingredients by viewModel.ingredients.collectAsStateWithLifecycle(emptyList())
     var selectedIngredient by remember {
         mutableStateOf<SimpleIngredient?>(null)
     }
 
-    val exportingProgress by viewModel.exportingProgress.collectAsStateWithLifecycle()
+    val uiState by viewModel.settingsUiState.collectAsStateWithLifecycle()
 
     Settings(
-        isIAGenerationChecked = isIAGenerationChecked,
+        uiState = uiState,
         onIAGenerationChanged = {
             viewModel.setIsIAGenerationChecked(it)
         },
-        ingredients = ingredients,
-        exportingProgress = exportingProgress,
         onDeleteIngredient = viewModel::deleteIngredient,
         onUpdateIngredient = {
             selectedIngredient = it
@@ -85,6 +85,7 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
             viewModel.generateImageNow()
         },
         onBack = onBack,
+        onPlayRecipeStepPositionChanged = viewModel::setPlayRecipeStepPosition
     )
 
     AnimatedVisibility(selectedIngredient != null) {
@@ -102,10 +103,9 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Settings(
-    isIAGenerationChecked: Boolean = false,
-    exportingProgress: Float? = 0f,
+    uiState: SettingsUiState,
     onIAGenerationChanged: (Boolean) -> Unit = {},
-    ingredients: List<SimpleIngredient> = emptyList(),
+    onPlayRecipeStepPositionChanged: (PlayRecipeStepPosition) -> Unit = {},
     onDeleteIngredient: (SimpleIngredient) -> Unit = {},
     onUpdateIngredient: (SimpleIngredient) -> Unit = {},
     onExportAll: suspend (outputStream: OutputStream) -> Unit = {},
@@ -136,7 +136,15 @@ private fun Settings(
                 .padding(vertical = 8.dp),
         ) {
             item {
-                ExportButton(onExportAll, exportingProgress)
+                ExportButton(onExportAll, uiState.exportingProgress)
+            }
+
+            item {
+                StepPosition(
+                    uiState.playRecipeStepPosition,
+                    onStepPositionChanged = onPlayRecipeStepPositionChanged,
+                    modifier = Modifier.padding( 16.dp)
+                )
             }
 
             item {
@@ -145,7 +153,7 @@ private fun Settings(
                     clickableShape = RoundedCornerShape(percent = 50)
                 ) { modifier ->
                     IAGenerationSwitch(
-                        isIAGenerationChecked,
+                        uiState.isIAGenerationChecked,
                         onIAGenerationChanged,
                         modifier,
                         onGenerateNow
@@ -163,7 +171,7 @@ private fun Settings(
                 )
             }
 
-            itemsIndexed(ingredients, key = { _, item -> item.id }) { index, item ->
+            itemsIndexed(uiState.ingredients, key = { _, item -> item.id }) { index, item ->
                 Column(
                     modifier = Modifier
                         .animateItem()
@@ -172,7 +180,7 @@ private fun Settings(
                 ) {
                     SettingsIngredient(ingredient = item, onDeleteIngredient = onDeleteIngredient)
 
-                    if (index < ingredients.lastIndex)
+                    if (index < uiState.ingredients.lastIndex)
                         HorizontalDivider(
                             modifier = Modifier
                                 .padding(top = 8.dp)
@@ -259,8 +267,7 @@ private fun IAGenerationSwitch(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 8.dp),
+            .padding(horizontal = 16.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
@@ -312,20 +319,52 @@ private fun SettingsIngredient(
     }
 }
 
+@Composable
+private fun StepPosition(
+    selected: PlayRecipeStepPosition,
+    modifier: Modifier = Modifier,
+    onStepPositionChanged: (PlayRecipeStepPosition) -> Unit
+) {
+    Column(modifier = modifier) {
+        Text(text = stringResource(id = R.string.play_recipe_step_position))
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            PlayRecipeStepPosition.entries.forEachIndexed { index, options ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = PlayRecipeStepPosition.entries.size
+                    ),
+                    onClick = { onStepPositionChanged(options) },
+                    selected = selected == options
+                ) {
+                    Text(
+                        when (options) {
+                            PlayRecipeStepPosition.First -> stringResource(id = R.string.play_recipe_step_position_first)
+                            PlayRecipeStepPosition.Last -> stringResource(id = R.string.play_recipe_step_position_last)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun SettingsPreview() {
     AppTheme {
         Settings(
-            isIAGenerationChecked = true,
-            ingredients = List(5) {
-                SimpleIngredient(
-                    it.toLong(),
-                    "Ingredient $it",
-                    null,
-                    it % 2 == 0
-                )
-            }
+            SettingsUiState(
+                isIAGenerationChecked = true,
+                ingredients = List(5) {
+                    SimpleIngredient(
+                        it.toLong(),
+                        "Ingredient $it",
+                        null,
+                        it % 2 == 0
+                    )
+                }
+            )
         )
     }
 }

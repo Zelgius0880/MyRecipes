@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,10 +42,10 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.atLeast
 import androidx.constraintlayout.compose.atMost
-import coil.compose.rememberAsyncImagePainter
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
+import zelgius.com.myrecipes.ui.common.AppImage
 import zelgius.com.myrecipes.ui.common.ExpandableList
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.common.recipe.IngredientChip
@@ -221,10 +219,9 @@ fun RecipeDetailsHeader(
             modifier = Modifier.fillMaxWidth(),
         ) {
             val (image, name) = createRefs()
-            Image(
-                painter = rememberAsyncImagePainter(
-                    recipe.imageUrl, error = painterResource(R.drawable.ic_dish)
-                ), contentDescription = null, modifier = Modifier
+            AppImage(
+                recipe.imageUrl,
+                modifier = Modifier
                     .constrainAs(image) {
                         top.linkTo(parent.top)
                         start.linkTo(parent.start)

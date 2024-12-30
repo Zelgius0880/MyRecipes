@@ -2,13 +2,11 @@ package zelgius.com.myrecipes.ui.play
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,20 +22,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import zelgius.com.myrecipes.BuildConfig
+import zelgius.com.myrecipes.data.model.PlayRecipeStepPosition
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.useCase.InstructionItem
 import zelgius.com.myrecipes.data.useCase.instructions
@@ -70,18 +65,14 @@ fun PlayRecipe(
 
     val root = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val showPreview = isGestureRecognitionChecked&& BuildConfig.DEBUG
 
     val context = LocalContext.current
-    val previewView = remember {
-        PreviewView(context)
-    }
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted && isGestureRecognitionChecked) {
-            viewModel.startGestureRecognition(lifecycleOwner, if(showPreview) previewView else null, root.display.rotation)
+            viewModel.startGestureRecognition(lifecycleOwner,null, root.display.rotation)
         }
     }
 
@@ -95,7 +86,7 @@ fun PlayRecipe(
         if(ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED){
             launcher.launch(android.Manifest.permission.CAMERA)
         } else {
-            viewModel.startGestureRecognition(lifecycleOwner,  if(showPreview) previewView else null, root.display.rotation)
+            viewModel.startGestureRecognition(lifecycleOwner,  null, root.display.rotation)
         }
     }
 
@@ -127,9 +118,6 @@ fun PlayRecipe(
                 },
                 onBack = onBack,
             )
-
-            if(showPreview)
-                AndroidView(factory = { previewView }, modifier = Modifier.size(64.dp).align(Alignment.TopEnd))
         }
     }
 }
@@ -239,7 +227,7 @@ private fun ButtonRow(
 @Preview(device = Devices.PIXEL_7_PRO, showSystemUi = true)
 fun PlayRecipePreview() {
     val recipe = createDummyModel()
-    val instructions = recipe.instructions
+    val instructions = recipe.instructions(PlayRecipeStepPosition.Last)
 
     AppTheme {
         PlayRecipe(recipe, instructions)
