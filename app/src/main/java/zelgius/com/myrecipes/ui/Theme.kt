@@ -43,9 +43,7 @@ fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable ()
         } else {
             lightThemeColors
         },
-        shapes = Shapes(
-
-        )
+        shapes = Shapes()
     ) {
         content()
     }

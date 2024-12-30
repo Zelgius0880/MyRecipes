@@ -8,10 +8,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -34,6 +31,7 @@ import androidx.compose.material.icons.twotone.Check
 import androidx.compose.material.icons.twotone.CloudDownload
 import androidx.compose.material.icons.twotone.InsertPhoto
 import androidx.compose.material.icons.twotone.KeyboardArrowDown
+import androidx.compose.material.icons.twotone.LowPriority
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +47,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,28 +60,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.atLeast
 import androidx.constraintlayout.compose.atMost
-import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.ui.billing.PremiumFeature
 import zelgius.com.myrecipes.ui.common.AppDropDown
+import zelgius.com.myrecipes.ui.common.AppImage
 import zelgius.com.myrecipes.ui.common.AppTextField
 import zelgius.com.myrecipes.ui.common.RemovableItem
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
@@ -146,7 +138,8 @@ fun EditRecipe(
                 navigateBack()
             }
         },
-        onAddFromWeb = addFromWeb
+        onAddFromWeb = addFromWeb,
+        onStepReordered = viewModel::onStepReordered
     )
 }
 
@@ -170,9 +163,28 @@ private fun EditRecipeView(
     onActionOnIngredient: (Action<Ingredient>) -> Unit = { },
     onSaved: () -> Unit = {},
     onAddFromWeb: () -> Unit = {},
-    onMove: (Int, Int) -> Unit = { _, _ -> }
+    onStepReordered: (List<StepItem>) -> Unit = {}
 ) {
-    val coroutineScope = rememberCoroutineScope()
+
+    var showStepBottomSheet by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedStep: StepItem? by remember {
+        mutableStateOf(null)
+    }
+
+    var showIngredientBottomSheet by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedIngredient: Ingredient? by remember {
+        mutableStateOf(null)
+    }
+
+    var showReorderSteps by remember {
+        mutableStateOf(false)
+    }
 
     Scaffold(
         topBar = {
@@ -204,37 +216,26 @@ private fun EditRecipeView(
                             )
                         }
                     }
+                IconButton(
+                    onClick = { showReorderSteps = true },
+                    enabled = recipe.name.isNotEmpty()
+                ) {
+                    Icon(
+                        imageVector = Icons.TwoTone.LowPriority, contentDescription = ""
+                    )
+                }
+
                 IconButton(onClick = onSaved, enabled = recipe.name.isNotEmpty()) {
                     Icon(
                         imageVector = Icons.TwoTone.Check, contentDescription = ""
                     )
                 }
+
             })
         }, content = { padding ->
 
-            var showStepBottomSheet by remember {
-                mutableStateOf(false)
-            }
-
-            var selectedStep: StepItem? by remember {
-                mutableStateOf(null)
-            }
-
-            var showIngredientBottomSheet by remember {
-                mutableStateOf(false)
-            }
-
-            var selectedIngredient: Ingredient? by remember {
-                mutableStateOf(null)
-            }
 
             val stateList = rememberLazyListState()
-
-            var draggingItemIndex: Int? by remember {
-                mutableStateOf(null)
-            }
-
-            var draggingItemOffset by remember { mutableFloatStateOf(0f) }
 
             LazyColumn(
                 state = stateList,
@@ -270,50 +271,6 @@ private fun EditRecipeView(
                             onRemove = {
                                 onActionOnStep(Action.Delete(it))
                             },
-                            modifier = Modifier
-                                .then(
-                                    if (draggingItemIndex == index)
-                                        Modifier
-                                            .zIndex(1f)
-                                            .graphicsLayer {
-                                                translationY = draggingItemOffset
-                                            }
-                                    else Modifier.graphicsLayer {
-                                        translationY = 0f
-                                    }
-                                )
-                                .pointerInput(Unit) {
-                                    detectDragGesturesAfterLongPress(
-                                        onDragStart = { offset ->
-                                            draggingItemIndex = index
-                                            draggingItemOffset = offset.y
-                                        },
-                                        onDragEnd = {
-                                            draggingItemIndex = null
-                                            draggingItemOffset = 0f
-
-                                        },
-                                        onDragCancel = {
-                                            draggingItemIndex = null
-                                            draggingItemOffset = 0f
-                                        },
-                                        onDrag = { change, dragAmount ->
-                                            draggingItemOffset += dragAmount.y
-                                            coroutineScope.launch {
-                                                stateList.scrollBy(dragAmount.y)
-                                            }
-
-                                            val currentItemIndex = stateList.firstVisibleItemIndex
-                                            val targetItemIndex =
-                                                currentItemIndex + (stateList.firstVisibleItemScrollOffset / (stateList.layoutInfo.visibleItemsInfo.firstOrNull()?.size
-                                                    ?: 0))
-                                            if (targetItemIndex != index) onMove(
-                                                index,
-                                                targetItemIndex.toInt()
-                                            )
-                                        }
-                                    )
-                                },
                         )
 
                         is AddIngredient -> AddIngredientButton(
@@ -367,6 +324,16 @@ private fun EditRecipeView(
                 onDismiss = {
                     showIngredientBottomSheet = false
                 })
+
+            val reorderStepSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            if (showReorderSteps) ReorderStepsBottomSheet(
+                items.filter { it is StepItem }.map { it as StepItem },
+                modalBottomSheetState = reorderStepSheetState,
+                onDismiss = {
+                    showReorderSteps = false
+                },
+                onStepReordered = onStepReordered
+            )
         })
 }
 
@@ -402,28 +369,9 @@ private fun EditRecipeHeader(
             modifier = Modifier.fillMaxWidth(),
         ) {
             val (image, fields) = createRefs()
-            var isError by remember { mutableStateOf(imageUrl == null) }
 
-            if (!isError)
-                AsyncImage(
-                    model = imageUrl,
-                    onError = { isError = true },
-                    contentDescription = null,
-                    modifier = Modifier
-                        .constrainAs(image) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            bottom.linkTo(parent.bottom)
-                            width = Dimension.ratio("1:1")
-                            height = Dimension.fillToConstraints.atLeast(128.dp).atMost(180.dp)
-                        }
-                        .clip(
-                            shape = MaterialTheme.shapes.extraLarge
-                        ),
-                    contentScale = ContentScale.Crop
-                )
-            else Image(
-                painterResource(R.drawable.ic_dish), contentDescription = null,
+            AppImage(
+                imageUrl = imageUrl,
                 modifier = Modifier
                     .constrainAs(image) {
                         top.linkTo(parent.top)
@@ -669,7 +617,7 @@ private fun LazyItemScope.AddStep(
     ) {
         Button(
             onClick = onClick,
-            modifier = Modifier.align(Alignment.CenterEnd),
+            modifier = Modifier.align(CenterEnd),
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             Row(verticalAlignment = CenterVertically) {

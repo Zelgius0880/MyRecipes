@@ -30,8 +30,8 @@ android {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 28
         targetSdk = 35
-        versionCode = 11
-        versionName = "2.0-beta05"
+        versionCode = 12
+        versionName = "2.0"
         testInstrumentationRunner =  "androidx.test.runner.AndroidJUnitRunner"
 
         ksp {
@@ -63,9 +63,9 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
-            isDebuggable = true
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isDebuggable = false
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

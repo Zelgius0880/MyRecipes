@@ -58,9 +58,9 @@ class WorkerRepository @Inject constructor(
                 imageGenerationProgressRepository.insert(it)
             }
 
-            WorkManager.getInstance(context).apply {
+            WorkManager.getInstance(context).
                 enqueueUniqueWork(ImageGenerationWorker.TAG, ExistingWorkPolicy.REPLACE, worker)
-            }
+
 
         }
     }

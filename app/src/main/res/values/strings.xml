@@ -192,6 +192,9 @@ SwEAAAAAAAAAAAAAAAAAAAAAAAAAAFBLBQYAAAAAAQABAC4AAAAFAQAAAAA
     <string name="data_extraction_error">An error occurred. It may happen, please retry</string>
     <string name="error">Error</string>
     <string name="retry">Retry</string>
+    <string name="play_recipe_step_position">Position of step while playing the recipe</string>
+    <string name="play_recipe_step_position_first">Before ingredients</string>
+    <string name="play_recipe_step_position_last">After ingredients</string>
 </resources>
 
 
