@@ -29,6 +29,7 @@ import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -49,6 +50,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import zelgius.com.myrecipes.data.model.Recipe
+import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.addFromWeb.AddFromWeb
 import zelgius.com.myrecipes.ui.details.RecipeDetails
@@ -70,6 +72,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var billingRepository: BillingRepository
 
+    @Inject
+    lateinit var dataStoreRepository: DataStoreRepository
+
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
@@ -81,14 +86,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        lifecycleScope.launch {
+
+        }
+
         setContent {
+            var selectedItem: HomeNavigation by rememberSaveable {
+                mutableStateOf(HomeNavigation.Recipe(Recipe.Type.Meal))
+            }
+
+            LaunchedEffect(null){
+                dataStoreRepository.selectedTab.collect {
+                    selectedItem = HomeNavigation.Recipe(it)
+                }
+            }
             AppTheme {
                 SharedTransitionLayout {
-
-                    var selectedItem: HomeNavigation by rememberSaveable {
-                        mutableStateOf(HomeNavigation.Recipe(Recipe.Type.Meal))
-                    }
-
                     val navigator = rememberListDetailPaneScaffoldNavigator<Navigation>()
 
                     BackHandler(navigator.canNavigateBack()) {
@@ -107,7 +120,12 @@ class MainActivity : AppCompatActivity() {
                                     sharedTransitionScope = this@SharedTransitionLayout,
                                     selectedItem = selectedItem,
                                     onNavigate = {
-                                        selectedItem = it
+                                        if(it is HomeNavigation.Recipe) {
+                                            selectedItem = it
+                                            lifecycleScope.launch {
+                                                dataStoreRepository.setSelectedTab(it.type)
+                                            }
+                                        } else selectedItem = it
                                     },
                                     onSettingsClicked = {
                                         navigator.navigateToDetails(Navigation.Settings)
