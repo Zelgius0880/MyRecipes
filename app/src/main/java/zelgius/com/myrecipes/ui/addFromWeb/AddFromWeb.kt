@@ -206,7 +206,6 @@ private fun AddFromWeb(
                             modifier = Modifier
                                 .size(24.dp)
                                 .padding(end = 4.dp)
-
                                 .align(Alignment.Center)
                                 .clip(CircleShape)
                                 .clickable {
