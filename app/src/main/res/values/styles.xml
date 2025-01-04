@@ -11,8 +11,9 @@
         <item name="floatingActionButtonStyle">@style/Widget.MyRecipes.FloatingActionButton</item>
         <item name="tabStyle">@style/Widget.MyRecipes.TabLayout</item>
         <item name="textInputStyle">@style/Widget.MyRecipes.TextInputLayout</item>
-<!--        <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:windowTranslucentStatus">true</item>-->
+        <item name="android:windowLayoutInDisplayCutoutMode">
+            default <!-- default, shortEdges, or never -->
+        </item>
         <item name="textAppearanceHeadline1">@style/TextAppearance.MyRecipes.Headline1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.MyRecipes.Headline2</item>
         <item name="textAppearanceHeadline3">@style/TextAppearance.MyRecipes.Headline3</item>
@@ -39,6 +40,13 @@
     <style name="AppTheme.NoActionBar" parent="AppTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.License" parent="Theme.Material3.DayNight.Dialog">
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowFixedHeightMajor">500dp</item>
+        <item name="windowFixedHeightMinor">500dp</item>
     </style>
 
     <style name="AppTheme.Transparent" parent="AppTheme">

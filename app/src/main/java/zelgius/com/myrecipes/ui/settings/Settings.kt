@@ -58,6 +58,7 @@ import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.billing.PremiumFeature
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
 import zelgius.com.myrecipes.ui.ingredients.UpdateIngredient
+import zelgius.com.myrecipes.ui.license.LicenceDialog
 import zelgius.com.myrecipes.utils.hasNavigationRail
 import java.io.OutputStream
 
@@ -68,6 +69,10 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
     }
 
     val uiState by viewModel.settingsUiState.collectAsStateWithLifecycle()
+
+    var showLicence by remember {
+        mutableStateOf(false)
+    }
 
     Settings(
         uiState = uiState,
@@ -85,7 +90,10 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
             viewModel.generateImageNow()
         },
         onBack = onBack,
-        onPlayRecipeStepPositionChanged = viewModel::setPlayRecipeStepPosition
+        onPlayRecipeStepPositionChanged = viewModel::setPlayRecipeStepPosition,
+        onOpenLicence = {
+            showLicence = true
+        }
     )
 
     AnimatedVisibility(selectedIngredient != null) {
@@ -98,6 +106,11 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
             )
         }
     }
+
+    if (showLicence)
+        LicenceDialog {
+            showLicence = false
+        }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,6 +123,7 @@ private fun Settings(
     onUpdateIngredient: (SimpleIngredient) -> Unit = {},
     onExportAll: suspend (outputStream: OutputStream) -> Unit = {},
     onGenerateNow: () -> Unit = {},
+    onOpenLicence: () -> Unit = {},
     onBack: () -> Unit = {},
 ) {
     Scaffold(
@@ -143,7 +157,7 @@ private fun Settings(
                 StepPosition(
                     uiState.playRecipeStepPosition,
                     onStepPositionChanged = onPlayRecipeStepPositionChanged,
-                    modifier = Modifier.padding( 16.dp)
+                    modifier = Modifier.padding(16.dp)
                 )
             }
 
@@ -186,6 +200,14 @@ private fun Settings(
                                 .padding(top = 8.dp)
                                 .padding(horizontal = 16.dp)
                         )
+                }
+            }
+
+            item {
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                    Button(onClick = onOpenLicence, modifier = Modifier.align(Alignment.Center)) {
+                        Text(text = stringResource(id = R.string.license))
+                    }
                 }
             }
         }

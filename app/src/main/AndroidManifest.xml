@@ -27,7 +27,6 @@
         </intent>
     </queries>
 
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
             android:name=".App"
             android:allowBackup="true"
@@ -71,7 +70,6 @@
 
             </intent-filter>
         </activity>
-        <activity android:name=".CreditActivity" />
         <activity
                 android:name="zelgius.com.myrecipes.VisionBarcodeReaderActivity"
                 android:theme="@style/Theme.Material3.DayNight.NoActionBar" />
@@ -96,6 +94,13 @@
                 android:authorities="${applicationId}.androidx-startup"
                 tools:node="remove" />
 
+        <activity
+                android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+                android:theme="@style/AppTheme.License" />
+
+        <activity
+                android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
+                android:theme="@style/AppTheme.License" />
     </application>
 
 </manifest>
