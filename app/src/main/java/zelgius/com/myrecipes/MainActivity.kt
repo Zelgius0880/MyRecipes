@@ -236,9 +236,9 @@ class MainActivity : AppCompatActivity() {
                     navigateBack = {
                         mainNavController.popBackStack()
                     },
-                    viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
-                        factory.create(it)
-                    }),
+                    viewModel = hiltViewModel<EditRecipeViewModel>().apply {
+                        init(it)
+                    },
                 )
             }
         }
@@ -255,9 +255,9 @@ class MainActivity : AppCompatActivity() {
                 else navigator.navigateToDetails(Navigation.NoSelection)
             },
             displayBack = navigator.canNavigateBack(),
-            viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
-                factory.create(Recipe(type = type, name = ""))
-            }),
+            viewModel = hiltViewModel<EditRecipeViewModel>().apply {
+                init(Recipe.Empty.copy(type = type))
+            },
             addFromWeb = {
                 navigator.navigateToDetails(Navigation.AddFromWeb(type))
             }
@@ -275,9 +275,7 @@ class MainActivity : AppCompatActivity() {
                 else navigator.navigateToDetails(Navigation.NoSelection)
             },
             displayBack = navigator.canNavigateBack(),
-            viewModel = hiltViewModel(creationCallback = { factory: EditRecipeViewModel.Factory ->
-                factory.create(recipe)
-            }).apply {
+            viewModel = hiltViewModel<EditRecipeViewModel>().apply {
                 load(recipe)
             },
         )
