@@ -138,7 +138,7 @@ private fun IngredientBottomSheet(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(null) {
         onChangeName(null)
         name = null
         quantity = if (showAdd) "" else decimalFormat.format(ingredient.quantity)
@@ -403,7 +403,10 @@ class IngredientBottomSheetViewModel @Inject constructor(
             viewModelScope.launch {
                 _ingredientFlow.value = ingredientsFlow.first().first()
             }
-        } else _ingredientFlow.value = ingredient
+        } else {
+            _isAdd.value = false
+            _ingredientFlow.value = ingredient
+        }
 
     }
 
