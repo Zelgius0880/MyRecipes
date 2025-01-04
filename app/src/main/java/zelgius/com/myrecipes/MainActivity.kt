@@ -87,12 +87,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        lifecycleScope.launch {
+
+        }
+
         setContent {
             var selectedItem: HomeNavigation by rememberSaveable {
                 mutableStateOf(HomeNavigation.Recipe(Recipe.Type.Meal))
             }
 
-            LaunchedEffect(null) {
+            LaunchedEffect(null){
                 dataStoreRepository.selectedTab.collect {
                     selectedItem = HomeNavigation.Recipe(it)
                 }
@@ -117,7 +121,7 @@ class MainActivity : AppCompatActivity() {
                                     sharedTransitionScope = this@SharedTransitionLayout,
                                     selectedItem = selectedItem,
                                     onNavigate = {
-                                        if (it is HomeNavigation.Recipe) {
+                                        if(it is HomeNavigation.Recipe) {
                                             selectedItem = it
                                             lifecycleScope.launch {
                                                 dataStoreRepository.setSelectedTab(it.type)
