@@ -21,6 +21,10 @@ data class Recipe(
         Meal,
         Other
     }
+
+    companion object {
+        val Empty = Recipe(name = "", type = Type.Meal)
+    }
 }
 
 fun Recipe.asEntity() = RecipeEntity(

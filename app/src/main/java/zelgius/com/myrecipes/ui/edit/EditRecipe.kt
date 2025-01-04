@@ -103,13 +103,14 @@ fun EditRecipe(
 
     val recipe by viewModel.recipeFlow.collectAsState()
     val items by viewModel.itemsFlow.collectAsState(emptyList())
+    val addFromWebState by viewModel.addFromWeb.collectAsState(false)
     val coroutineScope = rememberCoroutineScope()
 
     EditRecipeView(
         recipe,
         items = items,
         navigateBack = navigateBack,
-        addFromWeb = viewModel.addFromWeb,
+        addFromWeb = addFromWebState,
         displayBack = displayBack,
         onNameChanged = viewModel::changeName,
         onImageUrlChanged = {

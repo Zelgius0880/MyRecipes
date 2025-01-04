@@ -8,9 +8,6 @@ import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,17 +20,18 @@ import zelgius.com.myrecipes.data.model.Step
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
 import zelgius.com.myrecipes.worker.DownloadImageWorker
+import javax.inject.Inject
 
-@HiltViewModel(assistedFactory = EditRecipeViewModel.Factory::class)
-class EditRecipeViewModel @AssistedInject constructor(
-    @Assisted recipe: Recipe,
+@HiltViewModel
+class EditRecipeViewModel @Inject constructor(
     private val recipeRepository: RecipeRepository,
     private val saveRecipeUseCase: SaveRecipeUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val _recipeFlow = MutableStateFlow(recipe)
-    val addFromWeb = recipe.name.isEmpty()
+    private  val _recipeFlow = MutableStateFlow(Recipe.Empty)
+
+    val addFromWeb = recipeFlow.map { it.name.isEmpty() }
 
     val recipeFlow
         get() = _recipeFlow.asStateFlow()
@@ -56,12 +54,16 @@ class EditRecipeViewModel @AssistedInject constructor(
                     } + AddStep
             }
 
-    init {
+    fun init(recipe: Recipe) {
         viewModelScope.launch {
-            val id = recipe.id ?: return@launch
-            recipeRepository.getFull(id)?.let {
-                _recipeFlow.value = it
+            recipe.id?.let {
+                recipeRepository.getFull(it)?.let {
+                    _recipeFlow.value = it
+                }
+            } ?: run {
+                _recipeFlow.value = recipe
             }
+
         }
     }
 
@@ -207,11 +209,6 @@ class EditRecipeViewModel @AssistedInject constructor(
                     this[index] = i.copy(step = step)
                 }
             }
-    }
-
-    @AssistedFactory
-    interface Factory {
-        fun create(recipe: Recipe): EditRecipeViewModel
     }
 }
 
