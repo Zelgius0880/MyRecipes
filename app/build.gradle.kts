@@ -10,7 +10,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
 }
 
 val getProps: (propName: String) -> String = {
@@ -23,11 +23,6 @@ val getProps: (propName: String) -> String = {
         ""
     }
 }
-
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 android {
     compileSdk = 35
 
@@ -35,10 +30,13 @@ android {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 28
         targetSdk = 35
-        versionCode = 21
-        versionName = "2.0.2"
+        versionCode = 16
+        versionName = "2.0"
         testInstrumentationRunner =  "androidx.test.runner.AndroidJUnitRunner"
 
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
     }
 
     buildFeatures {
