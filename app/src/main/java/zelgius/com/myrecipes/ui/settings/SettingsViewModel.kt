@@ -1,9 +1,12 @@
 package zelgius.com.myrecipes.ui.settings
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zelgius.billing.repository.BillingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -12,6 +15,7 @@ import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.data.model.PlayRecipeStepPosition
 import zelgius.com.myrecipes.data.model.SimpleIngredient
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
+import zelgius.com.myrecipes.data.repository.DatabaseRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.useCase.pdf.GeneratePdfUseCase
@@ -25,12 +29,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val dataStoreRepository: DataStoreRepository,
     private val ingredientRepository: IngredientRepository,
     private val recipeRepository: RecipeRepository,
     billingRepository: BillingRepository,
     private val generatePdfUseCase: GeneratePdfUseCase,
     private val workRepository: WorkerRepository,
+    private val databaseRepository: DatabaseRepository,
 ) : ViewModel() {
 
     private val ingredients = ingredientRepository.getSimpleIngredients()
@@ -52,7 +58,7 @@ class SettingsViewModel @Inject constructor(
         .combine(exportingProgress) { state, progress ->
             state.copy(exportingProgress = progress)
         }
-        .combine(dataStoreRepository.playRecipeStepPosition){ state, position ->
+        .combine(dataStoreRepository.playRecipeStepPosition) { state, position ->
             state.copy(playRecipeStepPosition = position)
         }.stateIn(
             scope = viewModelScope,
@@ -80,6 +86,16 @@ class SettingsViewModel @Inject constructor(
             ingredientRepository.deleteIngredient(ingredient.id)
         }
     }
+
+    suspend fun importDatabase(uri: Uri): Boolean {
+        return uri.path?.let {
+            databaseRepository.restoreDatabase(backup = context.contentResolver.openInputStream(uri)?: return@let false)
+        } == true
+    }
+
+    suspend fun exportDatabase(uri: Uri): Boolean = uri.path?.let {
+        databaseRepository.backupDatabase(context.contentResolver.openOutputStream(uri)?: return@let false)
+    } == true
 
     suspend fun exportAllRecipes(outputStream: OutputStream) {
         exportingProgress.value = 0f
@@ -109,7 +125,9 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun generateImageNow() {
-        workRepository.startIaGenerationImmediately()
+        viewModelScope.launch {
+            workRepository.startIaGenerationImmediately()
+        }
     }
 }
 

@@ -2,12 +2,13 @@
 
 package zelgius.com.myrecipes.ui.billing
 
-import android.app.Activity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,7 +68,7 @@ fun PremiumFeature(
     modifier: Modifier = Modifier,
     viewModel: BillingViewModel = hiltViewModel(),
     clickableShape: RoundedCornerShape = CircleShape,
-    content: @Composable (modifier: Modifier) -> Unit,
+    content: @Composable BoxScope.(modifier: Modifier) -> Unit,
 ) {
     val isPremium by viewModel.isPremium.collectAsState(false)
     var showPremiumDialog by remember { mutableStateOf(false) }
@@ -101,7 +101,7 @@ fun PremiumFeature(
 fun BillingDialog(onClose: () -> Unit, viewModel: BillingViewModel) {
     val products by viewModel.products.collectAsStateWithLifecycle()
 
-    val context = (LocalContext.current as? Activity) ?: return
+    val context = LocalActivity.current?: return
 
     Dialog(
         onDismissRequest = onClose,

@@ -19,6 +19,7 @@ fun AppImage(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.Crop,
+    clipToBounds: Boolean = true
 ) {
     var isError by remember { mutableStateOf(imageUrl == null) }
 
@@ -32,10 +33,12 @@ fun AppImage(
             onError = { isError = true },
             contentDescription = contentDescription,
             modifier = modifier,
-            contentScale = contentScale
+            contentScale = contentScale,
+            clipToBounds = clipToBounds
         )
     else Image(
         painterResource(R.drawable.ic_dish), contentDescription = contentDescription,
         modifier = modifier,
+        contentScale = contentScale
     )
 }

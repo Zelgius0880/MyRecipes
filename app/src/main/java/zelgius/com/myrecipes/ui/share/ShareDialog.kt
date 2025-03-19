@@ -32,12 +32,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -61,10 +63,11 @@ fun ShareDialog(
     viewModel: ShareDialogViewModel = hiltViewModel(),
     onDismiss: () -> Unit
 ) {
-
-    val width = with(LocalDensity.current) { 500.dp.toPx() }.toInt()
-    val height = with(LocalDensity.current) { 500.dp.toPx() }.toInt()
     val color = Color.Black.toArgb()
+
+    var size by remember {
+        mutableStateOf<IntSize?>(null)
+    }
 
     var progress by remember {
         mutableStateOf(false)
@@ -72,8 +75,10 @@ fun ShareDialog(
 
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(recipe) {
-        viewModel.generateQrCode(recipe, width = width, height = height, color = color)
+    LaunchedEffect(recipe, size) {
+        size?.let {
+            viewModel.generateQrCode(recipe, width = it.width, height = it.height, color = color)
+        }
     }
 
     val qrCode by viewModel.qrCode.collectAsStateWithLifecycle(null)
@@ -103,16 +108,22 @@ fun ShareDialog(
             progress = false
         }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(modifier = Modifier.padding(16.dp)) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Box(
                     Modifier
-                        .padding(16.dp)
                         .fillMaxWidth()
                         .aspectRatio(1f)
                         .clip(MaterialTheme.shapes.medium)
                         .background(Color.White)
+                        .onSizeChanged {
+                            size = it
+                        }
                 ) {
                     qrCode?.let {
                         Image(
@@ -136,7 +147,7 @@ fun ShareDialog(
                         progress = true
 
                         saveFileLauncher.launch("${recipe.name}.pdf")
-                    }, modifier = Modifier.align(Alignment.End)) {
+                    }, modifier = Modifier.align(Alignment.End).padding(top = 8.dp)) {
                         Text(stringResource(R.string.export_to_pdf))
                     }
             }

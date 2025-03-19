@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.RecordVoiceOver
 import androidx.compose.material.icons.twotone.SignLanguage
@@ -25,11 +26,18 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.ui.billing.PremiumFeature
@@ -107,6 +115,35 @@ private fun MainCard(
     }
 }
 
+@Composable
+private fun MainCardLarge(
+    recipe: Recipe,
+    modifier: Modifier = Modifier,
+    additionalContent: @Composable ColumnScope.() -> Unit = {}
+) {
+    Card(
+        modifier = modifier, shape = RoundedCornerShape(48.dp)
+    ) {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    recipe.name ,
+                    modifier = Modifier
+                        .padding(vertical = 16.dp, horizontal = 32.dp).fillMaxWidth(),
+                    style = MaterialTheme.typography.headlineLarge,
+                )
+
+                additionalContent()
+            }
+
+        }
+    }
+}
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun RecipeHeaderOnePane(
@@ -155,32 +192,67 @@ fun RecipeHeaderTwoPanes(
     isGestureDetectionError: Boolean = false,
     onGestureDetectionChecked: (checked: Boolean) -> Unit = {},
 ) {
-    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-        MainCard(
-            recipe,
-            modifier
+    ConstraintLayout(modifier.fillMaxWidth().heightIn(min = 256.dp)) {
+        val (image, title, switches) = createRefs()
+        AppImage(
+            imageUrl =
+                recipe.imageUrl,
+            modifier = Modifier
+                .constrainAs(image) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    height = Dimension.fillToConstraints
+                }
+                .graphicsLayer { alpha = 0.99f }
+                .drawWithContent {
+                    val colors = listOf(
+                        Color.Black,
+                        Color.Transparent
+                    )
+                    drawContent()
+                    drawRect(
+                        brush = Brush.horizontalGradient(colors),
+                        blendMode = BlendMode.DstIn
+                    )
+                }, contentScale = ContentScale.Crop
         )
 
-        Spacer(modifier.weight(1f))
+        MainCardLarge(
+            recipe,
+            modifier = Modifier.constrainAs(title) {
+                top.linkTo(parent.top, 24.dp)
+                bottom.linkTo(parent.bottom, 32.dp)
+                verticalBias = 0f
+                horizontalBias = 0f
+                start.linkTo(parent.start, margin = 256.dp)
+                end.linkTo(switches.start, margin = 32.dp)
+                width = Dimension.value(512.dp)
+            }
+        )
 
         Card(
             modifier = Modifier
-                .fillMaxHeight()
-                .padding(end = 16.dp),
+                .constrainAs (switches){
+                    top.linkTo(title.top)
+                    end.linkTo(parent.end)
+                    height = Dimension.wrapContent
+                },
             shape = MaterialTheme.shapes.extraLarge
         ) {
-            Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight()) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+            ) {
                 CompositionLocalProvider(
                     LocalContentColor provides if (isGestureDetectionError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                 ) {
                     GestureDetectionSwitch(
                         isGestureDetectionChecked, onGestureDetectionChecked, Modifier
-                            .padding(vertical = 4.dp, horizontal = 16.dp)
+                            .padding(horizontal = 16.dp)
                     )
                 }
                 TextReadingSwitch(
                     isTextReadingChecked, onTextReadingChecked, Modifier
-                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                        .padding(horizontal = 16.dp)
                 )
             }
         }

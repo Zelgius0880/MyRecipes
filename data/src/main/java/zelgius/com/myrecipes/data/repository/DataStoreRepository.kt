@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,7 @@ class DataStoreRepository(context: Context) {
     private val stillNeedToGenerateKey = booleanPreferencesKey("stillNeedToGenerate")
     private val playRecipeStepPositionKey = stringPreferencesKey("playRecipeStepPosition")
     private val selectedTabKey = stringPreferencesKey("selectedTabKey")
+    private val gestureDetectionAreaPercentKey = floatPreferencesKey("gestureDetectionAreaPercent")
 
     suspend fun unit(name: String) =
         unitDataStore.data.first()[stringPreferencesKey(name)]
@@ -67,6 +69,11 @@ class DataStoreRepository(context: Context) {
             } ?: Recipe.Type.Meal
         }
 
+    val gestureDetectionAreaPercent: Flow<Float>
+        get() = dataStore.data.map { preferences ->
+            preferences[gestureDetectionAreaPercentKey] ?: 0f
+        }
+
     suspend fun setIAGenerationChecked(checked: Boolean) {
         dataStore.edit { preferences ->
             preferences[iaGenerationKey] = checked
@@ -100,6 +107,12 @@ class DataStoreRepository(context: Context) {
     suspend fun setSelectedTab(type: Recipe.Type) {
         dataStore.edit { preferences ->
             preferences[selectedTabKey] = type.name
+        }
+    }
+
+    suspend fun setGestureDetectionMaxZ(maxZ: Float) {
+        dataStore.edit { preferences ->
+            preferences[gestureDetectionAreaPercentKey] = maxZ
         }
     }
 }

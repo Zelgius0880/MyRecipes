@@ -187,5 +187,15 @@ AAAA
     <string name="play_recipe_step_position">Position de l\'étape lors de la lecture de la recette</string>
     <string name="play_recipe_step_position_first">Avant les ingrédients</string>
     <string name="play_recipe_step_position_last">Après les ingredients</string>
+    <string name="database_export_failed">Impossible d\'exporter la base de données</string>
+    <string name="database_import_failed">Impossible d\'importer la base de données</string>
+    <string name="export_database">Exporter la database</string>
+    <string name="import_database">Importer une database</string>
+    <string name="import_database_warning">Attention! Importer une base de donnée écrasera vos données actuelles</string>
+    <string name="database_import_succeeded">Import réussi</string>
+    <string name="database_export_succeeded">Export réussi</string>
+    <string name="set_up_recognition">Paramètrer la reconnaissance gestuelle</string>
+    <string name="gesture_sensibility_close_label">Proche</string>
+    <string name="gesture_sensibility_far_label">Loin</string>
 
 </resources>

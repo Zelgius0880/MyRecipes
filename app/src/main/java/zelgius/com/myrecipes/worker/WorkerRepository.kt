@@ -20,6 +20,7 @@ class WorkerRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val dataStoreRepository: DataStoreRepository,
     private val imageGenerationProgressRepository: ImageGenerationRequestRepository,
+    private val checkMissingImageUseCase: CheckMissingImageUseCase,
 ) {
 
     suspend fun startOrScheduleIaGenerationWorker(
@@ -65,7 +66,9 @@ class WorkerRepository @Inject constructor(
         }
     }
 
-    fun startIaGenerationImmediately() {
+    suspend fun startIaGenerationImmediately() {
+        checkMissingImageUseCase.execute()
+
         val worker = OneTimeWorkRequestBuilder<ImageGenerationWorker>()
             .addTag(ImageGenerationWorker.TAG)
             .build()

@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.data.model.Recipe
@@ -44,8 +45,8 @@ class PlayRecipeViewModel @Inject constructor(
     val gestureRecognitionEnabled
         get() = dataStoreRepository.isGestureRecognitionChecked
             .combine(billingRepository.isPremium) { isChecked, isPremium ->
-            isChecked && isPremium
-        }
+                isChecked && isPremium
+            }
 
     private val _gestureRecognitionError = MutableStateFlow(false)
     val gestureRecognitionError get() = _gestureRecognitionError.asStateFlow()
@@ -60,7 +61,7 @@ class PlayRecipeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            gestureRecognitionUseCase.gestureFlow.collect {
+            gestureRecognitionUseCase.gestureFlow.filterNotNull().collect {
                 when (it) {
                     Gesture.ThumbUp -> onNext()
                     Gesture.ThumbDown -> onPreview()
@@ -86,7 +87,9 @@ class PlayRecipeViewModel @Inject constructor(
     fun startGestureRecognition(
         lifecycleOwner: LifecycleOwner,
         preview: PreviewView?,
-        orientation: Int
+        orientation: Int,
+        width: Double,
+        height: Double,
     ) {
         val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
             exception.printStackTrace()
@@ -96,8 +99,10 @@ class PlayRecipeViewModel @Inject constructor(
         viewModelScope.launch(coroutineExceptionHandler) {
             gestureRecognitionUseCase.execute(
                 orientation,
+                width,
+                height,
                 preview,
-                lifecycleOwner
+                lifecycleOwner,
             )
         }
     }
