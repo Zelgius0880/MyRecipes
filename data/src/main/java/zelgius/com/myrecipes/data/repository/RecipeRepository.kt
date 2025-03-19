@@ -38,9 +38,6 @@ class RecipeRepository(
             }
         }
 
-    suspend fun getAllWithoutImages() = recipeDao.getAllWithoutImages()
-
-
     fun getFullFlow(id: Long): Flow<Recipe?> =
         recipeDao.getFlow(id).map { entity ->
             if (entity == null) return@map null
@@ -76,6 +73,9 @@ class RecipeRepository(
 
     suspend fun update(recipe: Recipe): Int =
         recipeDao.update(recipe.asEntity())
+
+    suspend fun update(recipe: RecipeEntity): Int =
+        recipeDao.update(recipe)
 
 
     suspend fun delete(recipe: Recipe): Int =

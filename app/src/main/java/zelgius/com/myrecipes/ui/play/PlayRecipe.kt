@@ -22,7 +22,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Devices
@@ -58,8 +62,12 @@ fun PlayRecipe(
     val instructions by viewModel.instructions.collectAsStateWithLifecycle()
     val recipe by viewModel.recipe.collectAsStateWithLifecycle()
     val isTextReadingChecked by viewModel.readingEnabled.collectAsStateWithLifecycle(true)
-    val isGestureRecognitionChecked by viewModel.gestureRecognitionEnabled.collectAsStateWithLifecycle(true)
-    val isGestureRecognitionError by viewModel.gestureRecognitionError.collectAsStateWithLifecycle(false)
+    val isGestureRecognitionChecked by viewModel.gestureRecognitionEnabled.collectAsStateWithLifecycle(
+        true
+    )
+    val isGestureRecognitionError by viewModel.gestureRecognitionError.collectAsStateWithLifecycle(
+        false
+    )
     val isInPipMode = rememberIsInPipMode()
     val currentItemPosition by viewModel.currentInstructionPosition.collectAsStateWithLifecycle()
 
@@ -68,36 +76,64 @@ fun PlayRecipe(
 
     val context = LocalContext.current
 
+    var height by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    var width by remember {
+        mutableFloatStateOf(0f)
+    }
+
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted && isGestureRecognitionChecked) {
-            viewModel.startGestureRecognition(lifecycleOwner,null, root.display.rotation)
+            viewModel.startGestureRecognition(
+                lifecycleOwner,
+                null,
+                root.display.rotation,
+                width.toDouble(),
+                height.toDouble(),
+            )
         }
     }
 
 
-    LaunchedEffect(isGestureRecognitionChecked) {
-        if(!isGestureRecognitionChecked ) {
+    LaunchedEffect(isGestureRecognitionChecked, width, height) {
+        if (!isGestureRecognitionChecked) {
             viewModel.cancelRecognition()
             return@LaunchedEffect
         }
 
-        if(ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.CAMERA
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
             launcher.launch(android.Manifest.permission.CAMERA)
-        } else {
-            viewModel.startGestureRecognition(lifecycleOwner,  null, root.display.rotation)
+        } else if(width > 0 && height > 0){
+            viewModel.startGestureRecognition(
+                lifecycleOwner,
+                null,
+                root.display.rotation,
+                width.toDouble(),
+                height.toDouble(),
+            )
         }
     }
 
     recipe?.let {
-        Box {
+        Box(modifier = Modifier.onGloballyPositioned { coordinates ->
+            // Set column height using the LayoutCoordinates
+            height = coordinates.size.height.toFloat()
+            width = coordinates.size.width.toFloat()
+        }) {
             PlayRecipe(
                 recipe = it,
                 instructions = instructions,
                 isTextReadingChecked = isTextReadingChecked,
                 isGestureRecognitionChecked = isGestureRecognitionChecked && !isGestureRecognitionError,
-                isGestureRecognitionError = isGestureRecognitionError ,
+                isGestureRecognitionError = isGestureRecognitionError,
                 isPipMode = isInPipMode,
                 modifier = modifier,
                 currentItemPosition = currentItemPosition,
