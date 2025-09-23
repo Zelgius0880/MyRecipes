@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package zelgius.com.myrecipes.ui.settings
 
 import android.content.Intent
@@ -31,6 +33,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -49,6 +53,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.R
 import zelgius.com.myrecipes.data.model.PlayRecipeStepPosition
@@ -57,36 +64,116 @@ import zelgius.com.myrecipes.data.model.asIngredient
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.billing.PremiumFeature
 import zelgius.com.myrecipes.ui.common.recipe.Ingredient
+import zelgius.com.myrecipes.ui.gestureSetUp.GestureSetUpScreen
 import zelgius.com.myrecipes.ui.ingredients.UpdateIngredient
+import zelgius.com.myrecipes.ui.license.LicenceDialog
 import zelgius.com.myrecipes.utils.hasNavigationRail
 import java.io.OutputStream
 
 @Composable
-fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit) {
+fun Settings(
+    viewModel: SettingsViewModel = hiltViewModel(),
+    onBack: () -> Unit,
+) {
     var selectedIngredient by remember {
         mutableStateOf<SimpleIngredient?>(null)
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
     val uiState by viewModel.settingsUiState.collectAsStateWithLifecycle()
 
-    Settings(
-        uiState = uiState,
-        onIAGenerationChanged = {
-            viewModel.setIsIAGenerationChecked(it)
+    var showLicence by remember {
+        mutableStateOf(false)
+    }
+
+    val navController = rememberNavController()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val exportDatabaseLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) {
+            it ?: return@rememberLauncherForActivityResult
+            coroutineScope.launch {
+                val result = viewModel.exportDatabase(it)
+                if (!result) snackbarHostState.showSnackbar(context.getString(R.string.database_export_failed))
+                else snackbarHostState.showSnackbar(context.getString(R.string.database_export_succeeded))
+            }
+        }
+
+    val importDatabaseLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+            it ?: return@rememberLauncherForActivityResult
+            coroutineScope.launch {
+                val result = viewModel.importDatabase(it)
+                if (!result) snackbarHostState.showSnackbar(context.getString(R.string.database_import_failed))
+                else snackbarHostState.showSnackbar(context.getString(R.string.database_import_succeeded))
+            }
+        }
+
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.settings)) },
+                navigationIcon = {
+
+                    if (!hasNavigationRail())
+                        IconButton(onClick = {
+                            if(navController.previousBackStackEntry != null)
+                                navController.popBackStack()
+                            else
+                                onBack()
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
+                                contentDescription = ""
+                            )
+                        }
+                }
+            )
         },
-        onDeleteIngredient = viewModel::deleteIngredient,
-        onUpdateIngredient = {
-            selectedIngredient = it
-        },
-        onExportAll = {
-            viewModel.exportAllRecipes(it)
-        },
-        onGenerateNow = {
-            viewModel.generateImageNow()
-        },
-        onBack = onBack,
-        onPlayRecipeStepPositionChanged = viewModel::setPlayRecipeStepPosition
-    )
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+
+        NavHost(
+            navController = navController,
+            startDestination = "/",
+            modifier = Modifier.padding(padding),
+        ) {
+            composable("/") {
+                Settings(
+                    uiState = uiState,
+                    onIAGenerationChanged = viewModel::setIsIAGenerationChecked,
+                    onDeleteIngredient = viewModel::deleteIngredient,
+                    onUpdateIngredient = {
+                        selectedIngredient = it
+                    },
+                    onExportAll = viewModel::exportAllRecipes,
+                    onGenerateNow = viewModel::generateImageNow,
+                    onPlayRecipeStepPositionChanged = viewModel::setPlayRecipeStepPosition,
+                    onOpenLicence = {
+                        showLicence = true
+                    },
+                    onExportDatabase = {
+                        exportDatabaseLauncher.launch("database")
+                    },
+                    onImportDatabase = {
+                        importDatabaseLauncher.launch(arrayOf("application/zip"))
+                    },
+                    onSetUpRecognition = {
+                        navController.navigate("gesture_setup")
+                    }
+                )
+            }
+
+            composable("gesture_setup") {
+                GestureSetUpScreen(onBack = {
+                    navController.popBackStack()
+                })
+            }
+        }
+    }
 
     AnimatedVisibility(selectedIngredient != null) {
         selectedIngredient?.let {
@@ -98,100 +185,134 @@ fun Settings(viewModel: SettingsViewModel = hiltViewModel(), onBack: () -> Unit)
             )
         }
     }
+
+    if (showLicence)
+        LicenceDialog {
+            showLicence = false
+        }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Settings(
     uiState: SettingsUiState,
+    modifier: Modifier = Modifier,
     onIAGenerationChanged: (Boolean) -> Unit = {},
     onPlayRecipeStepPositionChanged: (PlayRecipeStepPosition) -> Unit = {},
     onDeleteIngredient: (SimpleIngredient) -> Unit = {},
     onUpdateIngredient: (SimpleIngredient) -> Unit = {},
     onExportAll: suspend (outputStream: OutputStream) -> Unit = {},
     onGenerateNow: () -> Unit = {},
-    onBack: () -> Unit = {},
+    onOpenLicence: () -> Unit = {},
+    onImportDatabase: () -> Unit = {},
+    onExportDatabase: () -> Unit = {},
+    onSetUpRecognition: () -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.settings)) },
-                navigationIcon = {
+    LazyColumn(
+        modifier = modifier
+            .padding(vertical = 8.dp),
+    ) {
+        item {
+            ExportButton(onExportAll, uiState.exportingProgress)
+        }
 
-                    if (!hasNavigationRail())
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
-                                contentDescription = ""
-                            )
-                        }
-                }
+        item {
+            StepPosition(
+                uiState.playRecipeStepPosition,
+                onStepPositionChanged = onPlayRecipeStepPositionChanged,
+                modifier = Modifier.padding(16.dp)
             )
-        },
+        }
 
-        ) {
-        LazyColumn(
-            modifier = Modifier
-                .padding(it)
-                .padding(vertical = 8.dp),
-        ) {
-            item {
-                ExportButton(onExportAll, uiState.exportingProgress)
-            }
-
-            item {
-                StepPosition(
-                    uiState.playRecipeStepPosition,
-                    onStepPositionChanged = onPlayRecipeStepPositionChanged,
-                    modifier = Modifier.padding( 16.dp)
-                )
-            }
-
-            item {
-                PremiumFeature(
-                    modifier = Modifier.fillMaxWidth(),
-                    clickableShape = RoundedCornerShape(percent = 50)
-                ) { modifier ->
-                    IAGenerationSwitch(
-                        uiState.isIAGenerationChecked,
-                        onIAGenerationChanged,
-                        modifier,
-                        onGenerateNow
-                    )
+        item {
+            PremiumFeature(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OutlinedButton(
+                    onClick = onSetUpRecognition,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .align(Alignment.Center)
+                ) {
+                    Text(text = stringResource(id = R.string.set_up_recognition))
                 }
             }
+        }
 
-            item {
-                Text(
-                    text = stringResource(id = R.string.ingredients),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 8.dp)
+        item {
+            PremiumFeature(
+                modifier = Modifier.fillMaxWidth(),
+                clickableShape = RoundedCornerShape(percent = 50)
+            ) { modifier ->
+                IAGenerationSwitch(
+                    uiState.isIAGenerationChecked,
+                    onIAGenerationChanged,
+                    modifier,
+                    onGenerateNow
                 )
             }
+        }
 
-            itemsIndexed(uiState.ingredients, key = { _, item -> item.id }) { index, item ->
-                Column(
-                    modifier = Modifier
-                        .animateItem()
-                        .clickable { onUpdateIngredient(item) }
-                        .padding(top = 8.dp),
-                ) {
-                    SettingsIngredient(ingredient = item, onDeleteIngredient = onDeleteIngredient)
+        item {
+            Text(
+                text = stringResource(id = R.string.ingredients),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 8.dp)
+            )
+        }
 
-                    if (index < uiState.ingredients.lastIndex)
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .padding(top = 8.dp)
-                                .padding(horizontal = 16.dp)
-                        )
+        itemsIndexed(uiState.ingredients, key = { _, item -> item.id }) { index, item ->
+            Column(
+                modifier = Modifier
+                    .animateItem()
+                    .clickable { onUpdateIngredient(item) }
+                    .padding(top = 8.dp),
+            ) {
+                SettingsIngredient(ingredient = item, onDeleteIngredient = onDeleteIngredient)
+
+                if (index < uiState.ingredients.lastIndex)
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .padding(horizontal = 16.dp)
+                    )
+            }
+        }
+
+        item {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Row {
+                    Button(modifier = Modifier.padding(8.dp), onClick = onExportDatabase) {
+                        Text(stringResource(R.string.export_database))
+                    }
+                    Button(modifier = Modifier.padding(8.dp), onClick = onImportDatabase) {
+                        Text(stringResource(R.string.import_database))
+                    }
+                }
+                Text(
+                    stringResource(R.string.import_database_warning),
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.error)
+                )
+            }
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Button(onClick = onOpenLicence, modifier = Modifier.align(Alignment.Center)) {
+                    Text(text = stringResource(id = R.string.license))
                 }
             }
         }
     }
-
 }
+
 
 @Composable
 private fun ExportButton(
@@ -354,7 +475,7 @@ private fun StepPosition(
 private fun SettingsPreview() {
     AppTheme {
         Settings(
-            SettingsUiState(
+            uiState = SettingsUiState(
                 isIAGenerationChecked = true,
                 ingredients = List(5) {
                     SimpleIngredient(

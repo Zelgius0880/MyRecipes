@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -103,22 +104,26 @@ fun EditRecipe(
 
     val recipe by viewModel.recipeFlow.collectAsState()
     val items by viewModel.itemsFlow.collectAsState(emptyList())
+    val addFromWebState by viewModel.addFromWeb.collectAsState(false)
     val coroutineScope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
 
     EditRecipeView(
         recipe,
         items = items,
         navigateBack = navigateBack,
-        addFromWeb = viewModel.addFromWeb,
+        addFromWeb = addFromWebState,
         displayBack = displayBack,
         onNameChanged = viewModel::changeName,
         onImageUrlChanged = {
             viewModel.changeImageUrl(it.toString())
         },
         onTypeChanged = {
+            focusManager.clearFocus()
             viewModel.changeType(it)
         },
         onActionOnStep = { action ->
+            focusManager.clearFocus()
             when (action) {
                 is Action.Add -> viewModel.addStep(action.item)
                 is Action.Update -> viewModel.updateStep(action.oldItem, action.newItem)
@@ -126,6 +131,7 @@ fun EditRecipe(
             }
         },
         onActionOnIngredient = { action ->
+            focusManager.clearFocus()
             when (action) {
                 is Action.Add -> viewModel.addIngredient(action.item)
                 is Action.Update -> viewModel.updateIngredient(action.oldItem, action.newItem)

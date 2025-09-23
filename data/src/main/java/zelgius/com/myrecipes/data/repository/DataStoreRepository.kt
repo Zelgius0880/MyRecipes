@@ -5,26 +5,31 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import zelgius.com.myrecipes.data.model.PlayRecipeStepPosition
+import zelgius.com.myrecipes.data.model.Recipe
 
 class DataStoreRepository(context: Context) {
     private val dataStore = context.dataStore
+    private val unitDataStore = context.unitDataStore
     private val iaGenerationKey = booleanPreferencesKey("isIAGenerationChecked")
     private val textReadingKey = booleanPreferencesKey("isTextReadingChecked")
     private val gestureRecognitionKey = booleanPreferencesKey("isGestureRecognitionChecked")
     private val stillNeedToGenerateKey = booleanPreferencesKey("stillNeedToGenerate")
     private val playRecipeStepPositionKey = stringPreferencesKey("playRecipeStepPosition")
+    private val selectedTabKey = stringPreferencesKey("selectedTabKey")
+    private val gestureDetectionAreaPercentKey = floatPreferencesKey("gestureDetectionAreaPercent")
 
     suspend fun unit(name: String) =
-        dataStore.data.first()[stringPreferencesKey(name)]
+        unitDataStore.data.first()[stringPreferencesKey(name)]
 
     suspend fun saveUnit(ingredient: String, unit: String) {
-        dataStore.edit {
+        unitDataStore.edit {
             it[stringPreferencesKey(ingredient)] = unit
         }
     }
@@ -57,6 +62,18 @@ class DataStoreRepository(context: Context) {
             } ?: PlayRecipeStepPosition.Last
         }
 
+    val selectedTab: Flow<Recipe.Type>
+        get() = dataStore.data.map { preferences ->
+            preferences[selectedTabKey]?.let {
+                Recipe.Type.valueOf(it)
+            } ?: Recipe.Type.Meal
+        }
+
+    val gestureDetectionAreaPercent: Flow<Float>
+        get() = dataStore.data.map { preferences ->
+            preferences[gestureDetectionAreaPercentKey] ?: 0f
+        }
+
     suspend fun setIAGenerationChecked(checked: Boolean) {
         dataStore.edit { preferences ->
             preferences[iaGenerationKey] = checked
@@ -86,7 +103,19 @@ class DataStoreRepository(context: Context) {
             preferences[playRecipeStepPositionKey] = position.name
         }
     }
+
+    suspend fun setSelectedTab(type: Recipe.Type) {
+        dataStore.edit { preferences ->
+            preferences[selectedTabKey] = type.name
+        }
+    }
+
+    suspend fun setGestureDetectionMaxZ(maxZ: Float) {
+        dataStore.edit { preferences ->
+            preferences[gestureDetectionAreaPercentKey] = maxZ
+        }
+    }
 }
 
-// At the top level of your kotlin file:
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "units")
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "mainDataStore")
+val Context.unitDataStore: DataStore<Preferences> by preferencesDataStore(name = "units")

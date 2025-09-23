@@ -36,8 +36,9 @@ class StartStableHordeGenerationUseCase @Inject constructor(
     suspend fun execute(): ImageGenerationRequest? = coroutineScope {
         val recipes = recipeDao.getAll().filter {
             it.generationEnabled
-                    && it.imageURL?.startsWith("content://") == true
+                    && (it.imageURL?.startsWith("content://") != true
                     && it.imageURL?.fileExists(context) != true
+                    || it.imageURL?.isNotEmpty() != true)
         }
         val ingredients = ingredientDao.getAllWithoutImages().filter { it.generationEnabled }
 

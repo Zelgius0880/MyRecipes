@@ -21,6 +21,7 @@ import zelgius.com.myrecipes.data.repository.dao.RecipeDao
 import zelgius.com.myrecipes.data.repository.dao.StepDao
 
 
+
 @Database(
     entities = [IngredientEntity::class, RecipeEntity::class, StepEntity::class, RecipeIngredient::class, ImageGenerationRequestEntity::class],
     views = [IngredientForRecipe::class],
@@ -37,6 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val imageGenerationProgressDao: ImageGenerationProgressDao
 
     companion object {
+        const val DATABASE = "database"
         private var instance: AppDatabase? = null
         fun getInstance(
             context: Context,
@@ -69,7 +71,7 @@ abstract class AppDatabase : RoomDatabase() {
         ): AppDatabase {
             return Room.databaseBuilder(
                 context,
-                AppDatabase::class.java, "database"
+                AppDatabase::class.java, DATABASE
             )
                 .addCallback(object : Callback() {
 
