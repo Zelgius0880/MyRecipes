@@ -10,7 +10,7 @@ import zelgius.com.myrecipes.data.repository.RecipeRepository
 import javax.inject.Inject
 
 class StableHordeDownloadUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val stableHordeRepository: StableHordeRepository,
     private val ingredientRepository: IngredientRepository,
     private val recipeRepository: RecipeRepository,

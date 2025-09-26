@@ -10,7 +10,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
 }
 
 val getProps: (propName: String) -> String = {
@@ -23,20 +23,22 @@ val getProps: (propName: String) -> String = {
         ""
     }
 }
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 28
-        targetSdk = 35
-        versionCode = 16
-        versionName = "2.0"
+        targetSdk = 36
+        versionCode = 21
+        versionName = "2.0.2"
         testInstrumentationRunner =  "androidx.test.runner.AndroidJUnitRunner"
 
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
     }
 
     buildFeatures {
@@ -124,10 +126,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     namespace = "zelgius.com.myrecipes"
 
 }
@@ -191,6 +189,7 @@ dependencies {
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.camera2)
     implementation(libs.camera.view)
+    implementation(libs.androidx.camera.compose)
 
     //Compose
     implementation(libs.activity.compose)

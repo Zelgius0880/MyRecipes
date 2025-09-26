@@ -1,14 +1,23 @@
 package zelgius.com.myrecipes.data.useCase.pdf
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.toColorInt
 import androidx.core.graphics.withTranslation
 import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -32,7 +41,7 @@ import kotlin.math.roundToInt
 
 
 class GeneratePdfUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val recipeRepository: RecipeRepository
 ) {
     companion object {
@@ -192,7 +201,7 @@ class GeneratePdfUseCase @Inject constructor(
      */
     private fun drawSeparator(
         margin: Float = 300f,
-        @ColorInt color: Int = Color.parseColor("#B0BBC5")
+        @ColorInt color: Int = "#B0BBC5".toColorInt()
     ): Int {
         val width = 8f
         paint.apply {
@@ -470,7 +479,7 @@ class GeneratePdfUseCase @Inject constructor(
 
     private suspend fun drawQrCode(recipe: Recipe): Int {
         val bmp = GenerateQrCodeUseCase().execute(
-            recipeRepository.getBytesForQr(recipe), dotColor = Color.BLACK.toInt()
+            recipeRepository.getBytesForQr(recipe), dotColor = Color.BLACK
         ) ?: return linePosition
 
         val margin = 200
@@ -560,10 +569,7 @@ object Utils {
         val targetRect =
             RectF(left, top, left + scaledWidth, top + scaledHeight)
 
-        val dest = Bitmap.createBitmap(
-            newWidth, newHeight,
-            source.config ?: Bitmap.Config.ARGB_8888
-        )
+        val dest = createBitmap(newWidth, newHeight, source.config ?: Bitmap.Config.ARGB_8888)
         val canvas = Canvas(dest)
         canvas.drawBitmap(source, null, targetRect, null)
 

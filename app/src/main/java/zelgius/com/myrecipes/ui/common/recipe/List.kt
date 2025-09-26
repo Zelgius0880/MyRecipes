@@ -83,7 +83,7 @@ fun RecipeListItem(
 ) = with(sharedTransitionScope) {
     Card(
         shape = RoundedCornerShape(4.dp),
-        modifier = modifier then modifier(animatedVisibilityScope, "${recipe.id}_recipe_card")
+        modifier = modifier then sharedElement(animatedVisibilityScope, "${recipe.id}_recipe_card")
             .height(IntrinsicSize.Max)
     ) {
         val state = rememberAnchoredDraggableState(
@@ -104,7 +104,7 @@ fun RecipeListItem(
             Row {
                 AppImage(
                     imageUrl = recipe.imageUrl,
-                    modifier = modifier(animatedVisibilityScope, "${recipe.id}_recipe_image")
+                    modifier = sharedElement(animatedVisibilityScope, "${recipe.id}_recipe_image")
                         .size(64.dp)
                 )
 
@@ -112,11 +112,11 @@ fun RecipeListItem(
                     Text(
                         recipe.type.text(LocalContext.current),
                         style = MaterialTheme.typography.labelMedium,
-                        modifier = modifier(animatedVisibilityScope, "${recipe.id}_recipe_type")
+                        modifier = sharedElement(animatedVisibilityScope, "${recipe.id}_recipe_type")
                     )
                     Text(
                         recipe.name,
-                        modifier = modifier(animatedVisibilityScope, "${recipe.id}_recipe_name")
+                        modifier = sharedElement(animatedVisibilityScope, "${recipe.id}_recipe_name")
                             .padding(top = 8.dp)
                     )
                 }
@@ -127,13 +127,13 @@ fun RecipeListItem(
 
 
 @Composable
-fun SharedTransitionScope?.modifier(
+fun SharedTransitionScope?.sharedElement(
     animatedVisibilityScope: AnimatedVisibilityScope?,
     key: String,
 ) = if (this != null && animatedVisibilityScope != null)
     Modifier.sharedElement(
         animatedVisibilityScope = animatedVisibilityScope,
-        state = rememberSharedContentState(
+        sharedContentState = rememberSharedContentState(
             key = key
         )
     )

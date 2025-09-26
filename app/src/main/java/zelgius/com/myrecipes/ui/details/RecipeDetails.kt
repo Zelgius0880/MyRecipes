@@ -208,7 +208,7 @@ fun RecipeDetailsHeader(
             .ifNotNull(animatedVisibilityScope) {
                 sharedElement(
                     animatedVisibilityScope = it,
-                    state = rememberSharedContentState(
+                    sharedContentState = rememberSharedContentState(
                         key = "${recipe.id}_recipe_container"
                     )
                 )
@@ -232,7 +232,7 @@ fun RecipeDetailsHeader(
                     .ifNotNull(animatedVisibilityScope) {
                         sharedElement(
                             animatedVisibilityScope = it,
-                            state = rememberSharedContentState(key = "${recipe.id}_recipe_image")
+                            sharedContentState = rememberSharedContentState(key = "${recipe.id}_recipe_image")
                         )
                     }
                     .clip(
@@ -253,7 +253,7 @@ fun RecipeDetailsHeader(
                     .ifNotNull(animatedVisibilityScope) {
                         sharedElement(
                             animatedVisibilityScope = it,
-                            state = rememberSharedContentState(
+                            sharedContentState = rememberSharedContentState(
                                 key = "${recipe.id}_recipe_name"
                             )
                         )

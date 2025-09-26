@@ -26,7 +26,7 @@ import javax.inject.Inject
 class EditRecipeViewModel @Inject constructor(
     private val recipeRepository: RecipeRepository,
     private val saveRecipeUseCase: SaveRecipeUseCase,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private  val _recipeFlow = MutableStateFlow(Recipe.Empty)
@@ -162,9 +162,10 @@ class EditRecipeViewModel @Inject constructor(
     fun save() {
         viewModelScope.launch {
             val recipe = recipeFlow.value
-            saveRecipeUseCase.execute(toSave = recipe)
 
-            recipe.imageUrl?.takeIf { URLUtil.isHttpUrl(it) || URLUtil.isHttpsUrl(it) }?.let {
+            saveRecipeUseCase.execute(toSave = recipe, !recipe.imageUrl.isValidUrl)
+
+            recipe.imageUrl?.takeIf { it.isValidUrl }?.let {
                 val worker = OneTimeWorkRequestBuilder<DownloadImageWorker>()
                     .setInputData(
                         Data.Builder()
@@ -210,6 +211,8 @@ class EditRecipeViewModel @Inject constructor(
                 }
             }
     }
+
+    private val String?.isValidUrl get() = this != null && (URLUtil.isHttpUrl(this) || URLUtil.isHttpsUrl(this))
 }
 
 sealed interface ListItem

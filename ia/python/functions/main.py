@@ -6,47 +6,53 @@ from pathlib import Path
 sys.path.insert(0, Path(__file__).parent.as_posix())
 
 from firebase_functions import https_fn
-import google.generativeai as genai
+from firebase_functions import logger
+from google import genai
+from google.genai import types
 import tempfile
 import os
 import typing
 import base64
 import json
+import requests
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-
-#imagen = genai.ImageGenerationModel("imagen-3.0-generate-001")
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 API_KEY = os.getenv("API_KEY")
+AI_MODEL = "gemini-2.0-flash"
+JINA_API_KEY = os.getenv("JINA_API_KEY")
 
 @https_fn.on_call(region="europe-west2")
 def extractRecipe(req: https_fn.CallableRequest) -> typing.Any:
-    if req.data["apiKey"] != API_KEY:
+
+    if not "apiKey" in req.data != API_KEY:
         return {"error": {"message" : "Unauthorized", "status": 403}}
 
-    if req.data["pdfData"] is None:
-        return {"error": {"message" : "Missing mandatory data: pdfData", "status": 400}}
+    if not "pdfData" in req.data and not "urlData" in req.data:
+        return {"error": {"message" : "Missing mandatory data: pdfData or urlData", "status": 400}}
 
-    if req.data["name"] is None:
-        return {"error": {"message" : "Missing mandatory data: name", "status": 400}}
-
-    if req.data["locale"] is None:
+    if not "locale" in req.data:
         return {"error": {"message" : "Missing mandatory data: locale", "status": 400}}
 
-    tmp = tempfile.NamedTemporaryFile(mode="w",suffix=".pdf",delete=False)
+    tmp = None
+    if "pdfData" in req.data:
+        if not "name" in req.data:
+            return {"error": {"message" : "Missing mandatory data: name", "status": 400}}
 
-    base64_str = req.data["pdfData"]
+        tmp = tempfile.NamedTemporaryFile(mode="w",suffix=".pdf",delete=False)
 
-    with open(tmp.name, 'wb') as f:
-        f.write(base64.decodebytes(bytes(base64_str, "utf-8")))
+        base64_str = req.data["pdfData"]
 
-    uploaded_pdf = genai.upload_file(tmp.name, mime_type="application/pdf",
-                                     display_name=req.data["name"])
+        with open(tmp.name, 'wb') as f:
+            f.write(base64.decodebytes(bytes(base64_str, "utf-8")))
 
-    response = model.generate_content(
-        ["Summarize the recipe from this document. Present the data under JSON format. Here is the schema:\n" +
+        data_payload = client.files.upload(file=tmp.name,  config=types.UploadFileConfig(display_name=req.data["name"]))
+    else :
+        data_payload = requests.get(f'https://r.jina.ai/{req.data["urlData"]}', headers={"Authorization": "Bearer "+JINA_API_KEY}).text
+        logger.debug(req.data["locale"])
+
+    response = client.models.generate_content(model= AI_MODEL,
+        contents=["Summarize the recipe from this document. Present the data under JSON format. Here is the schema:\n" +
          "{\"recipe\": RECIPE, \"ingredients\": list[INGREDIENT], \"steps\": list[STEP]}\n\n" +
 
          "RECIPE = {\"name\": str, \"image_url\": str}\n" +
@@ -56,10 +62,14 @@ def extractRecipe(req: https_fn.CallableRequest) -> typing.Any:
          "step.ingredients is the list of ingredients used for this step\n" +
          "\"unit\" is one of these values: Gramme, Kilogramme, Milliliter, Liter, TeaSpoon, TableSpoon, Cup, Pinch, or null if nothing correspond\n" +
          "Important: Only return a single piece of valid JSON text." +
-         "Translate it into " + req.data["locale"] + " if necessary.", uploaded_pdf])
+         f'Translate it the output JSON into {req.data["locale"]}  if necessary.', data_payload])
 
-    tmp.close()
+    if tmp is not None:
+        tmp.close()
+        client.files.delete(name=data_payload.name)
+
     json_str = response.candidates[0].content.parts[0].text.replace("```json", "").replace("```", "")
+
     return {"result": json.loads(json_str)}
 """
 @https_fn.on_call(region="europe-west2")

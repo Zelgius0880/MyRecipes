@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class LiveGestureRecognitionUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val gestureRecognizerRepository: GestureRecognizerRepository,
     val dataStoreRepository: DataStoreRepository,
 ) {

@@ -10,11 +10,9 @@ import org.junit.Test
 import zelgius.com.myrecipes.data.AppDatabase
 import zelgius.com.myrecipes.data.model.Ingredient
 import zelgius.com.myrecipes.data.model.Step
-import zelgius.com.myrecipes.data.repository.DataStoreRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.useCase.pdf.GeneratePdfUseCase
 import zelgius.com.myrecipes.ui.preview.createDummyModel
-import zelgius.com.myrecipes.worker.WorkerRepository
 import java.io.File
 import java.io.IOException
 
@@ -26,7 +24,6 @@ class GeneratePdfUseCaseTest {
     private val ingredientDao by lazy { db.ingredientDao }
 
     private val recipeRepository by lazy { RecipeRepository(recipeDao, stepDao, ingredientDao) }
-    private val workerRepository = WorkerRepository(context, DataStoreRepository(context))
 
 
     @Test

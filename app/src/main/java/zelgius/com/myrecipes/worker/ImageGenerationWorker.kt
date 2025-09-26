@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 import com.zelgius.myrecipes.ia.usecase.StableHordeDownloadUseCase
 import com.zelgius.myrecipes.ia.usecase.StableHordeStatusUseCase
 import com.zelgius.myrecipes.ia.usecase.StartStableHordeGenerationUseCase

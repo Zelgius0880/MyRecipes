@@ -143,5 +143,5 @@ fun StepCardPreview() {
 
 sealed interface Avatar {
     data class Image(val letter: String, val imageUrl: String? = null) : Avatar
-    data class StaticImage(@DrawableRes val image: Int) : Avatar
+    data class StaticImage(@param:DrawableRes val image: Int) : Avatar
 }

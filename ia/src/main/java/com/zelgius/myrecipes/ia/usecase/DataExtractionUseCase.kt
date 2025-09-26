@@ -13,7 +13,6 @@ import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import java.net.URL
-import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 open class DataExtractionUseCase(
@@ -43,11 +42,11 @@ open class DataExtractionUseCase(
         @Serializable
         data class RecipeResponse(
             val name: String,
-            @SerialName("image_url") val imageUrl: String?,
+            @SerialName("image_url") val imageUrl: String? =null,
         )
 
         @Serializable
-        data class IngredientResponse(val name: String, val quantity: Double?, val unit: String?)
+        data class IngredientResponse(val name: String, val quantity: Double? = null, val unit: String? = null)
 
         @Serializable
         data class StepResponse(val description: String, val ingredients: List<IngredientResponse>)
@@ -57,14 +56,11 @@ open class DataExtractionUseCase(
         .getHttpsCallableFromUrl(URL(BuildConfig.CLOUD_FUNCTION_URL))
 
     @OptIn(ExperimentalEncodingApi::class)
-    suspend fun execute(bytes: ByteArray, locale: String): kotlin.Result<Recipe> {
-        val pdfBase64 = Base64.encode(bytes)
-
+    suspend fun execute(url: String, locale: String): kotlin.Result<Recipe> {
         val response = callable.call(
             mapOf(
                 "apiKey" to BuildConfig.CLOUD_FUNCTION_KEY,
-                "pdfData" to pdfBase64,
-                "name" to "Recipe",
+                "urlData" to url,
                 "locale" to locale
             ),
         )
@@ -77,10 +73,9 @@ open class DataExtractionUseCase(
                 Json.decodeFromString<Response>(jsonString)
             }.await()
 
-        val result = response.result
-        if (result == null) return kotlin.Result.failure(
+        val result = response.result ?: return kotlin.Result.failure(
             DataExtractionException(
-                response.error?.status ?: -1, response.error?.message ?: "Unknown"
+                 response.error?.message ?: "Unknown"
             )
         )
 
@@ -98,10 +93,10 @@ open class DataExtractionUseCase(
             .mapIndexed { index, i ->
                 val step = result.steps.firstOrNull { step ->
                     (step.ingredients.firstOrNull { ingredient ->
-                        ingredient.name.lowercase() == i.name.lowercase()
+                        ingredient.name.equals(i.name, ignoreCase = true)
                                 && ingredient.quantity == i.quantity
                                 && ingredient.unit == i.unit }
-                        ?: step.ingredients.firstOrNull { ingredient -> ingredient.name.lowercase() == i.name.lowercase() }) != null
+                        ?: step.ingredients.firstOrNull { ingredient -> ingredient.name.equals(i.name, ignoreCase = true) }) != null
                 }?.let {
                     steps.find { step -> it.description == step.text }
                 }
@@ -140,6 +135,5 @@ open class DataExtractionUseCase(
 }
 
 class DataExtractionException(
-    val status: Int,
     override val message: String
 ) : Exception()

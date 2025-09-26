@@ -5,9 +5,9 @@ import androidx.annotation.StringRes
 import zelgius.com.myrecipes.R
 
 enum class DefaultIngredients(
-    @StringRes val string: Int,
+    @param:StringRes val string: Int,
     val url: String,
-    @DrawableRes val drawable: Int
+    @param:DrawableRes val drawable: Int
 ) {
     EGG(R.string.egg_name, "drawable://egg", R.drawable.ic_eggs),
     FLOUR(R.string.flour_name, "drawable://flour", R.drawable.ic_flour),

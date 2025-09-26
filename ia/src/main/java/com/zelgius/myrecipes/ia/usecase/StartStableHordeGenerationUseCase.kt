@@ -26,7 +26,7 @@ import kotlin.math.abs
 import kotlin.random.Random
 
 class StartStableHordeGenerationUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val recipeDao: RecipeDao,
     private val ingredientDao: IngredientDao,
     private val stableHordeRepository: StableHordeRepository,
