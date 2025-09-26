@@ -16,6 +16,7 @@ import zelgius.com.myrecipes.data.model.Ingredient.Unit
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.model.Step
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
+import zelgius.com.myrecipes.data.repository.ImageGenerationRequestRepository
 import zelgius.com.myrecipes.data.repository.IngredientRepository
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.repository.StepRepository
@@ -23,6 +24,7 @@ import zelgius.com.myrecipes.data.useCase.SaveRecipeUseCase
 import zelgius.com.myrecipes.utils.DEFAULT_BASE_64
 import zelgius.com.myrecipes.utils.TestHelper
 import zelgius.com.myrecipes.utils.assertEquals
+import zelgius.com.myrecipes.worker.CheckMissingImageUseCase
 import zelgius.com.myrecipes.worker.WorkerRepository
 import kotlin.random.Random
 
@@ -33,12 +35,15 @@ class SaveRecipeUseCaseTest {
     private val recipeDao by lazy { db.recipeDao }
     private val stepDao by lazy { db.stepDao }
     private val ingredientDao by lazy { db.ingredientDao }
+    private val imageGenerationProgressDao by lazy { db.imageGenerationProgressDao }
 
     private val recipeRepository by lazy { RecipeRepository(recipeDao, stepDao, ingredientDao) }
     private val workerRepository = WorkerRepository(
-        context, DataStoreRepository(
-           context
-        ))
+        context, DataStoreRepository(context),
+        ImageGenerationRequestRepository(imageGenerationProgressDao),
+        CheckMissingImageUseCase(context, recipeRepository)
+    )
+
 
     private val saveRecipeUseCase by lazy {
         SaveRecipeUseCase(
@@ -49,7 +54,6 @@ class SaveRecipeUseCaseTest {
             workRepository = workerRepository
         )
     }
-
 
 
     @Test
@@ -100,11 +104,18 @@ class SaveRecipeUseCaseTest {
                     remove(random())
                     remove(random())
 
-                    add(ingredient( name = "New Ingredient"))
-                    add(ingredient( name = "New Ingredient", step = recipe.steps.first()))
+                    add(ingredient(name = "New Ingredient"))
+                    add(ingredient(name = "New Ingredient", step = recipe.steps.first()))
 
                     add(ingredient(name = "New Ingredient", step = recipe.steps.first()))
-                    add(first().copy(id= null, unit = Unit.entries.random(), quantity = Random.nextDouble(5.0, 50.0), step = recipe.steps.first()))
+                    add(
+                        first().copy(
+                            id = null,
+                            unit = Unit.entries.random(),
+                            quantity = Random.nextDouble(5.0, 50.0),
+                            step = recipe.steps.first()
+                        )
+                    )
                 }.mapIndexed { index, ingredient ->
                     ingredient.copy(sortOrder = index + 1)
                 }
@@ -118,15 +129,16 @@ class SaveRecipeUseCaseTest {
         }
     }
 
-    private fun ingredient(recipe: Recipe? = null,
-                           quantity: Double = Random.nextDouble(1.0, 100.0),
-                           unit: Unit = Unit.entries.random(),
-                           name: String,
-                           imageUrl: String? = null,
-                           optional: Boolean = Random.nextBoolean(),
-                           sortOrder: Int = Random.nextInt(),
-                           step: Step? = null,
-                           id: Long ? = null,
+    private fun ingredient(
+        recipe: Recipe? = null,
+        quantity: Double = Random.nextDouble(1.0, 100.0),
+        unit: Unit = Unit.entries.random(),
+        name: String,
+        imageUrl: String? = null,
+        optional: Boolean = Random.nextBoolean(),
+        sortOrder: Int = Random.nextInt(),
+        step: Step? = null,
+        id: Long? = null,
     ) = Ingredient(
         quantity = quantity,
         unit = unit,
@@ -139,6 +151,7 @@ class SaveRecipeUseCaseTest {
         sortOrder = sortOrder,
         optional = optional,
     )
+
     companion object {
         @BeforeClass
         @JvmStatic

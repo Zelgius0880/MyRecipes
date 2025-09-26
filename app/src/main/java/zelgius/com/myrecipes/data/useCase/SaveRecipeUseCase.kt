@@ -17,7 +17,7 @@ class SaveRecipeUseCase @Inject constructor(
     private val workRepository: WorkerRepository,
     private val database: AppDatabase,
 ) {
-    suspend fun execute(toSave: Recipe): Long = database.withTransaction {
+    suspend fun execute(toSave: Recipe, runGeneration: Boolean = true): Long = database.withTransaction {
         var recipe = if (toSave.id == null)
             toSave.copy(id = recipeRepository.insert(toSave))
         else {
@@ -57,7 +57,7 @@ class SaveRecipeUseCase @Inject constructor(
         ingredientRepository.deleteAllButThem(ingredients, recipeId)
         stepRepository.deleteAllButThem(recipe, recipe.steps)
 
-        workRepository.startOrScheduleIaGenerationWorker(resetStatus = true)
+        if(runGeneration) workRepository.startOrScheduleIaGenerationWorker(resetStatus = true)
 
         recipeId
     }

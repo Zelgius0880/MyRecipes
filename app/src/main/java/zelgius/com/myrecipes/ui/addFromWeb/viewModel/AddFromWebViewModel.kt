@@ -23,11 +23,11 @@ class AddFromWebViewModel @Inject constructor(
         _url.value = url
     }
 
-    suspend fun startExtraction(bytes: ByteArray, locale: Locale): Recipe? {
+    suspend fun startExtraction(url: String, locale: Locale): Recipe? {
         _loading.value = true
 
         return try {
-            dataExtractionUseCase.execute(bytes, locale.language).getOrThrow()
+            dataExtractionUseCase.execute(url, locale.getDisplayLanguage(Locale.US)).getOrThrow()
         } catch (e: Exception) {
             e.printStackTrace()
             null

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package zelgius.com.myrecipes.ui.share
 
 import android.content.Intent
@@ -10,12 +12,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,13 +38,14 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -108,16 +113,28 @@ fun ShareDialog(
             progress = false
         }
 
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        val configuration = LocalWindowInfo.current.containerSize
+
+        val screenHeight = configuration.height
+        val screenWidth = configuration.width
+
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = (
+                    if (screenWidth < screenHeight) Modifier
+                        .fillMaxWidth()
+                    else Modifier
+                        .fillMaxHeight()
+                    )
                 .padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Box(
                     Modifier
-                        .fillMaxWidth()
+                        .weight(1f, fill = false)
                         .aspectRatio(1f)
                         .clip(MaterialTheme.shapes.medium)
                         .background(Color.White)
@@ -133,21 +150,25 @@ fun ShareDialog(
                             modifier = Modifier.fillMaxSize()
                         )
                     } ?: run {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        CircularWavyProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 }
 
                 if (progress)
-                    CircularProgressIndicator(
+                    CircularWavyProgressIndicator(
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.align(Alignment.End)
                     )
                 else
-                    Button(onClick = {
-                        progress = true
+                    Button(
+                        onClick = {
+                            progress = true
 
-                        saveFileLauncher.launch("${recipe.name}.pdf")
-                    }, modifier = Modifier.align(Alignment.End).padding(top = 8.dp)) {
+                            saveFileLauncher.launch("${recipe.name}.pdf")
+                        }, modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(top = 8.dp)
+                    ) {
                         Text(stringResource(R.string.export_to_pdf))
                     }
             }

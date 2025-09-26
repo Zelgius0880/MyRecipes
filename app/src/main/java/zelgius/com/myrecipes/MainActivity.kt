@@ -37,7 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
@@ -87,12 +87,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        lifecycleScope.launch {
+
+        }
+
         setContent {
             var selectedItem: HomeNavigation by rememberSaveable {
                 mutableStateOf(HomeNavigation.Recipe(Recipe.Type.Meal))
             }
 
-            LaunchedEffect(null) {
+            LaunchedEffect(null){
                 dataStoreRepository.selectedTab.collect {
                     selectedItem = HomeNavigation.Recipe(it)
                 }
@@ -117,7 +121,7 @@ class MainActivity : AppCompatActivity() {
                                     sharedTransitionScope = this@SharedTransitionLayout,
                                     selectedItem = selectedItem,
                                     onNavigate = {
-                                        if (it is HomeNavigation.Recipe) {
+                                        if(it is HomeNavigation.Recipe) {
                                             selectedItem = it
                                             lifecycleScope.launch {
                                                 dataStoreRepository.setSelectedTab(it.type)

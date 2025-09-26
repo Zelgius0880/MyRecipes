@@ -1,6 +1,5 @@
 package zelgius.com.myrecipes.ui.addFromWeb
 
-import android.print.pdf
 import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.webkit.WebView
@@ -52,12 +51,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import zelgius.com.myrecipes.MainActivity.Navigation
@@ -96,9 +96,10 @@ fun AddFromWeb(
         }
     }) { padding ->
 
+        val configuration = LocalConfiguration.current
         @OptIn(ExperimentalMaterial3AdaptiveApi::class)
-        suspend fun startExtraction(bytes: ByteArray) {
-            viewModel.startExtraction(bytes, context.resources.configuration.locales[0])?.let {
+        suspend fun startExtraction(url : String) {
+            viewModel.startExtraction(url, configuration.locales[0])?.let {
                 navigator.navigateTo(
                     ListDetailPaneScaffoldRole.Detail,
                     Navigation.Edit(it.copy(type = type)),
@@ -111,7 +112,7 @@ fun AddFromWeb(
                 )
 
                 if (action == SnackbarResult.ActionPerformed) {
-                    startExtraction(bytes)
+                    startExtraction(url)
                 }
             }
         }
@@ -139,14 +140,14 @@ private fun AddFromWeb(
     url: String = "",
     loading: Boolean = false,
     onUrlChanged: (String) -> Unit = {},
-    onExtract: suspend (ByteArray) -> Unit = {},
+    onExtract: suspend (String) -> Unit = {},
     navigateBack: (() -> Unit)? = null,
     @ColorInt webViewBackgroundColor: Int = AColor.TRANSPARENT
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    var webView: WebView = remember {
+    val webView: WebView = remember {
         WebView(context).apply {
             setBackgroundColor(webViewBackgroundColor)
         }
@@ -158,9 +159,6 @@ private fun AddFromWeb(
         WebView(webView = webView, url = url, modifier = Modifier.fillMaxWidth()) {
 
             object : WebViewClient() {
-                override fun onPageFinished(view: WebView, url: String) {
-                    super.onPageFinished(view, url)
-                }
             }
         }
 
@@ -224,7 +222,7 @@ private fun AddFromWeb(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    onExtract(webView.pdf())
+                    onExtract(url)
                 }
             },
             Modifier
@@ -277,7 +275,7 @@ private fun ErrorSnackbarPreview() {
     val snackbarData = object : SnackbarData {
         override val visuals: SnackbarVisuals
             get() = object : SnackbarVisuals {
-                override val actionLabel: String?
+                override val actionLabel: String
                     get() = "Action"
                 override val duration: SnackbarDuration
                     get() = SnackbarDuration.Short
@@ -322,10 +320,8 @@ private fun AddFromWebPreview() {
                 loading = loading,
                 navigateBack = {},
                 onExtract = {
-                    loading = true
                     scope.launch {
                         delay(2000)
-                        loading = false
                     }
                 })
         }

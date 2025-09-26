@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
-import androidx.test.platform.app.InstrumentationRegistry
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.functions.functions
@@ -61,8 +60,8 @@ class DataExtractionUseCaseTest {
                 .getHttpsCallableFromUrl(URL("http://10.0.2.2:5001/piclock-c9af5/europe-west2/extractRecipe"))
         }
         val recipe = useCase.execute(
-            InstrumentationRegistry.getInstrumentation().context.assets.open("pdf/test.pdf").readBytes(),
-            locale = "en_US"
+            "https://www.marmiton.org/recettes/recette_poivrons-farcis_94368.aspx",
+            locale = "English"
         ).getOrNull()
         assertNotNull(recipe)
         assert(recipe!!.steps.isNotEmpty())

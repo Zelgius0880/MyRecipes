@@ -20,7 +20,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GestureRecognizerRepository @Inject constructor(
-    @ApplicationContext val context: Context,
+    @param:ApplicationContext val context: Context,
 ) : OutputHandler.ResultListener<GestureRecognizerResult, MPImage>, ErrorListener {
     companion object {
         private const val MP_RECOGNIZER_TASK = "gesture_recognizer.task"
