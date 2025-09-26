@@ -29,16 +29,15 @@ ksp {
 }
 
 android {
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 21
         versionName = "2.0.2"
         testInstrumentationRunner =  "androidx.test.runner.AndroidJUnitRunner"
-
     }
 
     buildFeatures {

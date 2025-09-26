@@ -51,6 +51,7 @@ dependencies {
 
     api(platform(libs.firebase.bom))
     implementation(libs.firebase.config)
+    implementation("com.google.android.gms:play-services-nearby:19.3.0")
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

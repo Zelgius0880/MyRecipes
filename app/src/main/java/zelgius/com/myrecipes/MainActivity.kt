@@ -52,6 +52,7 @@ import kotlinx.parcelize.Parcelize
 import zelgius.com.myrecipes.MainActivity.Navigation.RecognitionSetUp
 import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.repository.DataStoreRepository
+import zelgius.com.myrecipes.data.repository.share.ShareRepository
 import zelgius.com.myrecipes.ui.AppTheme
 import zelgius.com.myrecipes.ui.addFromWeb.AddFromWeb
 import zelgius.com.myrecipes.ui.details.RecipeDetails
@@ -69,7 +70,10 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
+    private companion object {
+        private const val TAG = "NFC"
+    }
 
     @Inject
     lateinit var billingRepository: BillingRepository
@@ -77,11 +81,16 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var dataStoreRepository: DataStoreRepository
 
+    @Inject
+    lateinit var shareRepository: ShareRepository
+
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
             billingRepository.checkPurchase()
         }
+
+        shareRepository.startDiscovering()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,48 +116,52 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    ListDetailPaneScaffold(
-                        directive = navigator.scaffoldDirective.copy(defaultPanePreferredWidth = 500.dp),
-                        value = navigator.scaffoldValue,
-                        listPane = {
-                            AnimatedPane {
-                                Home(
-                                    animatedVisibilityScope = this,
-                                    sharedTransitionScope = this@SharedTransitionLayout,
-                                    selectedItem = selectedItem,
-                                    onNavigate = {
-                                        if (it is HomeNavigation.Recipe) {
-                                            selectedItem = it
-                                            lifecycleScope.launch {
-                                                dataStoreRepository.setSelectedTab(it.type)
-                                            }
-                                        } else selectedItem = it
-                                    },
-                                    onSettingsClicked = {
-                                        navigator.navigateToDetails(Navigation.Settings)
-                                    },
-                                    onClick = {
-                                        if (it != null) navigator.navigateToDetails(
-                                            Navigation.Details(
-                                                it
+                    Box {
+                        ListDetailPaneScaffold(
+                            directive = navigator.scaffoldDirective.copy(defaultPanePreferredWidth = 500.dp),
+                            value = navigator.scaffoldValue,
+                            listPane = {
+                                AnimatedPane {
+                                    Home(
+                                        animatedVisibilityScope = this,
+                                        sharedTransitionScope = this@SharedTransitionLayout,
+                                        selectedItem = selectedItem,
+                                        onNavigate = {
+                                            if (it is HomeNavigation.Recipe) {
+                                                selectedItem = it
+                                                lifecycleScope.launch {
+                                                    dataStoreRepository.setSelectedTab(it.type)
+                                                }
+                                            } else selectedItem = it
+                                        },
+                                        onSettingsClicked = {
+                                            navigator.navigateToDetails(Navigation.Settings)
+                                        },
+                                        onClick = {
+                                            if (it != null) navigator.navigateToDetails(
+                                                Navigation.Details(
+                                                    it
+                                                )
                                             )
-                                        )
-                                        else (selectedItem as? HomeNavigation.Recipe)?.let {
-                                            navigator.navigateToDetails(Navigation.Add(it.type))
-                                        }
-                                    })
-                            }
-                        },
-                        detailPane = {
-                            AnimatedPane {
-                                DetailsPane(
-                                    navigator,
-                                    sharedTransitionScope = this@SharedTransitionLayout,
-                                    animatedVisibilityScope = if (navigator.scaffoldValue.secondary != PaneAdaptedValue.Hidden) null else this
-                                )
-                            }
-                        },
-                    )
+                                            else (selectedItem as? HomeNavigation.Recipe)?.let {
+                                                navigator.navigateToDetails(Navigation.Add(it.type))
+                                            }
+                                        })
+                                }
+                            },
+                            detailPane = {
+                                AnimatedPane {
+                                    DetailsPane(
+                                        navigator,
+                                        sharedTransitionScope = this@SharedTransitionLayout,
+                                        animatedVisibilityScope = if (navigator.scaffoldValue.secondary != PaneAdaptedValue.Hidden) null else this
+                                    )
+                                }
+                            },
+                        )
+
+
+                    }
                 }
             }
         }

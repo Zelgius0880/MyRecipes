@@ -53,6 +53,7 @@ import zelgius.com.myrecipes.data.model.Recipe
 import zelgius.com.myrecipes.data.repository.RecipeRepository
 import zelgius.com.myrecipes.data.useCase.GenerateQrCodeUseCase
 import zelgius.com.myrecipes.data.useCase.pdf.GeneratePdfUseCase
+import zelgius.com.myrecipes.data.repository.share.ShareRepository
 import zelgius.com.myrecipes.ui.preview.createDummyModel
 import java.io.OutputStream
 import javax.inject.Inject
@@ -158,7 +159,8 @@ fun ShareDialog(
 @HiltViewModel
 class ShareDialogViewModel @Inject constructor(
     private val recipeRepository: RecipeRepository,
-    private val generatePdfUseCase: GeneratePdfUseCase
+    private val generatePdfUseCase: GeneratePdfUseCase,
+    private val shareRepository: ShareRepository,
 ) : ViewModel() {
 
     private val _qrCode = MutableStateFlow<Bitmap?>(null)
@@ -173,6 +175,8 @@ class ShareDialogViewModel @Inject constructor(
                 height = height,
                 dotColor = color
             )
+
+            shareRepository.pushMessage(recipeRepository.getBytesForQr(recipe))
         }
     }
 

@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class TextToSpeechRepository @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) {
     val textToSpeech: TextToSpeech = TextToSpeech(context) {
         if (it == TextToSpeech.SUCCESS) {
