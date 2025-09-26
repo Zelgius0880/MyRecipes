@@ -8,7 +8,7 @@ import java.io.File
 import javax.inject.Inject
 
 class CheckMissingImageUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val recipeRepository: RecipeRepository,
 ) {
 

@@ -29,7 +29,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val dataStoreRepository: DataStoreRepository,
     private val ingredientRepository: IngredientRepository,
     private val recipeRepository: RecipeRepository,
