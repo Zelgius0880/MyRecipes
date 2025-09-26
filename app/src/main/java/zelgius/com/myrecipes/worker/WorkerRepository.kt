@@ -17,7 +17,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WorkerRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val dataStoreRepository: DataStoreRepository,
     private val imageGenerationProgressRepository: ImageGenerationRequestRepository,
     private val checkMissingImageUseCase: CheckMissingImageUseCase,

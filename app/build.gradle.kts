@@ -1,4 +1,5 @@
 import java.io.FileInputStream
+import java.util.Locale
 import java.util.Properties
 
 plugins {
@@ -13,12 +14,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
 }
 
-val getProps: (propName: String) -> String = {
-    val propsFile = rootProject.file("local.properties")
-    if (propsFile.exists()) {
+fun getProps(propName: String, propsFile: File = rootProject.file("local.properties")): String {
+    return if (propsFile.exists()) {
         val props = Properties()
         props.load(FileInputStream(propsFile))
-        props[it] as String
+        // Ensure a default empty string is returned if property is not found to avoid nulls
+        props.getProperty(propName, "")
     } else {
         ""
     }
@@ -31,13 +32,14 @@ ksp {
 android {
     compileSdk = 36
 
+    val gradlePropFile = rootProject.file("gradle.properties")
     defaultConfig {
         applicationId = "zelgius.com.myrecipes"
         minSdk = 28
         targetSdk = 36
-        versionCode = 21
-        versionName = "2.0.2"
-        testInstrumentationRunner =  "androidx.test.runner.AndroidJUnitRunner"
+        versionCode = getProps("build.versionCode", gradlePropFile).toIntOrNull() ?: 1
+        versionName = getProps("build.versionName", gradlePropFile)
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     }
 
@@ -48,17 +50,21 @@ android {
 
     sourceSets {
         getByName("androidTest") {
-            assets.srcDirs (listOf("src/androidTest/assets/", "$projectDir/schemas"))
+            assets.srcDirs(listOf("src/androidTest/assets/", "$projectDir/schemas"))
         }
     }
 
     signingConfigs {
-
         register("release").configure {
-            storeFile = file("zelgius.com.myrecipes")
-            storePassword = "keystore"
-            keyAlias = ("key0")
-            keyPassword = "keystore"
+            // Read signing configuration from local.properties
+            val storeFilePath = getProps("RELEASE_STORE_FILE")
+            if (storeFilePath.isNotEmpty()) {
+                storeFile =
+                    file(storeFilePath) // Assuming storeFilePath is relative to the app module or an absolute path
+            }
+            storePassword = getProps("RELEASE_STORE_PASSWORD")
+            keyAlias = getProps("RELEASE_KEY_ALIAS")
+            keyPassword = getProps("RELEASE_KEY_PASSWORD")
         }
     }
 
@@ -201,11 +207,82 @@ dependencies {
     implementation(libs.compose.material.icons)
     implementation(libs.compose.material3)
     implementation(libs.compose.material3.window)
-    implementation (libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.constraintlayout.compose)
 
     implementation(libs.compose.material3.adaptive)
     implementation(libs.compose.material3.adaptive.layout)
     implementation(libs.compose.material3.adaptive.navigation)
     implementation(libs.compose.material3.adaptive.navigation.suite)
 
+}
+
+
+tasks.register<Exec>("releaseBillingBundle") {
+    doFirst {
+        incrementVersionCode()
+        incrementVersionName()
+    }
+    workingDir = rootProject.projectDir
+    runScript("gradlew", ":app:bundleBillingRelease")
+}
+
+tasks.register<Exec>("releaseNoBillingBundle") {
+    doFirst {
+        incrementVersionCode()
+    }
+    workingDir = rootProject.projectDir
+    runScript("gradlew", ":app:bundleNoBillingRelease")
+    dependsOn("releaseBillingBundle")
+}
+
+tasks.register("createReleases") {
+    dependsOn("releaseNoBillingBundle")
+}
+
+fun Exec.runScript(vararg args: String) {
+    if (System.getProperty("os.name").lowercase(Locale.ROOT).contains("windows")) {
+        commandLine( "cmd", "/c", *args)
+    } else {
+        commandLine ("sh", "-c", *args)
+    }
+}
+
+
+fun incrementVersionCode() {
+    group = "versioning"
+    description =
+        "Increments the build.versionCode and updates build.versionName patch number in gradle.properties."
+    val propertiesFile = rootProject.file("gradle.properties")
+    val properties = Properties()
+    propertiesFile.inputStream().use { properties.load(it) }
+
+    val versionCode = properties.getProperty("build.versionCode")?.toIntOrNull() ?: 0
+    properties.setProperty("build.versionCode", (versionCode + 1).toString())
+    propertiesFile.outputStream().use { properties.store(it, null) }
+    println("Incremented versionCode to: ${properties.getProperty("build.versionCode")}")
+
+    // Store properties back to file
+    propertiesFile.outputStream().use { properties.store(it, null) }
+}
+
+fun incrementVersionName() {
+    group = "versioning"
+    description =
+        "Increments the build.versionCode and updates build.versionName patch number in gradle.properties."
+    val propertiesFile = rootProject.file("gradle.properties")
+    val properties = Properties()
+    propertiesFile.inputStream().use { properties.load(it) }
+
+    // Increment versionName patch
+    val versionName = properties.getProperty("build.versionName")
+    val versionNameParts = versionName.split(".").toMutableList()
+    val lastPartIndex = versionNameParts.size - 1
+    val patchVersion = versionNameParts[lastPartIndex].toIntOrNull() ?: 0
+    versionNameParts[lastPartIndex] = (patchVersion + 1).toString()
+    val newVersionName = versionNameParts.joinToString(".")
+    properties.setProperty("build.versionName", newVersionName)
+    println("Incremented versionName to: ${properties.getProperty("build.versionName")}")
+
+    // Store properties back to file
+    propertiesFile.outputStream().use { properties.store(it, null) }
 }

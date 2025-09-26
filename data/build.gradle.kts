@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "zelgius.com.myrecipes.data"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -33,11 +33,8 @@ android {
         create("randomTests") {}
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildFeatures {
@@ -65,6 +62,8 @@ dependencies {
     testImplementation(libs.test.junit)
     androidTestImplementation(libs.test.junit.ext)
 }
+
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)

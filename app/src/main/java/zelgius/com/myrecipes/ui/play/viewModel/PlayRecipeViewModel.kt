@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayRecipeViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val getInstructionUseCase: GetInstructionsUseCase,
     private val recipeRepository: RecipeRepository,
     private val dataStoreRepository: DataStoreRepository,

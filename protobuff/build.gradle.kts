@@ -10,7 +10,7 @@ plugins {
 val generatedFilesBaseDir = "$projectDir/src"
 
 android {
-    compileSdk = 34
+    compileSdk = 36
 
     sourceSets {
         getByName("main").java {
@@ -27,7 +27,7 @@ android {
 
     dependencies {
         //implementation (fileTree("libs", include: ["*.jar"]))
-        api ("com.google.protobuf:protobuf-javalite:4.26.1")
+        api ("com.google.protobuf:protobuf-javalite:4.32.1")
     }
     namespace = "zelgius.com.protobuff"
 

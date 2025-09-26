@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 
 class DatabaseRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val db: AppDatabase
 ) {
     companion object {
